@@ -225,10 +225,13 @@ returns next to what the app uses (the strict defaults while no vault is unlocke
 
 ### Quick access
 A Spotlight-like panel for the most common job: find an account, copy its code, get out of the way. Off by default
-(Settings, General, "Schnellzugriff": enable switch, shortcut recorder with ⌥Space as the suggestion, switch "Symbol in der
+(Settings, General, "Schnellzugriff": enable switch, shortcut recorder with ⌃⌥Space as the suggestion, switch "Symbol in der
 Menüleiste"); nothing is registered until the user turns it on. Registration uses Carbon `RegisterEventHotKey` (no
-accessibility permission, no event taps) and needs at least one of ⌘ ⌥ ⌃; a combination that is taken is reported in
-the settings. An enabled hotkey of the former option is migrated once to the same keys (`QuickAccessShortcut.migrate`,
+accessibility permission, no event taps) and needs at least one of ⌘ ⌥ ⌃. Carbon reports success even when another app
+uses the same combination, so "already taken" is only detected within MacAuth itself (and reported in the settings);
+the settings text says that another app may be the reason if pressing the shortcut does nothing. The suggestion is
+⌃⌥Space, not ⌥Space (that types a non-breaking space on German layouts and is the default of several launchers); a
+stored or migrated combination is never changed. An enabled hotkey of the former option is migrated once to the same keys (`QuickAccessShortcut.migrate`,
 the old keys are removed).
 - **Panel:** borderless, non-activating `NSPanel` (MacAuth does not become the active app, the previous app keeps its
   place and has the focus again after the panel closes), 560 pt wide, centred on the screen of the mouse, top edge in
@@ -238,14 +241,25 @@ the old keys are removed).
   and a new view state are created for every opening and dropped on close.
 - **List:** at most 9 rows (monogram, issuer, name, code in grouped monospaced digits, countdown ring, ⌘1–⌘9).
   Empty query: favourites, then accounts used before (`lastUsedAt`, newest first), then the rest in the order of the
-  main window. With a query: the main window's search and ranking (`AccountSearch`). Hidden codes stay masked until a
-  row is hovered or chosen with the arrow keys.
-- **Keys** (`QuickAccess.copyAction`): ↵ copies the selected code, ⌘1–⌘9 copy that row, ⌥↵ copies the next code (TOTP
-  only), ↑/↓ move. For HOTP, ↵ is the main window's "copy next code and count on": the counter moves on and is saved.
-  Under 5 s left (`QuickAccess.isExpiring`, the threshold of the cards) a TOTP code turns red, the next one is shown small
+  main window. With a query: the main window's search and ranking (`AccountSearch`). The order is frozen while the
+  panel is open (`QuickAccess.rowIDs` / `resolve`): it is computed when the panel opens, after an unlock in it and when
+  the query changes, never because usage data changed, so a copied row stays where it is; the new order shows the next
+  time. Hidden codes stay masked until a row is hovered or chosen with the arrow keys (and are left out of the
+  accessibility label while masked, in the panel and in the main window).
+- **Keys** (`QuickAccess.copyAction`, `QuickAccess.commandOutcome`): ↵, ⌘1–⌘9 (resolved by key code, so also on AZERTY)
+  and a click copy the code that is displayed, as in the main window; for HOTP the counter does not move. ⌥↵ copies the
+  next code: the next period for TOTP, and for HOTP "next code and count on" (the main window's ⌥⌘C: the counter moves
+  on and is saved at once). ↑/↓ move. ⌘L locks, ⌘W closes; ⌘A ⌘V ⌘X ⌘Z (also with ⇧), ⌘←, ⌘→ and ⌘⌫ are text commands of
+  the search field, ⌘C copies selected text of the field and without a selection does nothing (it never reaches the main
+  window's copy); every other ⌘ command is swallowed. Under 5 s left (`QuickAccess.isExpiring`, the threshold of the cards) a TOTP code turns red, the next one is shown small
   and the footer names ⌥↵. After a copy the row says "Kopiert" for 0.4 s (immediately closing with "Reduce motion"), then
   the panel closes. Every copy goes through `AppModel.copyCode` and the clipboard service (concealed, this Mac only,
-  cleared after the set time) and notes `lastUsedAt` (a vault write like any other change; the main window does the same).
+  cleared after the set time) and notes `lastUsedAt` (the main window does the same). The note lives in memory and is
+  written only with the next real change, or when the vault locks or the app quits, through `VaultStore.saveUsage`: it
+  does not rotate `vault.previous.json` (which keeps pointing at the last real change) and failures are silent (no
+  "Speichern fehlgeschlagen", no lock warning). It is never part of a `.macauth` file or a plain-text export, and
+  `AppPolicy.backupCoversCurrent` and the backup reminder ignore it. An HOTP counter change stays a real change, saved at
+  once.
 - **Locked vault:** the panel shows no account data, only "MacAuth ist gesperrt" and "Mit Touch ID entsperren". Opening
   it with the shortcut or a click on the menu bar item is a user action, so the unlock prompt may start by itself
   (`QuickAccess.mayPromptUnlock`; never after "cannot open", which needs the main window). It is `AppModel.unlock()`, the
@@ -254,7 +268,10 @@ the old keys are removed).
   the lock state (and closes when it loses the focus).
 - **Lock discipline:** `AppModel.lock()` closes the panel at once (auto-lock, sleep, screen lock, user switch, ⌘L): hosted
   view, query and selection are dropped and the confirmation timer is cancelled. The list carries the `Ticket` (phase and
-  lock generation) it was built in; a copy checks it (`AppModel.copyFromQuickAccess`), so nothing completes after a lock.
+  lock generation) it was built in, taken whenever the list first appears (also if the vault was unlocked by another
+  prompt while the panel was open); a copy checks it (`AppModel.copyFromQuickAccess`), so nothing completes after a lock.
+- **Edit sheet:** saving applies only the sheet's fields (`AccountEdit`) to the current account, so a counter or usage
+  note that moved meanwhile survives.
 - **Screen protection:** the panel follows `protectScreen` like the main window (`WindowConfigurator`, live; strict
   while locked).
 - **Auto-lock:** opening the panel and every key or mouse event in it count as activity, like the main window; an idle

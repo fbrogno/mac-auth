@@ -11,7 +11,6 @@ struct QuickAccessView: View {
     var controller: QuickAccessController?
 
     @FocusState private var searchFocused: Bool
-    @Environment(\.fixedNow) private var fixedNow
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,7 +25,6 @@ struct QuickAccessView: View {
         .environment(\.protectScreen, model.settings.protectScreen)
         .background(WindowConfigurator(isMainWindow: false))   // sharingType follows the security setting, live
         .onGeometryChange(for: CGSize.self) { $0.size } action: { controller?.contentSizeChanged($0) }
-        .onAppear { if fixedNow == nil { DispatchQueue.main.async { searchFocused = true } } }
     }
 }
 
@@ -37,9 +35,10 @@ private struct ListContent: View {
     @Bindable var state: QuickPanelState
     var controller: QuickAccessController?
     var searchFocused: FocusState<Bool>.Binding
+    @Environment(\.fixedNow) private var fixedNow
 
     var body: some View {
-        let rows = QuickAccess.rows(from: model.accounts, query: state.query, groupName: { model.group($0)?.name })
+        let rows = state.rows(in: model)
         VStack(spacing: 0) {
             searchField
             Divider()
@@ -67,6 +66,11 @@ private struct ListContent: View {
                 }
             }
         }
+        .onAppear {
+            state.listAppeared()
+            // Also after an unlock inside the panel: the search field only exists now.
+            if fixedNow == nil { DispatchQueue.main.async { searchFocused.wrappedValue = true } }
+        }
     }
 
     private var searchField: some View {
@@ -90,7 +94,7 @@ private struct ListContent: View {
         return HStack(spacing: 12) {
             Group {
                 if let selected, selected.kind == .hotp {
-                    Text("↵ kopiert den nächsten Code und zählt weiter").foregroundStyle(.secondary)
+                    Text("↵ kopieren · ⌥↵ nächster Code, zählt weiter").foregroundStyle(.secondary)
                 } else if let selected, QuickAccess.isExpiring(kind: selected.kind, remaining: selected.remainingSeconds(at: now)) {
                     Text("↵ kopiert den aktuellen Code, ⌥↵ den nächsten").foregroundStyle(Color.red)
                 } else {
@@ -167,7 +171,7 @@ private struct QuickRow: View {
         .onHover { hovering = $0 }
         .onTapGesture(perform: onCopy)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(display.accessibilitySummary)
+        .accessibilityLabel(display.accessibilitySummary(showCode: codeVisible))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction(named: Text("Kopieren"), onCopy)
     }

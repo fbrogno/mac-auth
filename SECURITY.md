@@ -61,7 +61,9 @@ withstand and where it stops.
   first, whatever its file says about the unlock prompt, and it comes back with the strict settings above.
 - **Screen sharing and screenshots:** the window content is excluded by default. This is a request to
   macOS that ordinary screen sharing and screenshots honour; it is not a guarantee against every
-  capture method.
+  capture method. The quick access panel is excluded from capture the same way as the main window; it is meant
+  to be opened over other apps, including during screen sharing, and "Hide codes" (hover or selection only)
+  additionally masks the codes there.
 - **Hostile input:** QR payloads, links and import files are checked against size and count limits and
   tested with malformed data; the binary formats are read by small parsers of our own, JSON by
   Foundation, images by the system frameworks (ImageIO, Vision). The app runs in the App Sandbox with the Hardened Runtime.

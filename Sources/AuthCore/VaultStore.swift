@@ -272,6 +272,18 @@ public actor VaultStore {
         contents = newContents
     }
 
+    /// Writes data that differs from the stored vault only in usage history (`lastUsedAt`). Unlike `save` it does NOT
+    /// rotate `vault.previous.json`, so the previous generation keeps pointing at the state before the last real
+    /// change. Callers treat a failure as nothing worth reporting (the note is simply written with the next change).
+    public func saveUsage(_ newContents: VaultData) throws {
+        guard state == .unlocked, let keyBuffer, let envelope else { throw VaultError.locked }
+        let sealed = try Self.seal(newContents, key: keyBuffer.key, protector: envelope.protector, fields: envelope.protectorFields, appLock: envelope.appLock)
+        let written = try writeCurrent(sealed, mode: .overwrite)
+        self.envelope = sealed
+        lastKnownBytes = written
+        contents = newContents
+    }
+
     /// Changes whether the app asks for authentication before using the vault key. Only while unlocked; the app
     /// must have authenticated freshly before lowering it. The value is sealed into the authenticated header.
     ///
@@ -508,6 +520,8 @@ public actor VaultStore {
     private enum WriteMode {
         /// `save`: current becomes the previous generation.
         case rotate
+        /// `saveUsage`: replaces the current file, the previous generation stays as it is.
+        case overwrite
         /// `changeProtector`: previous generation is not kept (removed by the caller afterwards).
         case discardPrevious
         /// The caller took care of any existing file.

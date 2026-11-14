@@ -190,7 +190,7 @@ struct AccountFormSheet: View {
     }
 
     private func save() async {
-        guard var account = candidate else { return }
+        guard let account = candidate else { return }
         saving = true
         defer { saving = false }
         do {
@@ -200,12 +200,8 @@ struct AccountFormSheet: View {
             return
         }
         if let editing {
-            account = editing
-            account.issuer = issuer.trimmingCharacters(in: .whitespaces)
-            account.name = name.trimmingCharacters(in: .whitespaces)
-            account.groupID = groupID
-            account.note = note
-            model.update(account)
+            model.update(editing.id, with: AccountEdit(issuer: issuer.trimmingCharacters(in: .whitespaces),
+                                                       name: name.trimmingCharacters(in: .whitespaces), groupID: groupID, note: note))
             dismiss()
         } else if await model.add(account, ticket: ticket) {
             dismiss()

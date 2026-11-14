@@ -91,8 +91,13 @@ final class AppSettings {
         lastBackupExport = stored["lastBackupExport"] as? Double ?? 0
         lastAccountChange = stored["lastAccountChange"] as? Double ?? 0
 
-        // The former option "global shortcut shows or hides the window" is replaced by the quick access: an enabled
-        // shortcut moves over with the same keys, then the old keys are removed (also if nothing moves).
+    }
+
+    /// The former option "global shortcut shows or hides the window" is replaced by the quick access: an enabled
+    /// shortcut moves over with the same keys, then the old keys are removed (also if nothing moves). This WRITES
+    /// preferences, so it runs only in the normal start (`AppModel.init`), never in the read-only `--print-settings`.
+    func migrateLegacyHotKey() {
+        let stored = defaults.persistentDomain(forName: domain) ?? [:]
         let legacy = QuickAccessShortcut.Legacy(enabled: stored["hotKeyEnabled"] as? Bool, keyCode: stored["hotKeyCode"] as? Int,
                                                 modifiers: stored["hotKeyModifiers"] as? Int, label: stored["hotKeyLabel"] as? String)
         if let migrated = QuickAccessShortcut.migrate(legacy: legacy, alreadyStored: stored["quickAccessEnabled"] != nil) {

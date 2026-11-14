@@ -132,7 +132,7 @@ struct SettingsView: View {
                         model.applyQuickAccess()
                     }))
                 }
-                Text("Ein kleines Fenster über jeder App: Konto tippen, mit ↵ den Code kopieren, das Fenster verschwindet und die vorige App ist wieder vorn. Ist MacAuth gesperrt, zeigt es nur die Entsperrung. Die Kombination braucht mindestens ⌘, ⌥ oder ⌃.")
+                Text("Ein kleines Fenster über jeder App: Konto tippen, mit ↵ den Code kopieren, das Fenster verschwindet und die vorige App ist wieder vorn. Ist MacAuth gesperrt, zeigt es nur die Entsperrung. Die Kombination braucht mindestens ⌘, ⌥ oder ⌃. Passiert beim Drücken nichts, benutzt vielleicht eine andere App dieselbe Kombination.")
                     .font(.callout).foregroundStyle(.secondary)
             }
             Section("Import und Backup") {

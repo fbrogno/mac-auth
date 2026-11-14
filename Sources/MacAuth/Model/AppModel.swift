@@ -152,6 +152,10 @@ final class AppModel {
     @ObservationIgnored private var started = false
     @ObservationIgnored private var saveSeq = 0
     @ObservationIgnored private var savedSeq = 0
+    /// `lastUsedAt` was noted in memory (a copy) and is not in the vault file yet. Written with the next real change,
+    /// or when the vault locks / the app quits (`AppPolicy.exitWrite`), never as a change of its own.
+    @ObservationIgnored private var usageDirty = false
+    @ObservationIgnored private var terminationObserver: NSObjectProtocol?
     @ObservationIgnored private var settingSelectionAutomatically = false
     @ObservationIgnored private var lockObserver: SystemLockObserver?
     @ObservationIgnored private var autoLockTimer: Timer?
@@ -160,7 +164,9 @@ final class AppModel {
     @ObservationIgnored private let demoRescue: [RescueEntry]
 
     init(settings: AppSettings? = nil) {
-        self.settings = settings ?? AppSettings()
+        let resolved = settings ?? AppSettings()
+        if settings == nil { resolved.migrateLegacyHotKey() }   // normal start only; `--print-settings` must not write
+        self.settings = resolved
         self.isDemo = false
         self.store = VaultStore(url: Self.vaultURL)
         self.demoRescue = []
@@ -201,6 +207,9 @@ final class AppModel {
         started = true
         input.start()
         quick.apply()
+        terminationObserver = NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.writeBeforeQuit() }
+        }
         lockObserver = SystemLockObserver(onLock: { [weak self] in self?.lock(fromSystem: true) },
                                           onReturn: { [weak self] in self?.userReturned() },
                                           onResign: { [weak self] in self?.appResigned() })
@@ -306,7 +315,9 @@ final class AppModel {
         epoch.bump()
         prompt.didLock()
         let wasUnlocked = phase == .unlocked
-        let unsaved: VaultData? = wasUnlocked && savedSeq != saveSeq ? storedVault : nil
+        let write = wasUnlocked ? AppPolicy.exitWrite(unsavedChange: savedSeq != saveSeq, unsavedUsage: usageDirty) : .nothing
+        let unsaved: VaultData? = write == .nothing ? nil : storedVault
+        usageDirty = false
         // While locked the strict defaults apply (screen protection on, shortest auto-lock, ...).
         settings.security = .strict
         autoLockTimer?.invalidate()
@@ -333,9 +344,13 @@ final class AppModel {
         savedSeq = saveSeq
         Task { [weak self, store] in
             if let unsaved {
-                do { try await store?.save(unsaved) } catch {
-                    // Locking still happens; the lock screen says plainly that the last change was not written.
-                    self?.lockWarning = String(localized: "Die letzte Änderung konnte nicht gespeichert werden: \(ErrorText.message(for: error))")
+                if write == .usageOnly {
+                    try? await store?.saveUsage(unsaved)   // silent: a note about a copy is not worth a warning
+                } else {
+                    do { try await store?.save(unsaved) } catch {
+                        // Locking still happens; the lock screen says plainly that the last change was not written.
+                        self?.lockWarning = String(localized: "Die letzte Änderung konnte nicht gespeichert werden: \(ErrorText.message(for: error))")
+                    }
                 }
             }
             await store?.lock()
@@ -575,7 +590,7 @@ final class AppModel {
     /// Registers or removes the shortcut and the menu bar item according to the settings.
     func applyQuickAccess() { quick.apply() }
 
-    /// Switches the quick access on or off. Switching on without a recorded combination suggests ⌥Space.
+    /// Switches the quick access on or off. Switching on without a recorded combination suggests ⌃⌥Space.
     func setQuickAccessEnabled(_ on: Bool) {
         if on, settings.quickAccessKeyCode < 0 {
             let suggestion = QuickAccessShortcut.suggestion
@@ -671,9 +686,28 @@ final class AppModel {
         return true
     }
 
+    /// Quit: writes a usage note that is still only in memory (or a real change still queued), without rotating the
+    /// previous generation for the note. Waits briefly (the store is an actor; the main thread is not needed for it)
+    /// and ignores failures: at quit there is nobody to tell, and the note is not a change.
+    private func writeBeforeQuit() {
+        guard phase == .unlocked, let store else { return }
+        let write = AppPolicy.exitWrite(unsavedChange: savedSeq != saveSeq, unsavedUsage: usageDirty)
+        guard write != .nothing else { return }
+        let data = storedVault
+        usageDirty = false
+        let done = DispatchSemaphore(value: 0)
+        Task.detached {
+            if write == .usageOnly { try? await store.saveUsage(data) } else { try? await store.save(data) }
+            done.signal()
+        }
+        _ = done.wait(timeout: .now() + 2)
+    }
+
     /// Newest state wins: older queued saves skip themselves; a lock writes whatever is still unsaved.
+    /// Every real change also carries a usage note that is still pending.
     private func persist(accountsChanged: Bool = true) {
         if accountsChanged { settings.lastAccountChange = Date().timeIntervalSince1970 }
+        usageDirty = false
         saveSeq += 1
         guard let store else { savedSeq = saveSeq; return }
         let seq = saveSeq
@@ -742,9 +776,11 @@ final class AppModel {
         return true
     }
 
-    func update(_ account: Account) {
-        guard phase == .unlocked, let index = accounts.firstIndex(where: { $0.id == account.id }) else { return }
-        accounts[index] = account
+    /// Applies the edit sheet's fields to the CURRENT account, so a counter or usage note that moved while the sheet
+    /// was open is not overwritten by an old copy.
+    func update(_ id: UUID, with edit: AccountEdit) {
+        guard phase == .unlocked, let index = accounts.firstIndex(where: { $0.id == id }) else { return }
+        accounts[index] = accounts[index].applying(edit)
         persist()
     }
 
@@ -908,7 +944,11 @@ final class AppModel {
         let advanced = next && account.kind == .hotp
         if advanced { accounts[index].advanceCounter() }
         accounts[index].lastUsedAt = now
-        persist(accountsChanged: advanced)   // a plain copy only notes the use; it does not make the backup outdated
+        if advanced {
+            persist()   // the counter is a real change: saved at once (the note goes along)
+        } else {
+            usageDirty = true   // only noted in memory; written with the next change, at lock or at quit
+        }
         return true
     }
 

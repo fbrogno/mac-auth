@@ -67,6 +67,42 @@ extension Account: CustomStringConvertible, CustomDebugStringConvertible, Custom
     }
 }
 
+/// The fields of an account that the edit sheet can change. Everything else (secret, counter, usage, order) stays
+/// as it is in the vault at the moment of saving.
+public struct AccountEdit: Equatable, Sendable {
+    public var issuer: String
+    public var name: String
+    public var groupID: UUID?
+    public var note: String
+
+    public init(issuer: String, name: String, groupID: UUID?, note: String) {
+        self.issuer = issuer
+        self.name = name
+        self.groupID = groupID
+        self.note = note
+    }
+}
+
+extension Account {
+    /// The current account with only the edited fields replaced: an HOTP counter or `lastUsedAt` that moved while
+    /// the sheet was open survives.
+    public func applying(_ edit: AccountEdit) -> Account {
+        var copy = self
+        copy.issuer = edit.issuer
+        copy.name = edit.name
+        copy.groupID = edit.groupID
+        copy.note = edit.note
+        return copy
+    }
+
+    /// The same account without its usage history.
+    public var withoutUsage: Account {
+        var copy = self
+        copy.lastUsedAt = nil
+        return copy
+    }
+}
+
 /// A user-defined group (sidebar entry). Named `AccountGroup` to avoid clashing with `SwiftUI.Group`.
 public struct AccountGroup: Codable, Sendable, Hashable, Identifiable {
     public var id: UUID
@@ -110,6 +146,17 @@ public struct VaultData: Codable, Sendable, Equatable {
         copy.security = nil
         return copy
     }
+
+    /// The same vault without the usage history (`lastUsedAt`): it only orders the quick access panel and is not a
+    /// change a backup or the backup reminder should care about.
+    public var withoutUsage: VaultData {
+        var copy = self
+        copy.accounts = copy.accounts.map(\.withoutUsage)
+        return copy
+    }
+
+    /// What a backup file holds: no security settings, no usage history.
+    public var forBackup: VaultData { withoutSecuritySettings.withoutUsage }
 
     static func makeEncoder() -> JSONEncoder {
         let e = JSONEncoder()

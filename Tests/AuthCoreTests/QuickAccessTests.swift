@@ -75,23 +75,25 @@ import Testing
 
     // MARK: Keys
 
-    @Test func returnCopiesCurrentForTOTPAndAdvancesForHOTP() {
+    @Test func returnCopiesTheDisplayedCodeForTOTPAndHOTPWithoutAdvancing() {
         let totp = account("T"), hotp = account("H", kind: .hotp)
         let rows = [totp, hotp]
         #expect(QuickAccess.copyAction(for: .returnKey, rows: rows, selected: 0) == .current(totp.id))
-        #expect(QuickAccess.copyAction(for: .returnKey, rows: rows, selected: 1) == .advancingHOTP(hotp.id))
+        #expect(QuickAccess.copyAction(for: .returnKey, rows: rows, selected: 1) == .current(hotp.id))
     }
 
-    @Test func optionReturnIsNextCodeForTOTPOnly() {
+    @Test func optionReturnIsTheNextPeriodForTOTPAndCountsOnForHOTP() {
         let totp = account("T"), hotp = account("H", kind: .hotp)
         #expect(QuickAccess.copyAction(for: .optionReturn, rows: [totp, hotp], selected: 0) == .next(totp.id))
-        #expect(QuickAccess.copyAction(for: .optionReturn, rows: [totp, hotp], selected: 1) == nil)
+        #expect(QuickAccess.copyAction(for: .optionReturn, rows: [totp, hotp], selected: 1) == .advancingHOTP(hotp.id))
+        #expect(QuickAccess.copyAction(for: .optionReturn, rows: [totp, hotp], selected: 2) == nil)
+        #expect(QuickAccess.copyAction(for: .optionReturn, rows: [], selected: nil) == nil)
     }
 
     @Test func commandNumberAddressesRowsDirectly() {
         let rows = (0..<3).map { account("R\($0)", kind: $0 == 2 ? .hotp : .totp) }
         #expect(QuickAccess.copyAction(for: .command(1), rows: rows, selected: 2) == .current(rows[0].id))
-        #expect(QuickAccess.copyAction(for: .command(3), rows: rows, selected: nil) == .advancingHOTP(rows[2].id))
+        #expect(QuickAccess.copyAction(for: .command(3), rows: rows, selected: nil) == .current(rows[2].id))   // HOTP: shown code, no advance
         #expect(QuickAccess.copyAction(for: .command(4), rows: rows, selected: 0) == nil)
         #expect(QuickAccess.copyAction(for: .command(0), rows: rows, selected: 0) == nil)
         #expect(QuickAccess.copyAction(for: .command(10), rows: rows, selected: 0) == nil)
@@ -192,10 +194,88 @@ import Testing
         #expect(QuickAccessShortcut.migrate(legacy: noLabel, alreadyStored: false)?.label == "")
     }
 
-    @Test func suggestionIsOptionSpace() {
+    @Test func suggestionIsControlOptionSpace() {
         let s = QuickAccessShortcut.suggestion
-        #expect(s.keyCode == 49 && s.modifiers == QuickAccessShortcut.optionBit && s.label == "⌥Space")
+        #expect(s.keyCode == 49 && s.modifiers == QuickAccessShortcut.controlBit | QuickAccessShortcut.optionBit && s.label == "⌃⌥Space")
         #expect(QuickAccessShortcut.hasRequiredModifier(s.modifiers))
         #expect(!QuickAccessShortcut.hasRequiredModifier(0))
+    }
+
+    // MARK: Frozen order (U1)
+
+    @Test func copyingDoesNotReorderTheOpenPanel() {
+        var accounts = [account("A", index: 1), account("B", index: 2), account("C", index: 3, used: 100)]
+        let ids = QuickAccess.rowIDs(from: accounts, query: "", groupName: { _ in nil })
+        #expect(ids == [accounts[2].id, accounts[0].id, accounts[1].id])
+        // B is copied: lastUsedAt changes, a fresh order would put B first.
+        accounts[1].lastUsedAt = Date(timeIntervalSince1970: 900)
+        #expect(issuers(list(accounts)) == ["B", "C", "A"])
+        // The frozen ids keep their positions, with current data.
+        let shown = QuickAccess.resolve(ids, in: accounts)
+        #expect(issuers(shown) == ["C", "A", "B"])
+        #expect(shown[2].lastUsedAt != nil)
+        // The next opening computes again.
+        #expect(QuickAccess.rowIDs(from: accounts, query: "", groupName: { _ in nil }) == [accounts[1].id, accounts[2].id, accounts[0].id])
+    }
+
+    @Test func frozenIDsDropDeletedAccountsAndKeepOrderForAQuery() {
+        let accounts = [account("Mail", index: 1), account("Mailbox", index: 2)]
+        let ids = QuickAccess.rowIDs(from: accounts, query: "mail", groupName: { _ in nil })
+        #expect(QuickAccess.resolve(ids, in: [accounts[1]]).map(\.issuer) == ["Mailbox"])
+        #expect(QuickAccess.resolve([], in: accounts).isEmpty)
+        #expect(QuickAccess.resolve([UUID()], in: accounts).isEmpty)
+    }
+
+    // MARK: ⌘ commands (N5)
+
+    private let cmd = QuickAccessShortcut.commandBit, shift = QuickAccessShortcut.shiftBit, opt = QuickAccessShortcut.optionBit
+
+    private func outcome(_ key: Int, _ char: String?, _ mods: Int, selected: Bool = false) -> QuickAccess.CommandOutcome {
+        QuickAccess.commandOutcome(keyCode: key, character: char, modifiers: mods, textSelected: selected)
+    }
+
+    @Test func commandDigitsAreResolvedByKeyCode() {
+        // AZERTY: the number row types "&é\"'(§è!ç", charactersIgnoringModifiers is no digit, the key code still is.
+        #expect(outcome(18, "&", cmd) == .copyRow(1))
+        #expect(outcome(25, "ç", cmd) == .copyRow(9))
+        #expect(outcome(83, "1", cmd) == .copyRow(1))
+        #expect(outcome(29, "0", cmd) == .swallow)   // ⌘0 is no row
+        let expected = [18: 1, 19: 2, 20: 3, 21: 4, 23: 5, 22: 6, 26: 7, 28: 8, 25: 9]
+        for (code, n) in expected { #expect(QuickAccess.digit(forKeyCode: code) == n) }
+        #expect(QuickAccess.digit(forKeyCode: 0) == nil)
+        #expect(outcome(18, "1", cmd | shift) == .swallow)
+        #expect(outcome(18, "1", cmd | opt) == .swallow)
+    }
+
+    @Test func commandLLocksAndCommandWCloses() {
+        #expect(outcome(37, "l", cmd) == .lock)
+        #expect(outcome(13, "w", cmd) == .close)
+        #expect(outcome(37, "l", cmd | shift) == .swallow)
+    }
+
+    @Test func textCommandsGoToTheSearchField() {
+        for (code, char) in [(0, "a"), (9, "v"), (7, "x"), (6, "z")] {
+            #expect(outcome(code, char, cmd) == .passToField)
+            #expect(outcome(code, char, cmd | shift) == .passToField)   // ⇧⌘Z redo
+        }
+        #expect(outcome(123, nil, cmd) == .passToField)   // ⌘←
+        #expect(outcome(124, nil, cmd) == .passToField)   // ⌘→
+        #expect(outcome(51, nil, cmd) == .passToField)    // ⌘⌫
+        #expect(outcome(123, nil, cmd | shift) == .passToField)
+        #expect(outcome(123, nil, cmd | opt) == .swallow)
+    }
+
+    @Test func commandCopyNeedsATextSelectionAndNeverFallsThrough() {
+        #expect(outcome(8, "c", cmd, selected: true) == .passToField)
+        #expect(outcome(8, "c", cmd, selected: false) == .swallow)
+        #expect(outcome(8, "c", cmd | opt, selected: true) == .swallow)   // ⌥⌘C (next code) is not for the panel
+    }
+
+    @Test func everythingElseWithCommandIsSwallowedAndNothingWithoutCommandIsACommand() {
+        for (code, char) in [(45, "n"), (4, "h"), (12, "q"), (43, ","), (3, "f"), (126, nil as String?), (125, nil)] {
+            #expect(outcome(code, char, cmd) == .swallow)
+        }
+        #expect(outcome(0, "a", 0) == .swallow)
+        #expect(outcome(0, "a", opt) == .swallow)
     }
 }

@@ -40,7 +40,7 @@ public enum BackupFile {
     // Internal variants let tests use a small iteration count.
 
     static func encrypt(_ contents: VaultData, password: String, iterations: Int) throws -> Data {
-        try encryptRaw(try contents.withoutSecuritySettings.encoded(), password: password, iterations: iterations)
+        try encryptRaw(try contents.forBackup.encoded(), password: password, iterations: iterations)
     }
 
     /// Seals an already encoded payload. Only `encrypt` strips the security settings; tests use this to craft a file
@@ -86,7 +86,7 @@ public enum BackupFile {
         } catch {
             throw BackupError.wrongPasswordOrCorrupt
         }
-        do { return try VaultData.decoded(from: plain).withoutSecuritySettings } catch { throw BackupError.wrongPasswordOrCorrupt }
+        do { return try VaultData.decoded(from: plain).forBackup } catch { throw BackupError.wrongPasswordOrCorrupt }
     }
 
     /// AAD: the header fields that decide how the file is read, as one canonical text.

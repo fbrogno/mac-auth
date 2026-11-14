@@ -134,8 +134,8 @@ enum DocRenderer {
                 let model = demoModel(.unlocked)
                 model.settings.quickAccessEnabled = true
                 model.settings.quickAccessKeyCode = 49
-                model.settings.quickAccessModifiers = QuickAccessShortcut.optionBit
-                model.settings.quickAccessLabel = "⌥Space"
+                model.settings.quickAccessModifiers = QuickAccessShortcut.suggestion.modifiers
+                model.settings.quickAccessLabel = QuickAccessShortcut.suggestion.label
                 model.settings.menuBarItem = true
                 sheet(SettingsView(model: model, updater: nil, initialTab: 1), scheme: scheme, to: url.appendingPathComponent("settings-general-\(tag)\(suffix).png"))
             }
@@ -217,7 +217,7 @@ enum DocRenderer {
 
     /// The quick access panel on its own (it is a floating panel without window chrome), with its shadow on the backdrop.
     private static func panel(model: AppModel, query: String = "", selected: Int = 0, explicit: Bool = false, scheme: ColorScheme, to file: URL) {
-        let state = QuickPanelState()
+        let state = QuickPanelState(model: model)
         state.query = query
         state.selectedIndex = selected
         state.selectionExplicit = explicit

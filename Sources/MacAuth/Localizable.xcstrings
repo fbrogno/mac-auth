@@ -33,6 +33,22 @@
         }
       }
     },
+    "%@, noch %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, noch %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@ left"
+          }
+        }
+      }
+    },
     "%@: %@": {
       "localizations": {
         "de": {
@@ -2449,18 +2465,18 @@
         }
       }
     },
-    "Diese Kombination wird schon von einer anderen App oder vom System benutzt. Wähle eine andere.": {
+    "Diese Kombination ist in MacAuth schon belegt. Wähle eine andere.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Diese Kombination wird schon von einer anderen App oder vom System benutzt. Wähle eine andere."
+            "value": "Diese Kombination ist in MacAuth schon belegt. Wähle eine andere."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Another app or the system already uses this shortcut. Choose a different one."
+            "value": "This shortcut is already in use in MacAuth. Choose a different one."
           }
         }
       }
@@ -2689,18 +2705,18 @@
         }
       }
     },
-    "Ein kleines Fenster über jeder App: Konto tippen, mit ↵ den Code kopieren, das Fenster verschwindet und die vorige App ist wieder vorn. Ist MacAuth gesperrt, zeigt es nur die Entsperrung. Die Kombination braucht mindestens ⌘, ⌥ oder ⌃.": {
+    "Ein kleines Fenster über jeder App: Konto tippen, mit ↵ den Code kopieren, das Fenster verschwindet und die vorige App ist wieder vorn. Ist MacAuth gesperrt, zeigt es nur die Entsperrung. Die Kombination braucht mindestens ⌘, ⌥ oder ⌃. Passiert beim Drücken nichts, benutzt vielleicht eine andere App dieselbe Kombination.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ein kleines Fenster über jeder App: Konto tippen, mit ↵ den Code kopieren, das Fenster verschwindet und die vorige App ist wieder vorn. Ist MacAuth gesperrt, zeigt es nur die Entsperrung. Die Kombination braucht mindestens ⌘, ⌥ oder ⌃."
+            "value": "Ein kleines Fenster über jeder App: Konto tippen, mit ↵ den Code kopieren, das Fenster verschwindet und die vorige App ist wieder vorn. Ist MacAuth gesperrt, zeigt es nur die Entsperrung. Die Kombination braucht mindestens ⌘, ⌥ oder ⌃. Passiert beim Drücken nichts, benutzt vielleicht eine andere App dieselbe Kombination."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A small window above any app: type an account, press ↵ to copy the code, the window disappears and the previous app is in front again. While MacAuth is locked it only shows the unlock button. The shortcut needs at least ⌘, ⌥ or ⌃."
+            "value": "A small window above any app: type an account, press ↵ to copy the code, the window disappears and the previous app is in front again. While MacAuth is locked it only shows the unlock button. The shortcut needs at least ⌘, ⌥ or ⌃. If nothing happens when you press it, another app may be using the same shortcut."
           }
         }
       }
@@ -6817,18 +6833,18 @@
         }
       }
     },
-    "↵ kopiert den nächsten Code und zählt weiter": {
+    "↵ kopieren · ⌥↵ nächster Code, zählt weiter": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "↵ kopiert den nächsten Code und zählt weiter"
+            "value": "↵ kopieren · ⌥↵ nächster Code, zählt weiter"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "↵ copies the next code and counts on"
+            "value": "↵ copy · ⌥↵ next code, counts on"
           }
         }
       }

@@ -8,9 +8,39 @@ import SwiftUI
 @MainActor @Observable
 final class QuickPanelState {
     var query = "" {
-        didSet { if query != oldValue { selectedIndex = 0; selectionExplicit = false } }
+        // The row order is decided here (and when the panel opens), never because usage data changed.
+        didSet { if query != oldValue { selectedIndex = 0; selectionExplicit = false; reloadRows() } }
     }
     var selectedIndex: Int? = 0
+    /// The rows (ids) in the frozen order, once the list has been built.
+    private(set) var rowIDs: [UUID] = []
+    private(set) var rowsReady = false
+    @ObservationIgnored private weak var model: AppModel?
+
+    init(model: AppModel? = nil) { self.model = model }
+
+    /// Builds the order for the current query from the current data (opening, unlock, query change).
+    func reloadRows() {
+        guard let model else { return }
+        rowIDs = QuickAccess.rowIDs(from: model.accounts, query: query, groupName: { [model] in model.group($0)?.name })
+        rowsReady = true
+    }
+
+    /// The rows to show and to act on: the frozen order with current data. Before the list was built (the single
+    /// render between the unlock and `listAppeared`) the order is computed directly.
+    func rows(in model: AppModel) -> [Account] {
+        guard rowsReady else { return QuickAccess.rows(from: model.accounts, query: query, groupName: { [model] in model.group($0)?.name }) }
+        return QuickAccess.resolve(rowIDs, in: model.accounts)
+    }
+
+    /// The list is on screen for the current lock generation: take the ticket (once) and freeze the order.
+    /// Whatever way the vault got unlocked (this panel, the main window, a running prompt), copying then works.
+    func listAppeared() {
+        guard let model else { return }
+        if listTicket == nil { listTicket = model.ticket }
+        if !rowsReady { reloadRows() }
+    }
+
     /// True once the user moved the selection with the arrow keys; the automatic first row does not reveal a hidden code.
     var selectionExplicit = false
     /// The row that was just copied ("Kopiert" confirmation).
@@ -74,7 +104,7 @@ final class QuickAccessController: NSObject, NSWindowDelegate {
             case .failure(.needsModifier):
                 model.quickAccessError = String(localized: "Die Kombination braucht mindestens ⌘, ⌥ oder ⌃.")
             case .failure(.taken):
-                model.quickAccessError = String(localized: "Diese Kombination wird schon von einer anderen App oder vom System benutzt. Wähle eine andere.")
+                model.quickAccessError = String(localized: "Diese Kombination ist in MacAuth schon belegt. Wähle eine andere.")
             case .failure(.other):
                 model.quickAccessError = String(localized: "Die Tastenkombination konnte nicht angemeldet werden.")
             }
@@ -120,7 +150,7 @@ final class QuickAccessController: NSObject, NSWindowDelegate {
 
     private func open(trigger: QuickAccess.Trigger, anchor: NSStatusBarButton?) {
         session += 1
-        let state = QuickPanelState()
+        let state = QuickPanelState(model: model)
         self.state = state
         let me = ProcessInfo.processInfo.processIdentifier
         previousApp = NSWorkspace.shared.frontmostApplication.flatMap { $0.processIdentifier == me ? nil : $0 }
@@ -148,7 +178,7 @@ final class QuickAccessController: NSObject, NSWindowDelegate {
         place(panel, size: size, anchor: anchor)
         // Opening counts as activity for auto-lock, like touching the main window. Nothing keeps the vault open after that.
         model.input.lastActivity = Date()
-        if model.phase == .unlocked { state.listTicket = model.ticket }
+        if model.phase == .unlocked { state.listAppeared() }
         installKeyMonitor()
         panel.orderFrontRegardless()
         panel.makeKey()
@@ -224,8 +254,9 @@ final class QuickAccessController: NSObject, NSWindowDelegate {
             guard session == current, let panel else { return }
             unlocking = false
             if model.phase == .unlocked {
-                state?.listTicket = model.ticket
                 state?.query = ""
+                state?.reloadRows()
+                state?.listAppeared()
             }
             panel.makeKey()
             if !panel.isKeyWindow { close() }
@@ -244,7 +275,7 @@ final class QuickAccessController: NSObject, NSWindowDelegate {
     /// Copies what `key` resolves to for the rows shown now.
     func copy(_ key: QuickAccess.Key) {
         guard let state, state.copiedID == nil, let ticket = state.listTicket, QuickAccess.content(for: model.phase) == .list else { return }
-        let rows = QuickAccess.rows(from: model.accounts, query: state.query, groupName: { [model] in model.group($0)?.name })
+        let rows = state.rows(in: model)
         guard let action = QuickAccess.copyAction(for: key, rows: rows, selected: state.selectedIndex) else { return }
         guard model.copyFromQuickAccess(action, ticket: ticket) else { close(); return }   // stale list: never copy
         switch action {
@@ -285,17 +316,18 @@ final class QuickAccessController: NSObject, NSWindowDelegate {
         let code = Int(event.keyCode)
 
         if flags.contains(.command) {
-            if flags == .command, let digit = event.charactersIgnoringModifiers.flatMap({ Int($0) }), (1...9).contains(digit) {
-                copy(.command(digit))
-            } else if flags == .command, event.charactersIgnoringModifiers == "w" {
-                close()
-            } else if flags == .command, event.charactersIgnoringModifiers == "c",
-                      (panel.firstResponder as? NSTextView)?.selectedRange().length ?? 0 > 0 {
-                return false   // copying selected text of the search field
-            } else if flags.isSubset(of: [.command, .shift]), let key = event.charactersIgnoringModifiers, ["a", "v", "x", "z"].contains(key) {
-                return false   // text editing in the search field
+            // The rules are `QuickAccess.commandOutcome` (tested): digits by key code, ⌘L locks, text commands go to the
+            // search field, ⌘C only with a selection, everything else is swallowed (no command of the main window).
+            let selected = ((panel.firstResponder as? NSTextView)?.selectedRange().length ?? 0) > 0
+            switch QuickAccess.commandOutcome(keyCode: code, character: event.charactersIgnoringModifiers,
+                                              modifiers: Int(event.modifierFlags.rawValue), textSelected: selected) {
+            case .copyRow(let n): copy(.command(n))
+            case .close: close()
+            case .lock: if model.phase == .unlocked, !model.isDemo { model.lock() }
+            case .passToField: return false
+            case .swallow: break
             }
-            return true   // no other ⌘ command (main menu) may act from the panel
+            return true
         }
 
         switch code {
@@ -318,7 +350,7 @@ final class QuickAccessController: NSObject, NSWindowDelegate {
     }
 
     private func move(_ delta: Int, state: QuickPanelState) {
-        let count = QuickAccess.rows(from: model.accounts, query: state.query, groupName: { [model] in model.group($0)?.name }).count
+        let count = state.rows(in: model).count
         state.selectedIndex = QuickAccess.moveSelection(state.selectedIndex, delta: delta, count: count)
         state.selectionExplicit = true
     }
