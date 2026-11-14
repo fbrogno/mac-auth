@@ -129,6 +129,14 @@ backups and Migration Assistant transfers, protected by the login password. The 
 level is actually in use. Switching between the levels always creates a new vault key, so a key that
 was once in the keychain does not protect a later Secure Enclave vault.
 
+One limit remains from a time with the unlock prompt switched off: a vault file written then (a set-aside
+`vault.replaced-*` file, or a copy in a Time Machine backup) and its keychain item are kept, because
+MacAuth never deletes old vault files on its own. The app asks for an authentication before it restores
+such a file, but someone with your user rights who puts the file in place by hand, outside the app, gets
+a vault that opens without a prompt. If you ever used that mode, delete old `vault.replaced-*` files in
+`~/Library/Containers/com.fbrogno.macauth/Data/Library/Application Support/MacAuth/` once you no longer
+need them.
+
 ### Network
 
 MacAuth opens exactly one kind of connection: the Sparkle update check against this repository's GitHub
