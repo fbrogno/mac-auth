@@ -55,21 +55,34 @@ MacAuth's own backup, Google migration links, and the following password-manager
 Encrypted Aegis/2FAS/Bitwarden files are recognised and refused with a hint to export unencrypted. Entries that
 cannot be used are listed with their label and the reason, never with their secret.
 CSV files are read by an own RFC 4180 parser (quotes, doubled quotes, embedded commas/newlines, CRLF/LF, BOM) with
-limits (rows, columns, field size); malformed input throws a typed `ImportError`. **Passwords are never read:** the
-parser drops every column except the OTP column and the label columns while scanning, so no password reaches a
-result, error or description. Rows without a code are skipped silently and counted in
-`ImportResult.rowsWithoutCode` ("37 Einträge ohne Code übersprungen").
+limits (rows, columns, field size); malformed input throws a typed `ImportError`. **Only the code and label columns
+are kept:** the file is read into memory for parsing, and the parser drops every other column (password, notes, URL)
+while scanning, so nothing but the OTP value and the label columns reaches a result, error or description and nothing
+else is retained after the parse. Rows without a code are skipped silently and counted in
+`ImportResult.rowsWithoutCode` ("37 Einträge ohne Code übersprungen"). A row whose only content sits in a discarded
+column still counts as a row (toward `rowsWithoutCode` and the row limit); blank lines before the header are skipped.
+A CSV without any usable code and without any unusable entry has `hasNothingToReview` and leads to the "Keine Codes
+gefunden" alert, never to an empty review sheet; a text with `otpauth://` lines whose first line merely looks like a
+CSV header is read as a line list. JSON counters (andOTP, Aegis) must be exact non-negative integers up to
+`UInt64.max`; anything else (`5.7`, `1e30`, negative) lists the entry as unusable.
 
 ### Other export formats
 `AccountExporter` (pure functions, `[Account]` to `Data`) writes an `otpauth://` list (one link per line), an
 unencrypted Aegis vault (`header.slots/params` null, db version 3) and a CSV for the Apple Passwords app (TOTP
-only; Title = issuer, Username = name, URL/Password empty, OTPAuth label-less like the Passwords app writes it).
+only; Title = issuer (the name if there is no issuer), Username = name (empty without issuer), URL/Password empty,
+Notes = the account note (empty if there is none), OTPAuth label-less like the Passwords app writes it). The import of
+this CSV does not read Notes (notes in password managers often hold recovery codes) and reads an empty Username with a
+label-less link as "name = Title, no issuer", so an export/import round trip keeps issuer and name stable.
 Each function reports accounts it cannot represent (HOTP in the Passwords CSV, invalid parameters) as
-`ExportSkippedEntry` with label and reason; parameters are never changed silently. CSV label cells starting with
-CSV cells are only quoted per RFC 4180 and otherwise written unchanged: the consumer is the Passwords app, not a
-spreadsheet, so no formula-injection prefix (a leading apostrophe would corrupt usernames such as `+49…` or `-name`).
+`ExportSkippedEntry` with label and reason; parameters are never changed silently. CSV cells are only quoted per
+RFC 4180 and otherwise written unchanged, so labels that start with `=`, `+`, `-` or `@` are kept verbatim: the
+consumer is the Passwords app, not a spreadsheet, and a formula-injection prefix (a leading apostrophe) would corrupt
+usernames such as `+49…` or `-name`. The file must not be opened in a spreadsheet (see `SECURITY.md`).
 All three outputs contain every secret in plain text and need a fresh authentication in the UI. `PrivateFile.write`
-creates the file with mode 0600 (set on the open descriptor) and removes a half-written file.
+creates the file with mode 0600, removes every ACL entry (`acl_set_fd_np` with an empty ACL; both set on the open
+descriptor before any data is written, so a pre-existing `chmod +a` entry or one inherited from the folder does not
+survive) and removes a half-written file. Not guaranteed: volumes without Unix permissions (exFAT, some network shares)
+and later copies.
 
 ### Model
 `Account`: id (UUID), issuer, name, secret (bytes), algorithm, digits, period, kind (totp/hotp), counter,
@@ -103,11 +116,27 @@ Duplicate = same secret bytes + same kind/algorithm/digits/period.
     `LAContext.deviceOwnerAuthentication` gate. Whether that gate is required is stored as `appLock` in
     the authenticated header of the vault file, not in the preferences: it can only be lowered through
     the unlocked store after a fresh authentication, and a file without the field counts as "required".
+  - Switching the app lock back ON (keychain mode) also creates a new vault key and discards `vault.previous.json`
+    (`setRequiresAppAuthentication`), so a previous generation that says `appLock=false` under the same key cannot
+    be restored later.
   - Changing the protector always creates a **new vault key** and re-seals the contents, then destroys the
     old key material and the previous generation that depended on it. Key material that a set-aside file
     (`vault.replaced-*`) still refers to is kept. A key that once lived in the
     keychain therefore never protects a later Secure Enclave vault.
   - **InMemoryProtector** for tests.
+- **Security settings** (`SecuritySettings`: auto-lock, screen protection, hidden codes, clipboard clearing) are part of
+  the vault payload (`VaultData.security`, missing = strict defaults), not of the preferences. They are not written
+  to backup files, not read from them and not merged by imports. While locked, the strict defaults apply. A vault
+  payload of 1.0.0 lacks the field and opens unchanged. On the first unlock after the update the old preference values
+  are migrated once (adopted only if at least as strict as the default) and the old keys are removed.
+- **Restore requires authentication.** Every restore from the lock screen (earlier version, set-aside file,
+  previous generation, backup file) first needs `LAContext` device-owner authentication (`RecoveryAuthorization`: one
+  lock generation, five minutes, used up by the restore). `VaultStore` marks every restore/recovery (`pendingAuthentication`,
+  with a marker file next to the vault, also set when `load()` falls back to the previous generation):
+  `requiresAppAuthentication` is then true whatever the restored header says, a keychain vault with `appLock=false`
+  refuses `unlock` without `appAuthenticated`, and the first successful unlock re-seals the vault with `appLock=true`
+  under a new key (previous generation dropped) and strict security settings. The user can switch the prompt off again
+  afterwards, after a fresh authentication.
 - Unlocking always goes through the protector; there is no shortcut for an already unlocked store.
   Locking takes effect immediately; a lock generation counter lets the app discard results of anything
   that was still running (unlock prompts, file dialogs, camera callbacks).
@@ -179,15 +208,20 @@ unchecked. Nothing is stored before the user confirms. Imported images are never
   list (`.txt`), Aegis (`.json`), Apple Passwords (`.csv`). Flow (`BackupFlow.startPlainExport`, `PlainExportSheet`):
   fresh authentication, then the sheet with target choice, then a warning stage (every secret in plain text, anyone
   with the file can generate the codes, import and delete right away, never in cloud folders; "Abbrechen" is the
-  default button), then the save panel, then the write with permissions 0600, then a confirmation with the number of
+  default button), then the save panel, then the write (mode 0600, no ACL), then a confirmation with the number of
   accounts written, the accounts that could not be exported (label and reason) and the reminder to delete the file.
-  The file content is built only after the warning was confirmed and is never kept in view state; every step checks
-  the lock generation, so a late dialog never appears over the lock screen and nothing is written after locking.
-  Nothing goes to the clipboard, logs or preferences.
-All three need a fresh authentication. So does every setting that lowers protection (unlock prompt off, longer
-or no auto-lock, screen protection off, hidden codes off); while the vault is locked the security
-settings cannot be changed at all. Preferences are read from the app's persistent domain only, so launch
-arguments cannot override them.
+  The save panel opens first; the file content is built only after the user chose a location and the lock generation
+  is still the one the authentication was done in, and it is never kept in view state. The backup export works the
+  same way (panel first, then the encryption). `FilePanels.cancelAll()` closes every open open/save panel when the
+  vault locks, so no panel stays over the lock screen, and every step checks the lock generation, so nothing is
+  written after locking. Nothing goes to the clipboard, logs or preferences.
+All three need a fresh authentication; on a Mac without a login password, where the system check passes without asking
+(`AuthOutcome.noPasscode`), an additional explicit confirmation names that nothing protects the export. So does every
+setting that lowers protection (unlock prompt off, longer or no auto-lock, screen protection off, hidden codes off,
+longer or no clipboard clearing); while the vault is locked the security settings cannot be changed at all. These
+settings live in the vault (see "Security settings"); the remaining preferences are read from the app's persistent
+domain only, so launch arguments cannot override them. `--print-settings` shows what a naive `UserDefaults` read
+returns next to what the app uses (the strict defaults while no vault is unlocked).
 
 ### Clipboard
 Copied codes carry `org.nspasteboard.ConcealedType` (clipboard managers skip them), stay on this Mac
@@ -198,17 +232,20 @@ Window content is excluded from screen sharing and screenshots (`NSWindow.sharin
 on, switchable. Optional: codes hidden until hover/selection.
 
 ### Settings
-Unlock (Touch ID/password required, auto-lock time), clipboard clearing, hide after copy, screen
-protection, hide codes, default group for imports, updates (Sparkle), backup reminder.
+Unlock (Touch ID/password required, auto-lock time), clipboard clearing, screen protection and hide codes (these four
+are stored in the vault), hide after copy, default group for imports, updates (Sparkle), backup reminder.
 
 Updates: Sparkle checks every 6 hours (`SUScheduledCheckInterval`) plus one quiet background check about 12 s
 after launch (not if the last check was under 15 minutes ago). Background checks never open a window (gentle
 reminders: `standardUserDriverShouldHandleShowingScheduledUpdate` returns false). A found update shows as a notice
 at the bottom of the sidebar ("Update verfügbar – Version X"); a click opens Sparkle's window. The notice stays until
 the update is installed or skipped; it is only shown in the main window, so while the vault is locked nothing is
-shown and it appears again after unlocking. "Updates automatisch installieren" (`automaticallyDownloadsUpdates`,
+shown and it appears again after unlocking. The version text comes from the unsigned appcast and is only shown if it
+consists of `[0-9A-Za-z.\-+ ]` and is at most 20 characters (`AppPolicy.displayVersion`); otherwise the notice says
+"Update verfügbar" without a version. "Updates automatisch installieren" (`automaticallyDownloadsUpdates`,
 default on via `SUAutomaticallyUpdate`) downloads in the background and installs when the app quits; it needs
-automatic checks. The updater never starts in demo mode.
+automatic checks. The updater never starts in demo mode. Sparkle accepts an update if the EdDSA signature or the
+Developer ID identity matches (not notarization); see `SECURITY.md` for the trust model.
 
 ## Verification
 - `swift test`: RFC 6238 and RFC 4226 vectors, Base32, otpauth URIs, migration reader/writer against fixed

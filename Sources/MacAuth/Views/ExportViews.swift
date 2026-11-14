@@ -8,7 +8,7 @@ enum BackupFlow {
     static func startExport(_ model: AppModel) async {
         guard model.phase == .unlocked, !model.accounts.isEmpty else { return }
         let ticket = model.ticket
-        if await model.authenticate(reason: String(localized: "Backup exportieren")), model.isCurrent(ticket) { model.sheet = .exportBackup }
+        if await model.authenticateForExport(reason: String(localized: "Backup exportieren")), model.isCurrent(ticket) { model.sheet = .exportBackup }
     }
 
     /// Export in a foreign format (plain text). Order: fresh authentication here, then the sheet (target, warning), then
@@ -16,7 +16,7 @@ enum BackupFlow {
     static func startPlainExport(_ model: AppModel) async {
         guard model.phase == .unlocked, !model.accounts.isEmpty else { return }
         let ticket = model.ticket
-        if await model.authenticate(reason: String(localized: "Konten unverschlüsselt exportieren")), model.isCurrent(ticket) {
+        if await model.authenticateForExport(reason: String(localized: "Konten unverschlüsselt exportieren")), model.isCurrent(ticket) {
             model.sheet = .exportPlain
         }
     }
@@ -24,7 +24,7 @@ enum BackupFlow {
     static func startTransfer(_ model: AppModel, ids: Set<UUID>? = nil) async {
         guard model.phase == .unlocked, !model.accounts.isEmpty else { return }
         let ticket = model.ticket
-        if await model.authenticate(reason: String(localized: "QR-Codes für die Übertragung anzeigen")), model.isCurrent(ticket) {
+        if await model.authenticateForExport(reason: String(localized: "QR-Codes für die Übertragung anzeigen")), model.isCurrent(ticket) {
             model.sheet = .transfer(ids)
         }
     }
@@ -181,7 +181,7 @@ struct PlainExportSheet: View {
             .font(.callout)
             .padding(12).frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-            Text("Die Datei wird nur für dich lesbar angelegt (Zugriffsrechte 600). In die Zwischenablage oder ein Protokoll wird nichts geschrieben.")
+            Text("Die Datei wird nur für dich lesbar angelegt (Zugriffsrechte 600, ohne zusätzliche Zugriffsregeln). Auf Laufwerken ohne Unix-Rechte, zum Beispiel exFAT oder manche Netzlaufwerke, gilt das nicht. In die Zwischenablage oder ein Protokoll wird nichts geschrieben.")
                 .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             if let errorText { Text(errorText).font(.callout).foregroundStyle(.red) }
         }
@@ -214,13 +214,21 @@ struct PlainExportSheet: View {
         // The data is built only now, from the state at this moment, and only while the app is still in the state
         // the authentication was done in. It lives in local variables only.
         guard model.isCurrent(ticket), !busy else { return }
-        let vault = model.currentVault
-        guard !vault.accounts.isEmpty else { return }
+        let chosen = target
+        // Cheap check without building any export data: is there at least one account this format can hold?
+        let usable = model.accounts.filter { (try? $0.validate()) != nil && (chosen != .apple || $0.kind == .totp) }
+        guard !usable.isEmpty else {
+            errorText = String(localized: "Kein Konto lässt sich in diesem Format ablegen. Wähle ein anderes Ziel.")
+            return
+        }
         busy = true
         errorText = nil
         defer { busy = false }
-        let chosen = target
         do {
+            // The panel comes first. The data is built only after a location was chosen and only if the app is still
+            // in the state the authentication was done in; it lives in local variables only. A lock closes the panel.
+            guard let url = await FilePanels.savePlainExport(suggestedName: chosen.fileName, type: chosen.type), model.isCurrent(ticket) else { return }
+            let vault = model.currentVault
             let result: ExportResult
             switch chosen {
             case .links: result = AccountExporter.otpauthList(vault.accounts)
@@ -231,7 +239,6 @@ struct PlainExportSheet: View {
                 errorText = String(localized: "Kein Konto lässt sich in diesem Format ablegen. Wähle ein anderes Ziel.")
                 return
             }
-            guard let url = await FilePanels.savePlainExport(suggestedName: chosen.fileName, type: chosen.type), model.isCurrent(ticket) else { return }
             try PrivateFile.write(result.data, to: url)
             outcome = Outcome(count: result.exportedCount, skipped: result.skipped, fileName: url.lastPathComponent)
             stage = .done
@@ -342,11 +349,12 @@ struct ExportBackupSheet: View {
         defer { busy = false }
         let secret = password
         do {
-            let file = try await Task.detached(priority: .userInitiated) { try BackupFile.encrypt(data, password: secret) }.value
-            guard model.isCurrent(ticket) else { return }
+            // Panel first; the (slow) encryption starts only after a location was chosen and the app is still in the same state.
             let stamp = Date().formatted(.iso8601.year().month().day())
             guard let url = await FilePanels.saveBackup(suggestedName: "MacAuth-Backup-\(stamp).\(BackupFile.fileExtension)"),
                   model.isCurrent(ticket) else { return }
+            let file = try await Task.detached(priority: .userInitiated) { try BackupFile.encrypt(data, password: secret) }.value
+            guard model.isCurrent(ticket) else { return }
             try file.write(to: url, options: .atomic)
             incomplete = !model.backupWritten(data)
             password = ""

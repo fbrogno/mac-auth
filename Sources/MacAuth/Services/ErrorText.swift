@@ -63,6 +63,7 @@ enum ErrorText {
             case .noPreviousGeneration: return String(localized: "Es gibt keine ältere Fassung des Tresors.")
             case .replacedFileNotFound: return String(localized: "Diese Tresordatei gibt es nicht mehr.")
             case .unreadableKeyFiles: return String(localized: "Die Schlüsseldateien des Tresors lassen sich nicht lesen.")
+            case .authenticationRequired: return String(localized: "Dafür ist zuerst eine Anmeldung mit Touch ID oder Passwort nötig.")
             case .ioFailure: return String(localized: "Die Tresordatei konnte nicht gelesen oder geschrieben werden.")
             }
         case let e as BackupError:

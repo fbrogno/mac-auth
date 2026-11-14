@@ -1,18 +1,39 @@
+import AuthCore
 import Foundation
 import Observation
 
 /// User preferences (never secrets). Stored in `UserDefaults`; the demo renderer passes an ephemeral suite.
+///
+/// The four security settings (auto-lock, screen protection, hidden codes, clipboard clearing) are NOT preferences:
+/// they live in the encrypted vault (`VaultData.security`) because the preferences file can be edited without any
+/// authentication. Here they are held in memory only: strict defaults while locked, the vault's values while unlocked.
 @MainActor @Observable
 final class AppSettings {
     @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let domain: String
+
+    /// What applies right now. Set by the model from the vault after unlocking and reset to `.strict` on lock.
+    var security: SecuritySettings = .strict
 
     /// Minutes of inactivity before locking; 0 = never.
-    var autoLockMinutes: Int { didSet { defaults.set(autoLockMinutes, forKey: "autoLockMinutes") } }
+    var autoLockMinutes: Int {
+        get { security.autoLockMinutes }
+        set { security.autoLockMinutes = newValue }
+    }
     /// Seconds until the clipboard is cleared; 0 = never.
-    var clipboardClearSeconds: Int { didSet { defaults.set(clipboardClearSeconds, forKey: "clipboardClearSeconds") } }
+    var clipboardClearSeconds: Int {
+        get { security.clipboardClearSeconds }
+        set { security.clipboardClearSeconds = newValue }
+    }
     var hideAfterCopy: Bool { didSet { defaults.set(hideAfterCopy, forKey: "hideAfterCopy") } }
-    var protectScreen: Bool { didSet { defaults.set(protectScreen, forKey: "protectScreen") } }
-    var hideCodes: Bool { didSet { defaults.set(hideCodes, forKey: "hideCodes") } }
+    var protectScreen: Bool {
+        get { security.protectScreen }
+        set { security.protectScreen = newValue }
+    }
+    var hideCodes: Bool {
+        get { security.hideCodes }
+        set { security.hideCodes = newValue }
+    }
     /// Group preselected when importing; empty = none.
     var defaultGroupID: String { didSet { defaults.set(defaultGroupID, forKey: "defaultGroupID") } }
     var backupReminder: Bool { didSet { defaults.set(backupReminder, forKey: "backupReminder") } }
@@ -28,6 +49,21 @@ final class AppSettings {
     var lastBackupExport: Double { didSet { defaults.set(lastBackupExport, forKey: "lastBackupExport") } }
     var lastAccountChange: Double { didSet { defaults.set(lastAccountChange, forKey: "lastAccountChange") } }
 
+    private static let legacyKeys = ["autoLockMinutes", "protectScreen", "hideCodes", "clipboardClearSeconds"]
+
+    /// The values 1.0.0 kept in the preferences file (only those actually stored). Read from the app's persistent
+    /// domain, like everything else. Used once, for the migration into the vault.
+    func legacySecurityValues() -> SecuritySettings.Legacy {
+        let stored = defaults.persistentDomain(forName: domain) ?? [:]
+        return SecuritySettings.Legacy(autoLockMinutes: stored["autoLockMinutes"] as? Int, protectScreen: stored["protectScreen"] as? Bool,
+                                       hideCodes: stored["hideCodes"] as? Bool, clipboardClearSeconds: stored["clipboardClearSeconds"] as? Int)
+    }
+
+    /// Removes the old keys, after their (stricter-or-equal) values are safely stored in the vault.
+    func removeLegacySecurityValues() {
+        for key in Self.legacyKeys { defaults.removeObject(forKey: key) }
+    }
+
     /// Preferences are read ONLY from the app's persistent domain. `UserDefaults.object(forKey:)` would also
     /// return values from the command line (`-autoLockMinutes 0`, `-protectScreen NO`) and from the global
     /// domain; the persistent domain contains only what the app itself saved.
@@ -35,14 +71,11 @@ final class AppSettings {
     /// header (`VaultStore.requiresAppAuthentication`).
     init(defaults: UserDefaults = .standard, domain: String = Bundle.main.bundleIdentifier ?? "com.fbrogno.macauth") {
         self.defaults = defaults
+        self.domain = domain
         let stored = defaults.persistentDomain(forName: domain) ?? [:]
         func bool(_ key: String, _ fallback: Bool) -> Bool { stored[key] as? Bool ?? fallback }
         func int(_ key: String, _ fallback: Int) -> Int { stored[key] as? Int ?? fallback }
-        autoLockMinutes = int("autoLockMinutes", 5)
-        clipboardClearSeconds = int("clipboardClearSeconds", 30)
         hideAfterCopy = bool("hideAfterCopy", false)
-        protectScreen = bool("protectScreen", true)
-        hideCodes = bool("hideCodes", false)
         defaultGroupID = stored["defaultGroupID"] as? String ?? ""
         backupReminder = bool("backupReminder", true)
         listMode = bool("listMode", false)
@@ -61,18 +94,20 @@ final class AppSettings {
 }
 
 /// `MacAuth --print-settings [-key value ...]`: prints what a naive `UserDefaults` read and `AppSettings` return,
-/// to show that command-line values never reach the settings. Starts no window and touches no vault.
+/// to show that command-line values never reach the settings. Starts no window and touches no vault: the security
+/// settings come from the vault, so without an unlocked vault the strict defaults are what applies.
 @MainActor
 enum SettingsProbe {
     static func run() {
         let defaults = UserDefaults.standard
         let settings = AppSettings()
         func say(_ text: String) { FileHandle.standardOutput.write(Data((text + "\n").utf8)) }
+        let source = "(Quelle: Tresor; gesperrt gelten die strengen Standardwerte)"
         let rows: [(String, Any?, Any)] = [
-            ("autoLockMinutes", defaults.object(forKey: "autoLockMinutes"), settings.autoLockMinutes),
-            ("protectScreen", defaults.object(forKey: "protectScreen"), settings.protectScreen),
-            ("hideCodes", defaults.object(forKey: "hideCodes"), settings.hideCodes),
-            ("clipboardClearSeconds", defaults.object(forKey: "clipboardClearSeconds"), settings.clipboardClearSeconds),
+            ("autoLockMinutes", defaults.object(forKey: "autoLockMinutes"), "\(settings.autoLockMinutes) \(source)"),
+            ("protectScreen", defaults.object(forKey: "protectScreen"), "\(settings.protectScreen) \(source)"),
+            ("hideCodes", defaults.object(forKey: "hideCodes"), "\(settings.hideCodes) \(source)"),
+            ("clipboardClearSeconds", defaults.object(forKey: "clipboardClearSeconds"), "\(settings.clipboardClearSeconds) \(source)"),
             ("hotKeyEnabled", defaults.object(forKey: "hotKeyEnabled"), settings.hotKeyEnabled),
             ("requireAuth", defaults.object(forKey: "requireAuth"), "(keine Einstellung mehr, steht im Tresor-Kopf)"),
         ]

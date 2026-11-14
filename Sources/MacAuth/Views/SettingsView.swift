@@ -104,12 +104,16 @@ struct SettingsView: View {
     private func generalForm(_ settings: AppSettings) -> some View {
         Form {
             Section("Kopieren") {
-                Picker("Zwischenablage leeren nach", selection: Binding(get: { settings.clipboardClearSeconds }, set: { settings.clipboardClearSeconds = $0 })) {
+                Picker("Zwischenablage leeren nach", selection: Binding(get: { settings.clipboardClearSeconds }, set: { new in
+                    let old = settings.clipboardClearSeconds
+                    Task { await model.applySecuritySetting(.clipboardClearSeconds(from: old, to: new)) { settings.clipboardClearSeconds = new } }
+                })) {
                     Text("10 Sekunden").tag(10)
                     Text("30 Sekunden").tag(30)
                     Text("60 Sekunden").tag(60)
                     Text("Nie").tag(0)
                 }
+                .disabled(locked)
                 Toggle("Fenster nach dem Kopieren ausblenden", isOn: Binding(get: { settings.hideAfterCopy }, set: { settings.hideAfterCopy = $0 }))
             }
             Section("Tastenkombination") {

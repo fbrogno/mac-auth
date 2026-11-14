@@ -82,7 +82,11 @@ struct SidebarView: View {
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "arrow.down.circle").foregroundStyle(Color.accentColor)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Update verfügbar – Version \(pending.version)").font(.callout.weight(.medium))
+                            if pending.version.isEmpty {
+                                Text("Update verfügbar").font(.callout.weight(.medium))
+                            } else {
+                                Text("Update verfügbar – Version \(pending.version)").font(.callout.weight(.medium))
+                            }
                             Text(pending.ready ? "Wird beim Beenden installiert. Jetzt ansehen." : "Zum Installieren anklicken.")
                                 .font(.caption).foregroundStyle(.secondary)
                         }

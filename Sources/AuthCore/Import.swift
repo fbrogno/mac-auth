@@ -62,6 +62,10 @@ public struct ImportResult: Sendable {
     /// Rows/items that carry no one-time code at all (typical for password-manager exports). Not an error;
     /// the UI can say "37 Einträge ohne Code übersprungen". Their content is never kept.
     public var rowsWithoutCode: Int = 0
+
+    /// Nothing the user could review or be told about: no account and no unusable entry. The app shows
+    /// "Keine Codes gefunden" instead of an empty review sheet.
+    public var hasNothingToReview: Bool { accounts.isEmpty && skipped.isEmpty }
 }
 
 public enum ImportDetection: Sendable {
@@ -82,7 +86,8 @@ public enum ImportDetection: Sendable {
 ///   `otpauth://totp?secret=…` link without label (community sources; Apple publishes no specification)
 /// - Bitwarden: https://bitwarden.com/help/condition-bitwarden-import/ (`items[].login.totp`, `encrypted`)
 /// - andOTP: https://github.com/andOTP/andOTP/wiki/Backup-Format and `Entry.java` (JSON array, Base32 secret)
-/// Passwords in CSV/JSON files are never read into a result: only the OTP and label columns are kept.
+/// A password-manager file is read into memory for parsing; only the OTP and label columns are kept in a result and
+/// nothing else is retained after the parse.
 public enum ImportDetector {
     public static let maxEntries = 10_000
 
@@ -294,7 +299,11 @@ public enum ImportDetector {
     /// Turns the OTP cell of a password-manager export into an account: an `otpauth://` link or a bare Base32
     /// setup key (then SHA1/6/30). Issuer and name from the link win; missing parts come from `title`/`username`.
     /// The failure reason never contains the value.
-    private static func account(fromOTPValue raw: String, title: String, username: String, now: Date) -> Result<Account, SkipReason> {
+    ///
+    /// `titleIsNameWithoutUsername` (Apple Passwords CSV): an account exported without issuer has its name in the
+    /// Title column and an empty Username; reading that back as issuer would swap issuer and name.
+    private static func account(fromOTPValue raw: String, title: String, username: String, now: Date,
+                                titleIsNameWithoutUsername: Bool = false) -> Result<Account, SkipReason> {
         let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if value.lowercased().hasPrefix("steam://") { return .failure(.unsupportedType("steam")) }
         var account: Account
@@ -306,6 +315,11 @@ public enum ImportDetector {
             guard !value.contains("://"), let secret = try? Base32.decode(value), !secret.isEmpty,
                   secret.count <= Limits.maxSecretBytes else { return .failure(.invalidSecret) }
             account = Account(name: "", secret: secret, createdAt: now)
+        }
+        if titleIsNameWithoutUsername, account.issuer.isEmpty, account.name.isEmpty,
+           username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            account.name = clip(title)
+            return .success(account)
         }
         if account.issuer.isEmpty { account.issuer = clip(title) }
         if account.name.isEmpty { account.name = clip(username) }
@@ -345,6 +359,8 @@ public enum ImportDetector {
 
     /// Returns nil when the text is not a CSV with a recognisable OTP column (the caller then tries other formats).
     private static func detectCSV(_ text: String, now: Date) throws -> ImportResult? {
+        // Blank lines (and indentation) before the header are skipped.
+        let text = String(text.drop(while: { $0.isWhitespace || $0.isNewline }))
         let firstLine = text.prefix(while: { $0 != "\n" && $0 != "\r" })
         guard firstLine.contains(","), !OTPAuthURI.isOTPAuthURI(String(firstLine)),
               !MigrationCodec.isMigrationURI(String(firstLine)) else { return nil }
@@ -374,13 +390,19 @@ public enum ImportDetector {
             let otp = cell(otpColumn)
             if otp.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { withoutCode += 1; continue }
             let title = cell(titleColumn), username = cell(userColumn)
-            switch account(fromOTPValue: otp, title: title, username: username, now: now) {
+            switch account(fromOTPValue: otp, title: title, username: username, now: now, titleIsNameWithoutUsername: format == .applePasswordsCSV) {
             case .success(var account):
                 account.sortIndex = accounts.count
                 accounts.append(account)
             case .failure(let reason):
                 skipped.append(SkippedEntry(label: label(title: title, username: username, fallback: "Zeile \(offset + 2)"), reason: reason))
             }
+        }
+        // A "CSV" that is really a list of otpauth lines (its first line only happened to contain a comma and a
+        // word like otp) yields nothing as CSV: let the line reader have it.
+        if accounts.isEmpty, skipped.isEmpty,
+           text.split(whereSeparator: \.isNewline).contains(where: { OTPAuthURI.isOTPAuthURI($0.trimmingCharacters(in: .whitespaces)) }) {
+            return nil
         }
         return ImportResult(format: format, accounts: accounts, groups: [], skipped: skipped, rowsWithoutCode: withoutCode)
     }
@@ -475,9 +497,22 @@ public enum ImportDetector {
         return Int(exactly: n.int64Value)
     }
 
+    /// An exact non-negative integer up to `UInt64.max`. Fractions (`5.7`), negative numbers and values that do not
+    /// fit (`1e30`) are refused instead of being converted.
     private static func uint(_ value: Any?) -> UInt64? {
-        guard let n = number(value), n.doubleValue >= 0 else { return nil }
-        return n.uint64Value
+        guard let n = number(value) else { return nil }
+        switch String(cString: n.objCType) {
+        case "d", "f":
+            // JSON numbers written with a fraction or exponent: only whole numbers that a double holds exactly.
+            let d = n.doubleValue
+            guard d >= 0, d == d.rounded(.towardZero), d < 9_007_199_254_740_992 else { return nil }
+            return UInt64(d)
+        case "Q":
+            return n.uint64Value
+        default:
+            let v = n.int64Value
+            return v >= 0 ? UInt64(v) : nil
+        }
     }
 
     private static func secret(_ value: Any?) -> Data? {

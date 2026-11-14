@@ -20,8 +20,13 @@ enum CSV {
         var inQuotes = false
         var afterQuote = false
         var recordHasQuoted = false
+        /// Any field of the record held something other than whitespace, also in columns that `keep` drops.
+        var recordHasContent = false
+        var fieldHasContent = false
 
         func endField() throws {
+            if fieldHasContent { recordHasContent = true }
+            fieldHasContent = false
             if record.count >= Limits.maxCSVColumns { throw ImportError.malformedCSV("zu viele Spalten") }
             if keep?.contains(record.count) ?? true {
                 record.append(String(decoding: field, as: UTF8.self))
@@ -35,8 +40,8 @@ enum CSV {
 
         /// Returns false once enough records have been read.
         func endRecord() throws -> Bool {
-            defer { record = []; recordHasQuoted = false }
-            if record.count == 1, record[0].isEmpty, !recordHasQuoted { return true }   // blank line
+            defer { record = []; recordHasQuoted = false; recordHasContent = false }
+            if record.count == 1, !recordHasContent, !recordHasQuoted { return true }   // blank line
             guard records.count < Limits.maxCSVRows else { throw ImportError.tooManyEntries }
             records.append(record)
             return records.count < maxRecords
@@ -58,6 +63,7 @@ enum CSV {
                     }
                 } else {
                     field.append(b)
+                    fieldHasContent = true
                     i += 1
                 }
             } else if b == comma {
@@ -77,6 +83,7 @@ enum CSV {
             } else {
                 fieldStarted = true
                 field.append(b)
+                if b != UInt8(ascii: " "), b != UInt8(ascii: "\t") { fieldHasContent = true }
                 i += 1
             }
             if field.count > Limits.maxCSVFieldBytes { throw ImportError.malformedCSV("Feld zu groß") }

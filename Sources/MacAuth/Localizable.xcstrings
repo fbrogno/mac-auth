@@ -1233,6 +1233,22 @@
         }
       }
     },
+    "Dafür ist zuerst eine Anmeldung mit Touch ID oder Passwort nötig.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dafür ist zuerst eine Anmeldung mit Touch ID oder Passwort nötig."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch ID or your password is needed first."
+          }
+        }
+      }
+    },
     "Danach": {
       "localizations": {
         "de": {
@@ -2081,18 +2097,18 @@
         }
       }
     },
-    "Die Datei wird nur für dich lesbar angelegt (Zugriffsrechte 600). In die Zwischenablage oder ein Protokoll wird nichts geschrieben.": {
+    "Die Datei wird nur für dich lesbar angelegt (Zugriffsrechte 600, ohne zusätzliche Zugriffsregeln). Auf Laufwerken ohne Unix-Rechte, zum Beispiel exFAT oder manche Netzlaufwerke, gilt das nicht. In die Zwischenablage oder ein Protokoll wird nichts geschrieben.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Die Datei wird nur für dich lesbar angelegt (Zugriffsrechte 600). In die Zwischenablage oder ein Protokoll wird nichts geschrieben."
+            "value": "Die Datei wird nur für dich lesbar angelegt (Zugriffsrechte 600, ohne zusätzliche Zugriffsregeln). Auf Laufwerken ohne Unix-Rechte, zum Beispiel exFAT oder manche Netzlaufwerke, gilt das nicht. In die Zwischenablage oder ein Protokoll wird nichts geschrieben."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The file is created readable by you only (permissions 600). Nothing is written to the clipboard or to a log."
+            "value": "The file is created readable by you only (permissions 600, no additional access rules). On volumes without Unix permissions, for example exFAT or some network drives, this does not apply. Nothing is written to the clipboard or a log."
           }
         }
       }
@@ -2509,6 +2525,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "This code type is not supported."
+          }
+        }
+      }
+    },
+    "Dieser Mac hat kein Anmeldepasswort": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Mac hat kein Anmeldepasswort"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac has no login password"
           }
         }
       }
@@ -3825,6 +3857,22 @@
         }
       }
     },
+    "In dieser Datei wurde kein Code für die Zwei-Faktor-Anmeldung gefunden. Es wurde nichts importiert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In dieser Datei wurde kein Code für die Zwei-Faktor-Anmeldung gefunden. Es wurde nichts importiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No two-factor code was found in this file. Nothing was imported."
+          }
+        }
+      }
+    },
     "Intervall: %lld Sekunden": {
       "localizations": {
         "de": {
@@ -4881,6 +4929,22 @@
         }
       }
     },
+    "Ohne Anmeldepasswort schützt nichts diesen Export: Wer an diesem Mac sitzt, erhält damit alle Schlüssel deiner Konten. Lege in den Systemeinstellungen ein Anmeldepasswort fest. Willst du trotzdem fortfahren?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ohne Anmeldepasswort schützt nichts diesen Export: Wer an diesem Mac sitzt, erhält damit alle Schlüssel deiner Konten. Lege in den Systemeinstellungen ein Anmeldepasswort fest. Willst du trotzdem fortfahren?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without a login password nothing protects this export: anyone at this Mac gets the keys of all your accounts. Set a login password in System Settings. Do you want to continue anyway?"
+          }
+        }
+      }
+    },
     "Ohne diesen Code kommst du eventuell nicht mehr in dein Konto. Prüfe vorher, dass du einen anderen Zugang hast, zum Beispiel Wiederherstellungscodes, oder den Code auf einem anderen Gerät. Das Löschen lässt sich nicht rückgängig machen.": {
       "localizations": {
         "de": {
@@ -5697,6 +5761,22 @@
         }
       }
     },
+    "Tresor wiederherstellen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tresor wiederherstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore vault"
+          }
+        }
+      }
+    },
     "Trotzdem exportieren …": {
       "localizations": {
         "de": {
@@ -5709,6 +5789,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Export Anyway …"
+          }
+        }
+      }
+    },
+    "Trotzdem fortfahren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trotzdem fortfahren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue anyway"
           }
         }
       }
@@ -5789,6 +5885,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unencrypted. Choose the target."
+          }
+        }
+      }
+    },
+    "Update verfügbar": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update verfügbar"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update available"
           }
         }
       }

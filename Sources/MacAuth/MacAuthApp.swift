@@ -1,4 +1,5 @@
 import AppKit
+import AuthCore
 import Sparkle
 import SwiftUI
 
@@ -81,6 +82,7 @@ final class UpdateDelegate: NSObject, SPUUpdaterDelegate, SPUStandardUserDriverD
 final class UpdaterModel {
     /// An update Sparkle has found and the user has not installed or skipped yet.
     struct Pending: Equatable {
+        /// Sanitised (`AppPolicy.displayVersion`); empty if the appcast's text was not usable.
         var version: String
         /// Already downloaded; installs when MacAuth quits.
         var ready: Bool
@@ -131,8 +133,11 @@ final class UpdaterModel {
 
     private func handle(_ event: UpdateEvent) {
         switch event {
-        case .found(let version): pending = Pending(version: version, ready: pending?.version == version && pending?.ready == true)
-        case .readyToInstall(let version): pending = Pending(version: version, ready: true)
+        case .found(let raw):
+            // The appcast is not signed: only a short, harmless version string is ever shown ("" = show no version).
+            let version = AppPolicy.displayVersion(raw) ?? ""
+            pending = Pending(version: version, ready: pending?.version == version && pending?.ready == true)
+        case .readyToInstall(let raw): pending = Pending(version: AppPolicy.displayVersion(raw) ?? "", ready: true)
         case .cleared: pending = nil
         }
     }

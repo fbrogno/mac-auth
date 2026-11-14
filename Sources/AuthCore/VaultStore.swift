@@ -91,7 +91,12 @@ public actor VaultStore {
     /// True if the app must ask for Touch ID / password before using the vault key. Read from the file header
     /// before unlocking (a manipulated value cannot open the vault: the header is authenticated). Files
     /// without the field, and no file at all, count as "required".
-    public var requiresAppAuthentication: Bool { envelope?.appLock ?? true }
+    /// After a restore or recovery it is always "required" until the first unlock has re-sealed the vault (or the user
+    /// switched the lock off again in the unlocked app), whatever the restored file's header says.
+    public var requiresAppAuthentication: Bool { pendingAuthentication || (envelope?.appLock ?? true) }
+    /// True from a restore/recovery of a vault file until the first successful unlock after it. Backed by a marker
+    /// file next to the vault, so it survives a restart of the app.
+    public private(set) var pendingAuthentication = false
     /// The decrypted data while unlocked.
     public private(set) var contents: VaultData?
     /// True if `load()` found no current file and fell back to the previous generation.
@@ -103,6 +108,9 @@ public actor VaultStore {
     private var envelope: VaultEnvelope?
     private var keyBuffer: SecretBuffer?
     private var protector: (any KeyProtector)?
+    nonisolated var pendingMarkerURL: URL {
+        url.deletingLastPathComponent().appendingPathComponent(".\(url.lastPathComponent).auth-required")
+    }
     /// Bytes of the vault file as this store last read or wrote them; anything else on disk is foreign.
     private var lastKnownBytes: Data?
 
@@ -131,6 +139,7 @@ public actor VaultStore {
         state = .unloaded
         loadedFromPreviousGeneration = false
         let fm = FileManager.default
+        pendingAuthentication = fm.fileExists(atPath: pendingMarkerURL.path)
         if fm.fileExists(atPath: url.path) {
             let (env, bytes) = try Self.readEnvelope(at: url)
             envelope = env
@@ -138,6 +147,7 @@ public actor VaultStore {
         } else if fm.fileExists(atPath: previousURL.path) {
             envelope = try Self.readEnvelope(at: previousURL).0
             loadedFromPreviousGeneration = true
+            pendingAuthentication = true   // a fallback to an older generation counts as a recovery
         } else {
             state = .empty
             return .empty
@@ -187,6 +197,7 @@ public actor VaultStore {
             self.protector = protector
             state = .unlocked
             loadedFromPreviousGeneration = false
+            clearPending()   // a newly created vault has a fresh key and the lock on
         } catch {
             try? protector.destroy(fields: fields)   // only the NEW material
             throw error
@@ -196,10 +207,16 @@ public actor VaultStore {
     /// Unlocks with the protector that matches the vault file. May show the Touch ID prompt.
     /// Always asks the protector, also when already unlocked (use it to re-authenticate); a protector that
     /// refuses never gets contents out.
+    ///
+    /// `appAuthenticated`: the app asked the user for Touch ID / password just before. A keychain vault that was
+    /// restored with `appLock=false` in its header refuses to open without it (the keychain does not ask by itself).
     @discardableResult
-    public func unlock(using protector: any KeyProtector) async throws -> VaultData {
+    public func unlock(using protector: any KeyProtector, appAuthenticated: Bool = false) async throws -> VaultData {
         guard let envelope else { throw VaultError.noVault }
         guard envelope.protector == protector.identifier else { throw VaultError.protectorMismatch(stored: envelope.protector) }
+        if pendingAuthentication, envelope.appLock == false, protector.identifier == "keychain", !appAuthenticated {
+            throw VaultError.authenticationRequired
+        }
         let generation = lockGeneration
         let fields = envelope.protectorFields
         let key: SymmetricKey
@@ -217,7 +234,29 @@ public actor VaultStore {
         contents = data
         self.protector = protector
         state = .unlocked
-        return data
+        if pendingAuthentication { await finishRecovery(protector: protector) }
+        return contents ?? data
+    }
+
+    /// First unlock after a restore or recovery: the restored vault gets the strict security settings of a fresh
+    /// vault, and a header with `appLock=false` is replaced by `appLock=true` under a NEW vault key (the old key's
+    /// previous generation, which still says `false`, is discarded). Best effort: if it fails, the vault stays
+    /// "required" (flag and marker remain) and the next unlock tries again.
+    private func finishRecovery(protector: any KeyProtector) async {
+        guard state == .unlocked, let envelope, var data = contents else { return }
+        let hadSettings = data.security != nil
+        data.security = nil
+        do {
+            if envelope.appLock == false {
+                contents = data
+                try await changeProtector(to: protector, requireAppAuthentication: true)
+            } else if hadSettings {
+                try save(data)
+            }
+        } catch {
+            return
+        }
+        clearPending()
     }
 
     // MARK: Save
@@ -235,12 +274,27 @@ public actor VaultStore {
 
     /// Changes whether the app asks for authentication before using the vault key. Only while unlocked; the app
     /// must have authenticated freshly before lowering it. The value is sealed into the authenticated header.
-    public func setRequiresAppAuthentication(_ on: Bool) throws {
-        guard state == .unlocked, let keyBuffer, let envelope, let contents else { throw VaultError.locked }
+    ///
+    /// Switching it back ON from `false` creates a new vault key and discards the previous generation (as
+    /// `changeProtector` does), so `vault.previous.json` with `appLock=false` under the same key cannot survive and
+    /// be restored later. Switching it OFF is only possible while unlocked and also ends a pending-recovery state.
+    public func setRequiresAppAuthentication(_ on: Bool) async throws {
+        guard state == .unlocked, let keyBuffer, let envelope, let contents, let protector else { throw VaultError.locked }
+        if on, envelope.appLock == false {
+            try await changeProtector(to: protector, requireAppAuthentication: true)
+            clearPending()
+            return
+        }
         let sealed = try Self.seal(contents, key: keyBuffer.key, protector: envelope.protector, fields: envelope.protectorFields, appLock: on)
         let written = try writeCurrent(sealed, mode: .rotate)
         self.envelope = sealed
         lastKnownBytes = written
+        if !on { clearPending() }
+    }
+
+    private func clearPending() {
+        pendingAuthentication = false
+        try? FileManager.default.removeItem(at: pendingMarkerURL)
     }
 
     /// Switches to another protector with a NEW vault key: new material is created, the contents are sealed
@@ -362,6 +416,7 @@ public actor VaultStore {
         let bytes: Data
         do { bytes = try Data(contentsOf: file.url) } catch { throw VaultError.ioFailure(error.localizedDescription) }
         lock()
+        try markPendingAuthentication()
         let exists = FileManager.default.fileExists(atPath: url.path)
         if exists { try setAsideExisting(includePrevious: true) }
         try AtomicFile.write(bytes, to: url)
@@ -376,9 +431,22 @@ public actor VaultStore {
         guard FileManager.default.fileExists(atPath: previousURL.path) else { throw VaultError.noPreviousGeneration }
         let (_, bytes) = try Self.readEnvelope(at: previousURL)
         lock()
+        try markPendingAuthentication()
         if FileManager.default.fileExists(atPath: url.path) { try setAsideExisting(includePrevious: false) }
         try AtomicFile.write(bytes, to: url)
         try load()
+    }
+
+    /// Written before a restored file replaces the current one, so a restart cannot lose the "must authenticate" state.
+    private func markPendingAuthentication() throws {
+        do {
+            try AtomicFile.write(Data("1".utf8), to: pendingMarkerURL)
+        } catch let e as VaultError {
+            throw e
+        } catch {
+            throw VaultError.ioFailure(error.localizedDescription)
+        }
+        pendingAuthentication = true
     }
 
     /// Deletes the vault files and, if unlocked, the protector's external secret. Irreversible.
@@ -392,6 +460,7 @@ public actor VaultStore {
         }
         envelope = nil
         lastKnownBytes = nil
+        clearPending()
         state = .empty
     }
 

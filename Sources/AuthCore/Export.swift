@@ -122,12 +122,17 @@ public enum AccountExporter {
 
 /// Writes sensitive files readable by the owner only.
 public enum PrivateFile {
-    /// Creates or truncates `url` with mode 0600 (the mode is set on the open descriptor, so the content is never
-    /// readable by others, not even for a moment), writes `data` and flushes it. A half-written file is removed.
+    /// Creates or truncates `url`, sets mode 0600 and removes every ACL entry on the open descriptor (before any data
+    /// is written, so the content is never readable by others, not even for a moment), writes `data` and flushes it.
+    /// A half-written file is removed.
+    ///
+    /// What this guarantees: the file has mode 0600 and no ACL entries, also if it existed before (with `chmod +a`
+    /// entries) or inherited entries from its folder when it was created. What it cannot: volumes that do not
+    /// keep Unix permissions (exFAT, FAT, some network shares) and copies of the file made later.
     public static func write(_ data: Data, to url: URL) throws {
         let fd = open(url.path, O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW, 0o600)
         guard fd >= 0 else { throw BackupError.ioFailure("") }
-        var ok = fchmod(fd, 0o600) == 0
+        var ok = fchmod(fd, 0o600) == 0 && clearACL(fd)
         if ok {
             ok = data.withUnsafeBytes { raw -> Bool in
                 var offset = 0
@@ -144,5 +149,17 @@ public enum PrivateFile {
             try? FileManager.default.removeItem(at: url)
             throw BackupError.ioFailure("")
         }
+    }
+
+    /// Replaces the file's ACL with an empty one. A file without ACL (or on a volume that has none) is fine;
+    /// an ACL that cannot be removed is a failure.
+    static func clearACL(_ fd: Int32) -> Bool {
+        guard let current = acl_get_fd_np(fd, ACL_TYPE_EXTENDED) else {
+            return [ENOENT, ENOTSUP, EINVAL].contains(errno)   // no ACL, or this volume has none
+        }
+        acl_free(UnsafeMutableRawPointer(current))
+        guard let empty = acl_init(0) else { return false }
+        defer { acl_free(UnsafeMutableRawPointer(empty)) }
+        return acl_set_fd_np(fd, empty, ACL_TYPE_EXTENDED) == 0
     }
 }
