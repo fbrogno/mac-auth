@@ -7,28 +7,52 @@ struct ImportSheet: View {
     @State private var cameraProblem: CameraAccess?
     @State private var cameraTicket: Ticket?
     @State private var confirmScreenshot = false
+    /// Instructions for a file import (Apple Passwords, another app); nil = the Google Authenticator guide.
+    @State private var fileGuide: FileGuide?
     @Environment(\.dismiss) private var dismiss
+
+    enum FileGuide { case applePasswords, otherApp }
+
+    init(model: AppModel, initialGuide: FileGuide? = nil) {
+        self.model = model
+        _fileGuide = State(initialValue: initialGuide)
+    }
 
     private var importer: ImportCoordinator { model.importer }
 
     var body: some View {
-        SheetScaffold(title: String(localized: "Aus Google Authenticator importieren"),
-                      subtitle: scanning ? nil : String(localized: "So holst du deine Konten aus der Handy-App:"), width: 540) {
+        SheetScaffold(title: sheetTitle, subtitle: sheetSubtitle, width: 540) {
             VStack(alignment: .leading, spacing: 14) {
-                if scanning { cameraPage } else { guidePage }
+                if scanning {
+                    cameraPage
+                } else if let fileGuide {
+                    switch fileGuide {
+                    case .applePasswords: applePasswordsPage
+                    case .otherApp: otherAppPage
+                    }
+                } else {
+                    guidePage
+                }
                 progressAndNotice
             }
         } footer: {
             if scanning {
                 Button("Zurück") { scanning = false }
+            } else if fileGuide != nil {
+                Button("Zurück") { fileGuide = nil; importer.reset() }
             } else {
                 Button("Screenshot wählen …") { confirmScreenshot = true }
             }
             Spacer()
             Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
             if !scanning {
-                Button("Mit Kamera scannen") { Task { await startCamera() } }
-                    .keyboardShortcut(.defaultAction).primaryButtonStyle()
+                if fileGuide != nil {
+                    Button("Datei wählen …") { Task { await ImportFlow.chooseFile(model: model) } }
+                        .keyboardShortcut(.defaultAction).primaryButtonStyle()
+                } else {
+                    Button("Mit Kamera scannen") { Task { await startCamera() } }
+                        .keyboardShortcut(.defaultAction).primaryButtonStyle()
+                }
             }
         }
         .onChange(of: scanning) { _, now in model.cameraScanning = now }
@@ -44,6 +68,60 @@ struct ImportSheet: View {
         }
     }
 
+    private var sheetTitle: String {
+        switch fileGuide {
+        case .applePasswords: String(localized: "Aus Apple Passwörter importieren")
+        case .otherApp: String(localized: "Aus anderer App importieren")
+        case nil: String(localized: "Aus Google Authenticator importieren")
+        }
+    }
+
+    private var sheetSubtitle: String? {
+        if scanning { return nil }
+        switch fileGuide {
+        case .applePasswords: return String(localized: "So holst du die Codes aus der App „Passwörter“ deines Macs oder iPhones:")
+        case .otherApp: return String(localized: "Exportiere die Konten unverschlüsselt aus der anderen App und wähle die Datei hier aus.")
+        case nil: return String(localized: "So holst du deine Konten aus der Handy-App:")
+        }
+    }
+
+    /// Shown wherever the file may contain passwords: only codes are read.
+    private var passwordsNote: some View {
+        Label("MacAuth liest aus der Datei nur die Codes. Passwörter in der Datei werden ignoriert und nicht gespeichert. Die Datei selbst enthält aber alle deine Passwörter: lösche sie nach dem Import, auch aus dem Papierkorb.",
+              systemImage: "lock.shield")
+            .font(.callout).fixedSize(horizontal: false, vertical: true)
+            .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private var applePasswordsPage: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 10) {
+                StepRow(number: 1, text: "Öffne auf dem Mac die App „Passwörter“.")
+                StepRow(number: 2, text: "Wähle „Ablage“ > „Alle Passwörter in eine Datei exportieren“ und bestätige mit „Passwörter exportieren“.")
+                StepRow(number: 3, text: "Speichere die CSV-Datei, zum Beispiel auf dem Schreibtisch, und wähle sie hier aus. Du kannst sie auch auf das Fenster ziehen.")
+            }
+            Text("Es werden nur Einträge übernommen, bei denen in „Passwörter“ ein Bestätigungscode eingerichtet ist. Alle anderen werden übersprungen.")
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            passwordsNote
+        }
+    }
+
+    private var otherAppPage: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                Label("Aegis, 2FAS und Ente Auth (unverschlüsselte Exportdatei)", systemImage: "checkmark.circle")
+                Label("Bitwarden (JSON, unverschlüsselt) und andOTP (unverschlüsselte Sicherung)", systemImage: "checkmark.circle")
+                Label("Passwortmanager als CSV, etwa 1Password und Proton Pass", systemImage: "checkmark.circle")
+                Label("Jede Textdatei mit otpauth-Links, ein Link je Zeile", systemImage: "checkmark.circle")
+            }
+            .font(.callout).fixedSize(horizontal: false, vertical: true)
+            Text("MacAuth erkennt das Format am Inhalt der Datei. Verschlüsselte Dateien werden abgelehnt, exportiere dann bitte unverschlüsselt. Eine Datei kannst du auch auf das Fenster ziehen.")
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            passwordsNote
+        }
+    }
+
     private var guidePage: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
@@ -53,11 +131,15 @@ struct ImportSheet: View {
             }
             Text("Bei mehreren QR-Codes scannst du einen nach dem anderen. Ein Bild kannst du auch auf das Fenster ziehen oder mit ⌘V einfügen.")
                 .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Du hast eine Exportdatei von Aegis, 2FAS, Ente Auth oder eine MacAuth-Sicherung?")
+            Divider()
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Du kommst nicht von Google Authenticator?").font(.callout.weight(.medium))
+                HStack(spacing: 10) {
+                    sourceButton(title: "Aus Apple Passwörter", subtitle: "Export der App „Passwörter“", symbol: "key") { fileGuide = .applePasswords }
+                    sourceButton(title: "Aus anderer App (Datei)", subtitle: "Aegis, 2FAS, Ente, Bitwarden, andOTP, CSV", symbol: "doc.text") { fileGuide = .otherApp }
+                }
+                Text("Eine MacAuth-Sicherung stellst du über „Backup wiederherstellen“ wieder her.")
                     .font(.callout).foregroundStyle(.secondary)
-                Button("Aus Datei importieren …") { Task { await ImportFlow.chooseFile(model: model) } }
-                    .buttonStyle(.link)
             }
             if let problem = cameraProblem {
                 VStack(alignment: .leading, spacing: 8) {
@@ -74,6 +156,23 @@ struct ImportSheet: View {
                 .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
         }
+    }
+
+    private func sourceButton(title: LocalizedStringKey, subtitle: LocalizedStringKey, symbol: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: symbol).font(.system(size: 17)).foregroundStyle(Color.accentColor).frame(width: 24)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(.system(size: 13, weight: .semibold))
+                    Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var cameraPage: some View {
@@ -193,6 +292,18 @@ struct ReviewSheet: View {
                 .background(Color(nsColor: .controlBackgroundColor))
                 .overlay(alignment: .top) { Divider() }
                 .overlay(alignment: .bottom) { Divider() }
+                if session.fileHasPasswords {
+                    Label("Es werden nur die Codes importiert. Passwörter in der Datei werden ignoriert und nicht gespeichert. Lösche die Datei nach dem Import, sie enthält alle deine Passwörter.",
+                          systemImage: "lock.shield")
+                        .font(.callout).fixedSize(horizontal: false, vertical: true)
+                        .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .padding(.horizontal, 24)
+                }
+                if session.rowsWithoutCode > 0 {
+                    Label("\(session.rowsWithoutCode) Einträge ohne Code übersprungen", systemImage: "minus.circle")
+                        .font(.callout).foregroundStyle(.secondary).padding(.horizontal, 24)
+                }
                 if !session.skipped.isEmpty {
                     VStack(alignment: .leading, spacing: 3) {
                         Label("Übersprungen, weil MacAuth sie nicht unterstützt:", systemImage: "exclamationmark.triangle")
@@ -235,7 +346,9 @@ struct ReviewSheet: View {
     }
 
     private var subtitle: String {
-        var parts = [String(localized: "\(session.rows.count) Konten gefunden. Es wird erst gespeichert, wenn du auf „Importieren“ klickst.")]
+        var parts: [String] = []
+        if let format = session.format { parts.append(String(localized: "Erkanntes Format: \(format.localizedName).")) }
+        parts.append(String(localized: "\(session.rows.count) Konten gefunden. Es wird erst gespeichert, wenn du auf „Importieren“ klickst."))
         if session.duplicateCount > 0 {
             parts.append(String(localized: "\(session.duplicateCount) davon gibt es schon und sind abgewählt."))
         }

@@ -16,6 +16,8 @@ extension EnvironmentValues {
 
 struct RootView: View {
     @Bindable var model: AppModel
+    /// Optional: the documentation renderer passes an updater with an invented pending update.
+    var updater: UpdaterModel?
 
     var body: some View {
         ZStack {
@@ -27,6 +29,7 @@ struct RootView: View {
             }
         }
         .frame(minWidth: 760, minHeight: 520)
+        .environment(updater)
         .environment(\.protectScreen, model.settings.protectScreen)
         .background(WindowConfigurator(isMainWindow: true))
         .sheet(item: $model.sheet) { sheet in SheetRouter(model: model, sheet: sheet).environment(\.protectScreen, model.settings.protectScreen) }
@@ -70,6 +73,7 @@ struct SheetRouter: View {
         case .restoreBackup(let preset, let replace): RestoreSheet(model: model, preset: preset, replace: replace)
         case .rescue: RescueSheet(model: model)
         case .exportBackup: ExportBackupSheet(model: model)
+        case .exportPlain: PlainExportSheet(model: model)
         case .transfer(let ids): TransferSheet(model: model, preselected: ids)
         case .newGroup: GroupSheet(model: model, existing: nil)
         case .editGroup(let id): GroupSheet(model: model, existing: model.group(id))
@@ -112,49 +116,73 @@ struct WindowConfigurator: NSViewRepresentable {
 
 @MainActor
 enum FilePanels {
-    static func openImages() async -> [URL] {
+    /// Panels that are open right now. `cancelAll()` closes them when the vault locks, so no open/save panel
+    /// stays on screen over the lock screen (and none answers into a state it was not started in).
+    private static var open: [NSSavePanel] = []
+
+    private static func run(_ panel: NSSavePanel) async -> NSApplication.ModalResponse {
         await withCheckedContinuation { continuation in
-            let panel = NSOpenPanel()
-            panel.allowedContentTypes = [.image]
-            panel.allowsMultipleSelection = true
-            panel.canChooseDirectories = false
-            panel.message = String(localized: "Wähle einen Screenshot oder ein Foto mit dem QR-Code. Das Bild wird nicht gespeichert.")
-            panel.begin { response in continuation.resume(returning: response == .OK ? panel.urls : []) }
+            open.append(panel)
+            panel.begin { response in
+                open.removeAll { $0 === panel }
+                continuation.resume(returning: response)
+            }
         }
     }
 
+    /// Closes every open panel as if the user had pressed "Cancel".
+    static func cancelAll() {
+        for panel in open { panel.cancel(nil) }
+    }
+
+    static func openImages() async -> [URL] {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.image]
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = false
+        panel.message = String(localized: "Wähle einen Screenshot oder ein Foto mit dem QR-Code. Das Bild wird nicht gespeichert.")
+        return await run(panel) == .OK ? panel.urls : []
+    }
+
     static func openBackup() async -> URL? {
-        await withCheckedContinuation { continuation in
-            let panel = NSOpenPanel()
-            panel.allowedContentTypes = [UTType(filenameExtension: BackupFile.fileExtension) ?? .data, .json, .data]
-            panel.allowsMultipleSelection = false
-            panel.canChooseDirectories = false
-            panel.message = String(localized: "Wähle eine MacAuth-Backup-Datei.")
-            panel.begin { response in continuation.resume(returning: response == .OK ? panel.url : nil) }
-        }
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: BackupFile.fileExtension) ?? .data, .json, .data]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.message = String(localized: "Wähle eine MacAuth-Backup-Datei.")
+        return await run(panel) == .OK ? panel.url : nil
     }
 
     /// Export file of another authenticator (Aegis, 2FAS, Ente Auth, otpauth list) or a MacAuth backup.
     static func openImportFile() async -> URL? {
-        await withCheckedContinuation { continuation in
-            let panel = NSOpenPanel()
-            panel.allowedContentTypes = [UTType(filenameExtension: BackupFile.fileExtension) ?? .data, .json, .plainText, .text, .data]
-            panel.allowsMultipleSelection = false
-            panel.canChooseDirectories = false
-            panel.message = String(localized: "Wähle eine Exportdatei aus Aegis, 2FAS oder Ente Auth (unverschlüsselt) oder eine MacAuth-Sicherung.")
-            panel.begin { response in continuation.resume(returning: response == .OK ? panel.url : nil) }
-        }
+        let panel = NSOpenPanel()
+        // Detection is by content, so any file may be chosen; the listed types only make the common ones easy to find.
+        panel.allowedContentTypes = [UTType(filenameExtension: BackupFile.fileExtension) ?? .data, .json, .commaSeparatedText, .plainText, .text,
+                                     UTType(filenameExtension: "2fas") ?? .data, .data]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.message = String(localized: "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV) oder eine MacAuth-Sicherung.")
+        return await run(panel) == .OK ? panel.url : nil
+    }
+
+    /// Plain-text export for another app. The panel opens first; the file content is built only after a location was
+    /// chosen (and the lock generation is still the same), never while the panel is open.
+    static func savePlainExport(suggestedName: String, type: UTType) async -> URL? {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [type]
+        panel.nameFieldStringValue = suggestedName
+        panel.canCreateDirectories = true
+        panel.message = String(localized: "Achtung: Diese Datei enthält alle Schlüssel im Klartext. Speichere sie nicht in einem Cloud-Ordner und lösche sie nach dem Import.")
+        return await run(panel) == .OK ? panel.url : nil
     }
 
     static func saveBackup(suggestedName: String) async -> URL? {
-        await withCheckedContinuation { continuation in
-            let panel = NSSavePanel()
-            panel.allowedContentTypes = [UTType(filenameExtension: BackupFile.fileExtension) ?? .data]
-            panel.nameFieldStringValue = suggestedName
-            panel.canCreateDirectories = true
-            panel.message = String(localized: "Wähle, wo das verschlüsselte Backup liegen soll.")
-            panel.begin { response in continuation.resume(returning: response == .OK ? panel.url : nil) }
-        }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: BackupFile.fileExtension) ?? .data]
+        panel.nameFieldStringValue = suggestedName
+        panel.canCreateDirectories = true
+        panel.message = String(localized: "Wähle, wo das verschlüsselte Backup liegen soll.")
+        return await run(panel) == .OK ? panel.url : nil
     }
 }
 
@@ -222,7 +250,17 @@ enum ImportFlow {
             switch detection {
             case .accounts(let result):
                 let skipped = result.skipped.map { "\($0.label) – \($0.reason.localizedText)" }
-                let session = model.makeSession(source: .file, delivery: .file, accounts: result.accounts, skipped: skipped, groups: result.groups)
+                // Never an empty review sheet: nothing usable and nothing to explain means "no codes found".
+                if result.hasNothingToReview {
+                    let message = result.rowsWithoutCode > 0
+                        ? String(localized: "In dieser Datei steht bei keinem der \(result.rowsWithoutCode) Einträge ein Code für die Zwei-Faktor-Anmeldung. Es wurde nichts importiert.")
+                        : String(localized: "In dieser Datei wurde kein Code für die Zwei-Faktor-Anmeldung gefunden. Es wurde nichts importiert.")
+                    model.alert = AppAlert(title: String(localized: "Keine Codes gefunden"), message: message)
+                    return
+                }
+                let delivery: ImportSession.Delivery = [.applePasswordsCSV, .genericCSV, .bitwarden].contains(result.format) ? .passwordFile : .file
+                let session = model.makeSession(source: .file, delivery: delivery, accounts: result.accounts, skipped: skipped, groups: result.groups,
+                                                format: result.format, rowsWithoutCode: result.rowsWithoutCode)
                 model.sheet = .review(session)
             case .googleMigration(let links):
                 present(model.importer.ingest(links, delivery: .file, model: model), model: model, ticket: ticket)

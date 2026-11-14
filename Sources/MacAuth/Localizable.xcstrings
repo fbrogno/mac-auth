@@ -33,6 +33,22 @@
         }
       }
     },
+    "%@: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: %2$@"
+          }
+        }
+      }
+    },
     "%lld": {
       "localizations": {
         "de": {
@@ -45,6 +61,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld"
+          }
+        }
+      }
+    },
+    "%lld Einträge ohne Code übersprungen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Einträge ohne Code übersprungen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld entries without a code skipped"
           }
         }
       }
@@ -165,6 +197,38 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld Konten konnten nicht exportiert werden:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Konten konnten nicht exportiert werden:"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld accounts could not be exported:"
+          }
+        }
+      }
+    },
+    "%lld Konten wurden in „%@“ geschrieben.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld Konten wurden in „%2$@“ geschrieben."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld accounts were written to “%2$@”."
           }
         }
       }
@@ -349,6 +413,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "Turn off prompt"
+          }
+        }
+      }
+    },
+    "Achtung: Diese Datei enthält alle Schlüssel im Klartext. Speichere sie nicht in einem Cloud-Ordner und lösche sie nach dem Import.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Achtung: Diese Datei enthält alle Schlüssel im Klartext. Speichere sie nicht in einem Cloud-Ordner und lösche sie nach dem Import."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warning: this file contains every key in plain text. Do not save it in a cloud folder and delete it after the import."
+          }
+        }
+      }
+    },
+    "Aegis (JSON)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aegis (JSON)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aegis (JSON)"
+          }
+        }
+      }
+    },
+    "Aegis, 2FAS und Ente Auth (unverschlüsselte Exportdatei)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aegis, 2FAS und Ente Auth (unverschlüsselte Exportdatei)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aegis, 2FAS and Ente Auth (unencrypted export file)"
+          }
+        }
+      }
+    },
+    "Aegis, 2FAS, Ente, Bitwarden, andOTP, CSV": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aegis, 2FAS, Ente, Bitwarden, andOTP, CSV"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aegis, 2FAS, Ente, Bitwarden, andOTP, CSV"
           }
         }
       }
@@ -609,6 +737,22 @@
         }
       }
     },
+    "Apple Passwörter (CSV)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Passwörter (CSV)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Passwords (CSV)"
+          }
+        }
+      }
+    },
     "Auf Handy übertragen": {
       "localizations": {
         "de": {
@@ -653,6 +797,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Record"
+          }
+        }
+      }
+    },
+    "Aus Apple Passwörter": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Apple Passwörter"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From Apple Passwords"
+          }
+        }
+      }
+    },
+    "Aus Apple Passwörter importieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Apple Passwörter importieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import from Apple Passwords"
           }
         }
       }
@@ -733,6 +909,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Import from Google Authenticator …"
+          }
+        }
+      }
+    },
+    "Aus anderer App (Datei)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus anderer App (Datei)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From another app (file)"
+          }
+        }
+      }
+    },
+    "Aus anderer App importieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus anderer App importieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import from another app"
           }
         }
       }
@@ -945,6 +1153,38 @@
         }
       }
     },
+    "Bitwarden (JSON, unverschlüsselt) und andOTP (unverschlüsselte Sicherung)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitwarden (JSON, unverschlüsselt) und andOTP (unverschlüsselte Sicherung)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitwarden (JSON, unencrypted) and andOTP (unencrypted backup)"
+          }
+        }
+      }
+    },
+    "CSV-Datei": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CSV-Datei"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CSV file"
+          }
+        }
+      }
+    },
     "Code kopieren": {
       "localizations": {
         "de": {
@@ -989,6 +1229,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Code type “%@” is not supported"
+          }
+        }
+      }
+    },
+    "Dafür ist zuerst eine Anmeldung mit Touch ID oder Passwort nötig.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dafür ist zuerst eine Anmeldung mit Touch ID oder Passwort nötig."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch ID or your password is needed first."
           }
         }
       }
@@ -1073,18 +1329,18 @@
         }
       }
     },
-    "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste) und MacAuth-Sicherungen.": {
+    "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste), Bitwarden, andOTP, CSV-Dateien mit einer Code-Spalte (Apple Passwörter, 1Password, Proton Pass u. a.) und MacAuth-Sicherungen.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste) und MacAuth-Sicherungen."
+            "value": "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste), Bitwarden, andOTP, CSV-Dateien mit einer Code-Spalte (Apple Passwörter, 1Password, Proton Pass u. a.) und MacAuth-Sicherungen."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The file format is not recognised. Supported are Aegis, 2FAS, Ente Auth (otpauth list) and MacAuth backups."
+            "value": "The file format is not recognised. Supported are Aegis, 2FAS, Ente Auth (otpauth list), Bitwarden, andOTP, CSV files with a code column (Apple Passwords, 1Password, Proton Pass and others) and MacAuth backups."
           }
         }
       }
@@ -1117,6 +1373,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "The password must be at least %lld characters long."
+          }
+        }
+      }
+    },
+    "Das Update-Fenster öffnen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Update-Fenster öffnen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the update window"
           }
         }
       }
@@ -1197,6 +1469,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "That is not a MacAuth backup."
+          }
+        }
+      }
+    },
+    "Datei gespeichert": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datei gespeichert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File saved"
           }
         }
       }
@@ -1713,6 +2001,38 @@
         }
       }
     },
+    "Die CSV-Datei ist fehlerhaft und lässt sich nicht lesen. Exportiere sie noch einmal aus der App.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die CSV-Datei ist fehlerhaft und lässt sich nicht lesen. Exportiere sie noch einmal aus der App."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The CSV file is damaged and cannot be read. Export it from the app again."
+          }
+        }
+      }
+    },
+    "Die Datei enthält die Schlüssel aller deiner Konten im Klartext.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datei enthält die Schlüssel aller deiner Konten im Klartext."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file contains the keys of all your accounts in plain text."
+          }
+        }
+      }
+    },
     "Die Datei enthält zu viele Einträge.": {
       "localizations": {
         "de": {
@@ -1773,6 +2093,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "The file could not be read or written."
+          }
+        }
+      }
+    },
+    "Die Datei wird nur für dich lesbar angelegt (Zugriffsrechte 600, ohne zusätzliche Zugriffsregeln). Auf Laufwerken ohne Unix-Rechte, zum Beispiel exFAT oder manche Netzlaufwerke, gilt das nicht. In die Zwischenablage oder ein Protokoll wird nichts geschrieben.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datei wird nur für dich lesbar angelegt (Zugriffsrechte 600, ohne zusätzliche Zugriffsregeln). Auf Laufwerken ohne Unix-Rechte, zum Beispiel exFAT oder manche Netzlaufwerke, gilt das nicht. In die Zwischenablage oder ein Protokoll wird nichts geschrieben."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file is created readable by you only (permissions 600, no additional access rules). On volumes without Unix permissions, for example exFAT or some network drives, this does not apply. Nothing is written to the clipboard or a log."
           }
         }
       }
@@ -1885,6 +2221,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "The accounts are kept and will no longer be in any group."
+          }
+        }
+      }
+    },
+    "Die Kontodaten sind ungültig": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kontodaten sind ungültig"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The account data is invalid"
           }
         }
       }
@@ -2049,6 +2401,22 @@
         }
       }
     },
+    "Diese Datei ist nicht geschützt": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Datei ist nicht geschützt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This file is not protected"
+          }
+        }
+      }
+    },
     "Diese Fassung ist nur durch den Schlüsselbund geschützt. Dein Mac kann sie mit der Secure Enclave schützen.": {
       "localizations": {
         "de": {
@@ -2161,6 +2529,22 @@
         }
       }
     },
+    "Dieser Mac hat kein Anmeldepasswort": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Mac hat kein Anmeldepasswort"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac has no login password"
+          }
+        }
+      }
+    },
     "Dieser Mac hat keine Secure Enclave.": {
       "localizations": {
         "de": {
@@ -2241,18 +2625,18 @@
         }
       }
     },
-    "Du hast eine Exportdatei von Aegis, 2FAS, Ente Auth oder eine MacAuth-Sicherung?": {
+    "Du kommst nicht von Google Authenticator?": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Du hast eine Exportdatei von Aegis, 2FAS, Ente Auth oder eine MacAuth-Sicherung?"
+            "value": "Du kommst nicht von Google Authenticator?"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Do you have an export file from Aegis, 2FAS or Ente Auth, or a MacAuth backup?"
+            "value": "Not coming from Google Authenticator?"
           }
         }
       }
@@ -2301,6 +2685,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "A screenshot contains all your keys"
+          }
+        }
+      }
+    },
+    "Ein unverschlüsselter Aegis-Tresor mit Gruppen, Favoriten und Notizen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein unverschlüsselter Aegis-Tresor mit Gruppen, Favoriten und Notizen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An unencrypted Aegis vault with groups, favourites and notes."
+          }
+        }
+      }
+    },
+    "Eine CSV-Datei für die App „Passwörter“. Nur zeitbasierte Codes (TOTP), Zähler-Codes (HOTP) bleiben zurück.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine CSV-Datei für die App „Passwörter“. Nur zeitbasierte Codes (TOTP), Zähler-Codes (HOTP) bleiben zurück."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A CSV file for the Passwords app. Only time-based codes (TOTP); counter-based codes (HOTP) stay behind."
+          }
+        }
+      }
+    },
+    "Eine MacAuth-Sicherung stellst du über „Backup wiederherstellen“ wieder her.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine MacAuth-Sicherung stellst du über „Backup wiederherstellen“ wieder her."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You restore a MacAuth backup with “Backup wiederherstellen” (Restore backup)."
+          }
+        }
+      }
+    },
+    "Eine Textdatei mit einem otpauth-Link je Zeile. Viele Apps lesen sie, zum Beispiel Ente Auth.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine Textdatei mit einem otpauth-Link je Zeile. Viele Apps lesen sie, zum Beispiel Ente Auth."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A text file with one otpauth link per line. Many apps can read it, for example Ente Auth."
           }
         }
       }
@@ -2429,6 +2877,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unlock without Touch ID or password?"
+          }
+        }
+      }
+    },
+    "Erkanntes Format: %@.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erkanntes Format: %@."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detected format: %@."
           }
         }
       }
@@ -2609,6 +3073,54 @@
         }
       }
     },
+    "Es werden nur Einträge übernommen, bei denen in „Passwörter“ ein Bestätigungscode eingerichtet ist. Alle anderen werden übersprungen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es werden nur Einträge übernommen, bei denen in „Passwörter“ ein Bestätigungscode eingerichtet ist. Alle anderen werden übersprungen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only entries that have a verification code set up in Passwords are imported. All others are skipped."
+          }
+        }
+      }
+    },
+    "Es werden nur die Codes importiert. Passwörter in der Datei werden ignoriert und nicht gespeichert. Lösche die Datei nach dem Import, sie enthält alle deine Passwörter.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es werden nur die Codes importiert. Passwörter in der Datei werden ignoriert und nicht gespeichert. Lösche die Datei nach dem Import, sie enthält alle deine Passwörter."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the codes are imported. Passwords in the file are ignored and not stored. Delete the file after the import: it contains all your passwords."
+          }
+        }
+      }
+    },
+    "Export der App „Passwörter“": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export der App „Passwörter“"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export of the Passwords app"
+          }
+        }
+      }
+    },
     "Exportdatei aus Aegis, 2FAS oder Ente Auth, oder eine MacAuth-Sicherung. Du kannst die Datei auch auf das Fenster ziehen.": {
       "localizations": {
         "de": {
@@ -2637,6 +3149,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete the export file now"
+          }
+        }
+      }
+    },
+    "Exportiere die Konten unverschlüsselt aus der anderen App und wähle die Datei hier aus.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportiere die Konten unverschlüsselt aus der anderen App und wähle die Datei hier aus."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export the accounts unencrypted from the other app and choose the file here."
           }
         }
       }
@@ -2813,6 +3341,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Paste the key shown next to the website’s QR code. You can paste an otpauth link right here."
+          }
+        }
+      }
+    },
+    "Für andere App exportieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für andere App exportieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export for another app"
+          }
+        }
+      }
+    },
+    "Für andere App exportieren (unverschlüsselt) …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für andere App exportieren (unverschlüsselt) …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export for Another App (Unencrypted) …"
+          }
+        }
+      }
+    },
+    "Für die Sicherung deiner Konten ist das verschlüsselte Backup der bessere Weg. Diese Dateien sind nur zum Umziehen in eine andere App gedacht.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für die Sicherung deiner Konten ist das verschlüsselte Backup der bessere Weg. Diese Dateien sind nur zum Umziehen in eine andere App gedacht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For backing up your accounts the encrypted backup is the better way. These files are only meant for moving to another app."
           }
         }
       }
@@ -3153,6 +3729,38 @@
         }
       }
     },
+    "Importiere die Datei jetzt und lösche sie danach, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle Schlüssel im Klartext.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importiere die Datei jetzt und lösche sie danach, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle Schlüssel im Klartext."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import the file now and delete it afterwards, also from the Trash and from iCloud Drive. It contains every key in plain text."
+          }
+        }
+      }
+    },
+    "Importiere sie sofort in die andere App und lösche sie danach, auch aus dem Papierkorb. Lege sie nie in einem Cloud-Ordner ab (iCloud Drive, Dropbox, OneDrive u. a.).": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importiere sie sofort in die andere App und lösche sie danach, auch aus dem Papierkorb. Lege sie nie in einem Cloud-Ordner ab (iCloud Drive, Dropbox, OneDrive u. a.)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import it into the other app right away and delete it afterwards, also from the Trash. Never leave it in a cloud folder (iCloud Drive, Dropbox, OneDrive and others)."
+          }
+        }
+      }
+    },
     "Importieren …": {
       "localizations": {
         "de": {
@@ -3233,6 +3841,38 @@
         }
       }
     },
+    "In dieser Datei steht bei keinem der %lld Einträge ein Code für die Zwei-Faktor-Anmeldung. Es wurde nichts importiert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In dieser Datei steht bei keinem der %lld Einträge ein Code für die Zwei-Faktor-Anmeldung. Es wurde nichts importiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None of the %lld entries in this file has a code for two-factor sign-in. Nothing was imported."
+          }
+        }
+      }
+    },
+    "In dieser Datei wurde kein Code für die Zwei-Faktor-Anmeldung gefunden. Es wurde nichts importiert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In dieser Datei wurde kein Code für die Zwei-Faktor-Anmeldung gefunden. Es wurde nichts importiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No two-factor code was found in this file. Nothing was imported."
+          }
+        }
+      }
+    },
     "Intervall: %lld Sekunden": {
       "localizations": {
         "de": {
@@ -3249,6 +3889,38 @@
         }
       }
     },
+    "Jede Textdatei mit otpauth-Links, ein Link je Zeile": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jede Textdatei mit otpauth-Links, ein Link je Zeile"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Any text file with otpauth links, one link per line"
+          }
+        }
+      }
+    },
+    "Kein Konto lässt sich in diesem Format ablegen. Wähle ein anderes Ziel.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Konto lässt sich in diesem Format ablegen. Wähle ein anderes Ziel."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No account can be stored in this format. Choose another target."
+          }
+        }
+      }
+    },
     "Keine": {
       "localizations": {
         "de": {
@@ -3261,6 +3933,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "None"
+          }
+        }
+      }
+    },
+    "Keine Codes gefunden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Codes gefunden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No codes found"
           }
         }
       }
@@ -3373,6 +4061,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Review Accounts"
+          }
+        }
+      }
+    },
+    "Konten unverschlüsselt exportieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konten unverschlüsselt exportieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export accounts unencrypted"
           }
         }
       }
@@ -3505,6 +4209,22 @@
         }
       }
     },
+    "Link-Liste (otpauth)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link-Liste (otpauth)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link list (otpauth)"
+          }
+        }
+      }
+    },
     "Liste": {
       "localizations": {
         "de": {
@@ -3533,6 +4253,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete the screenshot now, also from the Trash and from iCloud Photos. It contains all your keys."
+          }
+        }
+      }
+    },
+    "Lösche die Datei jetzt, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle deine Passwörter und alle Schlüssel im Klartext.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lösche die Datei jetzt, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle deine Passwörter und alle Schlüssel im Klartext."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the file now, also from the Trash and from iCloud Drive. It contains all your passwords and every key in plain text."
           }
         }
       }
@@ -3633,6 +4369,22 @@
         }
       }
     },
+    "MacAuth erkennt das Format am Inhalt der Datei. Verschlüsselte Dateien werden abgelehnt, exportiere dann bitte unverschlüsselt. Eine Datei kannst du auch auf das Fenster ziehen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth erkennt das Format am Inhalt der Datei. Verschlüsselte Dateien werden abgelehnt, exportiere dann bitte unverschlüsselt. Eine Datei kannst du auch auf das Fenster ziehen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth recognises the format from the content of the file. Encrypted files are refused; please export unencrypted instead. You can also drag a file onto the window."
+          }
+        }
+      }
+    },
     "MacAuth hat keinen Zugriff auf die Kamera. Du kannst ihn in den Systemeinstellungen erlauben oder stattdessen einen Screenshot wählen.": {
       "localizations": {
         "de": {
@@ -3677,6 +4429,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "MacAuth is locked. Unlock it to change security settings."
+          }
+        }
+      }
+    },
+    "MacAuth liest aus der Datei nur die Codes. Passwörter in der Datei werden ignoriert und nicht gespeichert. Die Datei selbst enthält aber alle deine Passwörter: lösche sie nach dem Import, auch aus dem Papierkorb.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth liest aus der Datei nur die Codes. Passwörter in der Datei werden ignoriert und nicht gespeichert. Die Datei selbst enthält aber alle deine Passwörter: lösche sie nach dem Import, auch aus dem Papierkorb."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth reads only the codes from the file. Passwords in the file are ignored and not stored. The file itself does contain all your passwords, though: delete it after the import, also from the Trash."
           }
         }
       }
@@ -3901,6 +4669,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "New Group …"
+          }
+        }
+      }
+    },
+    "Neue Versionen werden im Hintergrund geladen und beim nächsten Beenden von MacAuth installiert. Ohne diese Option zeigt MacAuth einen Hinweis in der Seitenleiste, und du entscheidest selbst.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Versionen werden im Hintergrund geladen und beim nächsten Beenden von MacAuth installiert. Ohne diese Option zeigt MacAuth einen Hinweis in der Seitenleiste, und du entscheidest selbst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New versions are downloaded in the background and installed the next time MacAuth quits. Without this option MacAuth shows a notice in the sidebar and you decide yourself."
           }
         }
       }
@@ -4145,6 +4929,22 @@
         }
       }
     },
+    "Ohne Anmeldepasswort schützt nichts diesen Export: Wer an diesem Mac sitzt, erhält damit alle Schlüssel deiner Konten. Lege in den Systemeinstellungen ein Anmeldepasswort fest. Willst du trotzdem fortfahren?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ohne Anmeldepasswort schützt nichts diesen Export: Wer an diesem Mac sitzt, erhält damit alle Schlüssel deiner Konten. Lege in den Systemeinstellungen ein Anmeldepasswort fest. Willst du trotzdem fortfahren?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without a login password nothing protects this export: anyone at this Mac gets the keys of all your accounts. Set a login password in System Settings. Do you want to continue anyway?"
+          }
+        }
+      }
+    },
     "Ohne diesen Code kommst du eventuell nicht mehr in dein Konto. Prüfe vorher, dass du einen anderen Zugang hast, zum Beispiel Wiederherstellungscodes, oder den Code auf einem anderen Gerät. Das Löschen lässt sich nicht rückgängig machen.": {
       "localizations": {
         "de": {
@@ -4237,6 +5037,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Repeat password"
+          }
+        }
+      }
+    },
+    "Passwortmanager als CSV, etwa 1Password und Proton Pass": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passwortmanager als CSV, etwa 1Password und Proton Pass"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password managers as CSV, such as 1Password and Proton Pass"
           }
         }
       }
@@ -4689,6 +5505,38 @@
         }
       }
     },
+    "So holst du die Codes aus der App „Passwörter“ deines Macs oder iPhones:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "So holst du die Codes aus der App „Passwörter“ deines Macs oder iPhones:"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is how you get the codes out of the Passwords app on your Mac or iPhone:"
+          }
+        }
+      }
+    },
+    "Speichere die CSV-Datei, zum Beispiel auf dem Schreibtisch, und wähle sie hier aus. Du kannst sie auch auf das Fenster ziehen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speichere die CSV-Datei, zum Beispiel auf dem Schreibtisch, und wähle sie hier aus. Du kannst sie auch auf das Fenster ziehen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save the CSV file, for example on the desktop, and choose it here. You can also drag it onto the window."
+          }
+        }
+      }
+    },
     "Speichern fehlgeschlagen": {
       "localizations": {
         "de": {
@@ -4913,6 +5761,54 @@
         }
       }
     },
+    "Tresor wiederherstellen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tresor wiederherstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore vault"
+          }
+        }
+      }
+    },
+    "Trotzdem exportieren …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trotzdem exportieren …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export Anyway …"
+          }
+        }
+      }
+    },
+    "Trotzdem fortfahren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trotzdem fortfahren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue anyway"
+          }
+        }
+      }
+    },
     "Typ": {
       "localizations": {
         "de": {
@@ -4977,6 +5873,54 @@
         }
       }
     },
+    "Unverschlüsselt. Wähle das Ziel.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unverschlüsselt. Wähle das Ziel."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unencrypted. Choose the target."
+          }
+        }
+      }
+    },
+    "Update verfügbar": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update verfügbar"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update available"
+          }
+        }
+      }
+    },
+    "Update verfügbar – Version %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update verfügbar – Version %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update available – version %@"
+          }
+        }
+      }
+    },
     "Updates": {
       "localizations": {
         "de": {
@@ -4989,6 +5933,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Updates"
+          }
+        }
+      }
+    },
+    "Updates automatisch installieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updates automatisch installieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install updates automatically"
           }
         }
       }
@@ -5073,6 +6033,22 @@
         }
       }
     },
+    "Wer die Datei hat, kann alle Codes selbst erzeugen, ohne dein Handy und ohne MacAuth.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wer die Datei hat, kann alle Codes selbst erzeugen, ohne dein Handy und ohne MacAuth."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anyone with the file can generate all the codes themselves, without your phone and without MacAuth."
+          }
+        }
+      }
+    },
     "Wiederherstellen": {
       "localizations": {
         "de": {
@@ -5121,6 +6097,22 @@
         }
       }
     },
+    "Wird beim Beenden installiert. Jetzt ansehen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird beim Beenden installiert. Jetzt ansehen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installs when MacAuth quits. View now."
+          }
+        }
+      }
+    },
     "Wurde dieser Tresor auf einem anderen Mac oder vor dem Zurücksetzen angelegt? Er liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen.": {
       "localizations": {
         "de": {
@@ -5153,22 +6145,6 @@
         }
       }
     },
-    "Wähle eine Exportdatei aus Aegis, 2FAS oder Ente Auth (unverschlüsselt) oder eine MacAuth-Sicherung.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wähle eine Exportdatei aus Aegis, 2FAS oder Ente Auth (unverschlüsselt) oder eine MacAuth-Sicherung."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose an export file from Aegis, 2FAS or Ente Auth (unencrypted) or a MacAuth backup."
-          }
-        }
-      }
-    },
     "Wähle eine MacAuth-Backup-Datei.": {
       "localizations": {
         "de": {
@@ -5185,6 +6161,22 @@
         }
       }
     },
+    "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV) oder eine MacAuth-Sicherung.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV) oder eine MacAuth-Sicherung."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose an unencrypted export file (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV) or a MacAuth backup."
+          }
+        }
+      }
+    },
     "Wähle einen Screenshot oder ein Foto mit dem QR-Code. Das Bild wird nicht gespeichert.": {
       "localizations": {
         "de": {
@@ -5197,6 +6189,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose a screenshot or photo with the QR code. The image is not saved."
+          }
+        }
+      }
+    },
+    "Wähle „Ablage“ > „Alle Passwörter in eine Datei exportieren“ und bestätige mit „Passwörter exportieren“.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle „Ablage“ > „Alle Passwörter in eine Datei exportieren“ und bestätige mit „Passwörter exportieren“."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose “File” > “Export All Passwords to File” and confirm with “Export Passwords”."
           }
         }
       }
@@ -5281,6 +6289,22 @@
         }
       }
     },
+    "Ziel: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ziel: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target: %@"
+          }
+        }
+      }
+    },
     "Zu Favoriten hinzufügen": {
       "localizations": {
         "de": {
@@ -5329,6 +6353,22 @@
         }
       }
     },
+    "Zum Installieren anklicken.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Installieren anklicken."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click to install."
+          }
+        }
+      }
+    },
     "Zurück": {
       "localizations": {
         "de": {
@@ -5357,6 +6397,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clear clipboard after"
+          }
+        }
+      }
+    },
+    "Zähler-basierte Codes (HOTP) lassen sich in diesem Format nicht ablegen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zähler-basierte Codes (HOTP) lassen sich in diesem Format nicht ablegen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Counter-based codes (HOTP) cannot be stored in this format"
           }
         }
       }
@@ -5425,6 +6481,22 @@
         }
       }
     },
+    "otpauth-Liste": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "otpauth-Liste"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "otpauth list"
+          }
+        }
+      }
+    },
     "z. B. GitHub": {
       "localizations": {
         "de": {
@@ -5469,6 +6541,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open Google Authenticator on your phone and tap the menu."
+          }
+        }
+      }
+    },
+    "Öffne auf dem Mac die App „Passwörter“.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne auf dem Mac die App „Passwörter“."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the Passwords app on your Mac."
           }
         }
       }

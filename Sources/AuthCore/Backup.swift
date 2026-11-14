@@ -40,6 +40,12 @@ public enum BackupFile {
     // Internal variants let tests use a small iteration count.
 
     static func encrypt(_ contents: VaultData, password: String, iterations: Int) throws -> Data {
+        try encryptRaw(try contents.withoutSecuritySettings.encoded(), password: password, iterations: iterations)
+    }
+
+    /// Seals an already encoded payload. Only `encrypt` strips the security settings; tests use this to craft a file
+    /// that carries them anyway.
+    static func encryptRaw(_ payload: Data, password: String, iterations: Int) throws -> Data {
         guard password.count >= minimumPasswordLength else {
             throw BackupError.passwordTooShort(minimum: minimumPasswordLength)
         }
@@ -47,7 +53,7 @@ public enum BackupFile {
         let nonce = AES.GCM.Nonce()
         let key = try deriveKey(password: password, salt: salt, iterations: iterations)
         let aad = authenticatedHeader(iterations: iterations, saltBase64: salt.base64EncodedString())
-        let box = try AES.GCM.seal(try contents.encoded(), using: key, nonce: nonce, authenticating: aad)
+        let box = try AES.GCM.seal(payload, using: key, nonce: nonce, authenticating: aad)
         let header = Header(
             format: formatName, version: 1,
             kdf: .init(name: kdfName, iterations: iterations, salt: salt.base64EncodedString()),
@@ -80,7 +86,7 @@ public enum BackupFile {
         } catch {
             throw BackupError.wrongPasswordOrCorrupt
         }
-        do { return try VaultData.decoded(from: plain) } catch { throw BackupError.wrongPasswordOrCorrupt }
+        do { return try VaultData.decoded(from: plain).withoutSecuritySettings } catch { throw BackupError.wrongPasswordOrCorrupt }
     }
 
     /// AAD: the header fields that decide how the file is read, as one canonical text.

@@ -123,6 +123,8 @@ public enum VaultError: Error, Equatable, LocalizedError {
     case replacedFileNotFound
     /// A file that may reference key material could not be read, so nothing was deleted.
     case unreadableKeyFiles
+    /// The vault was restored and must be opened with a fresh Touch ID / password check first.
+    case authenticationRequired
     case ioFailure(String)
 
     public var errorDescription: String? {
@@ -136,6 +138,7 @@ public enum VaultError: Error, Equatable, LocalizedError {
         case .noPreviousGeneration: "Es gibt keine ältere Fassung des Tresors."
         case .replacedFileNotFound: "Diese beiseitegelegte Tresordatei gibt es nicht mehr."
         case .unreadableKeyFiles: "Eine Tresordatei war nicht lesbar; es wurde nichts gelöscht."
+        case .authenticationRequired: "Dafür ist zuerst eine Anmeldung mit Touch ID oder Passwort nötig."
         case .ioFailure(let m): "Dateifehler: \(m)"
         }
     }
@@ -170,6 +173,8 @@ public enum ImportError: Error, Equatable, LocalizedError {
     /// An encrypted Aegis or 2FAS file. Not decrypted; the user should export unencrypted.
     case encryptedFile(ImportFormat)
     case unsupportedVersion(String)
+    /// The file looks like CSV but cannot be parsed. Carries a fixed reason text, never file content.
+    case malformedCSV(String)
 
     public var errorDescription: String? {
         switch self {
@@ -179,6 +184,7 @@ public enum ImportError: Error, Equatable, LocalizedError {
         case .unrecognizedFormat: "Das Dateiformat wird nicht erkannt."
         case .encryptedFile(let f): "Die \(f.displayName)-Datei ist verschlüsselt. Bitte unverschlüsselt exportieren."
         case .unsupportedVersion(let v): "Die Dateiversion (\(v)) wird nicht unterstützt."
+        case .malformedCSV(let r): "Die CSV-Datei ist fehlerhaft (\(r))."
         }
     }
 }

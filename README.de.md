@@ -21,7 +21,7 @@ MacAuth ist eine native macOS-App für Zwei-Faktor-Codes (TOTP/HOTP). Die Geheim
 ## Funktionen
 
 - Import aus Google Authenticator per Mac-Kamera (empfohlen), Bilddatei oder Screenshot (öffnen, hineinziehen, einfügen) oder per einzelnem `otpauth://`-Link bzw. Setup-Schlüssel.
-- Import aus Dateien: Aegis, 2FAS, Ente Auth (`otpauth://`-Liste) und MacAuth-Backups. Es gehen nur unverschlüsselte Exporte; lösche die Exportdatei danach, sie enthält alle Schlüssel im Klartext.
+- Import aus Dateien: Aegis, 2FAS, Ente Auth (`otpauth://`-Liste), Bitwarden (JSON), andOTP, CSV-Dateien von Passwortmanagern (Apple Passwörter, 1Password, Proton Pass u. a.) und MacAuth-Backups. Das Format wird am Inhalt der Datei erkannt. Es gehen nur unverschlüsselte Exporte; lösche die Exportdatei danach, sie enthält alle Schlüssel im Klartext. Aus Passwortmanagern werden nur die Codes gelesen: Passwörter in der Datei werden ignoriert und nie gespeichert.
 - Jeder Import endet in einem Prüfschritt; gespeichert wird erst nach deiner Bestätigung, Duplikate sind markiert, nicht importierbare Einträge stehen mit Grund in einer Liste.
 - Code kopieren per Klick auf die Karte, mit `↵` oder mit `⌘1`–`⌘9`. Den nächsten Code kopierst du mit `⌥⌘C`.
 - Suche durch bloßes Tippen; Gruppen und Favoriten; Raster- oder Listenansicht.
@@ -33,6 +33,7 @@ MacAuth ist eine native macOS-App für Zwei-Faktor-Codes (TOTP/HOTP). Die Geheim
 - Fenster wird von Bildschirmfreigabe und Screenshots ausgenommen (eine Bitte an macOS, keine Garantie; abschaltbar); optional Codes erst bei Hover oder Auswahl.
 - Verschlüsselte Backup-Datei mit offenem, dokumentiertem Format ([docs/backup-format.md](docs/backup-format.md), englisch).
 - Konten aufs Handy übertragen als QR-Codes (Googles Übertragungsformat oder je Konto ein `otpauth://`-QR).
+- Export für eine andere App, unverschlüsselt und nur nach frischer Authentifizierung und einer Warnung: Link-Liste (`otpauth://`, `.txt`), Aegis (`.json`) oder Apple Passwörter (`.csv`). Die Datei wird nur für dich lesbar angelegt; Konten, die ein Format nicht fassen kann (etwa HOTP in der Passwörter-CSV), werden aufgelistet, nie stillschweigend verändert.
 - Oberfläche auf Deutsch und Englisch.
 
 <table>
@@ -49,7 +50,7 @@ Die Bilder zeigen Demodaten.
 1. Lade die DMG von der [aktuellen Release-Seite](https://github.com/fbrogno/mac-auth/releases/latest).
 2. Öffne sie und ziehe MacAuth in den Ordner „Programme“.
 
-Voraussetzung: macOS 15 oder neuer. Die App ist mit Developer ID signiert und von Apple notarisiert. Sie aktualisiert sich selbst (Sparkle, signierte Updates); die automatische Prüfung lässt sich abschalten.
+Voraussetzung: macOS 15 oder neuer. Die App ist mit Developer ID signiert und von Apple notarisiert. Sie aktualisiert sich selbst (Sparkle, signierte Updates); neue Versionen erscheinen als Hinweis in der Seitenleiste und werden standardmäßig beim Beenden installiert; automatische Prüfung und automatische Installation lassen sich abschalten.
 
 Releases lassen sich nachprüfen: Jeder hat eine SHA-256-Datei (`shasum -a 256 -c MacAuth-<Version>.dmg.sha256`) und eine Build-Provenance-Attestation von GitHub Actions (`gh attestation verify MacAuth-<Version>.dmg --repo fbrogno/mac-auth`).
 
@@ -62,7 +63,9 @@ Releases lassen sich nachprüfen: Jeder hat eine SHA-256-Datei (`shasum -a 256 -
 
 Lösche die Konten erst aus Google Authenticator, wenn du geprüft hast, dass die Codes in MacAuth funktionieren.
 
-Du kommst von Aegis, 2FAS oder Ente Auth? Exportiere dort unverschlüsselt und wähle dann **Aus Datei importieren …** (auch im **+**-Menü und im Ablage-Menü, oder ziehe die Datei auf das Fenster). Ein verschlüsselter Export muss dort erst unverschlüsselt exportiert werden. Lösche die Exportdatei danach, auch aus dem Papierkorb und aus iCloud Drive. Dasselbe gilt für einen Screenshot eines QR-Codes, auch in iCloud-Fotos.
+Du kommst von Aegis, 2FAS, Ente Auth, Bitwarden oder andOTP? Exportiere dort unverschlüsselt und wähle dann **Aus Datei importieren …** (auch im **+**-Menü und im Ablage-Menü, oder ziehe die Datei auf das Fenster). Ein verschlüsselter Export muss dort erst unverschlüsselt exportiert werden. Lösche die Exportdatei danach, auch aus dem Papierkorb und aus iCloud Drive. Dasselbe gilt für einen Screenshot eines QR-Codes, auch in iCloud-Fotos.
+
+Du kommst von Apple Passwörter? Wähle in der App „Passwörter“ **Ablage** > **Alle Passwörter in eine Datei exportieren**, dann in MacAuth **Aus Apple Passwörter** (im Import-Fenster) und die CSV-Datei. MacAuth liest nur die Codes; die Passwörter in der Datei werden ignoriert und nicht gespeichert. Die Datei selbst enthält alle deine Passwörter: lösche sie direkt nach dem Import. In die Gegenrichtung schreibt **Ablage** > **Für andere App exportieren (unverschlüsselt) …** eine CSV für die App „Passwörter“, eine Link-Liste oder eine Aegis-Datei.
 
 <p align="center">
   <picture>

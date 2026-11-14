@@ -104,12 +104,16 @@ struct SettingsView: View {
     private func generalForm(_ settings: AppSettings) -> some View {
         Form {
             Section("Kopieren") {
-                Picker("Zwischenablage leeren nach", selection: Binding(get: { settings.clipboardClearSeconds }, set: { settings.clipboardClearSeconds = $0 })) {
+                Picker("Zwischenablage leeren nach", selection: Binding(get: { settings.clipboardClearSeconds }, set: { new in
+                    let old = settings.clipboardClearSeconds
+                    Task { await model.applySecuritySetting(.clipboardClearSeconds(from: old, to: new)) { settings.clipboardClearSeconds = new } }
+                })) {
                     Text("10 Sekunden").tag(10)
                     Text("30 Sekunden").tag(30)
                     Text("60 Sekunden").tag(60)
                     Text("Nie").tag(0)
                 }
+                .disabled(locked)
                 Toggle("Fenster nach dem Kopieren ausblenden", isOn: Binding(get: { settings.hideAfterCopy }, set: { settings.hideAfterCopy = $0 }))
             }
             Section("Tastenkombination") {
@@ -138,8 +142,12 @@ struct SettingsView: View {
                 Toggle("An Backups erinnern", isOn: Binding(get: { settings.backupReminder }, set: { settings.backupReminder = $0 }))
             }
             Section("Updates") {
-                Toggle("Automatisch nach Updates suchen", isOn: Binding(get: { updater?.automaticChecks ?? true }, set: { updater?.automaticChecks = $0 }))
+                Toggle("Automatisch nach Updates suchen", isOn: Binding(get: { updater?.automaticChecks ?? true }, set: { updater?.setAutomaticChecks($0) }))
                     .disabled(updater == nil)
+                Toggle("Updates automatisch installieren", isOn: Binding(get: { updater?.automaticInstall ?? false }, set: { updater?.setAutomaticInstall($0) }))
+                    .disabled(updater == nil || !(updater?.canAutomaticInstall ?? false))
+                Text("Neue Versionen werden im Hintergrund geladen und beim nächsten Beenden von MacAuth installiert. Ohne diese Option zeigt MacAuth einen Hinweis in der Seitenleiste, und du entscheidest selbst.")
+                    .font(.callout).foregroundStyle(.secondary)
                 HStack {
                     Button("Nach Updates suchen …") { updater?.checkForUpdates() }.disabled(!(updater?.canCheck ?? false))
                     Spacer()

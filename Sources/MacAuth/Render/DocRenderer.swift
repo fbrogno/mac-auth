@@ -31,6 +31,12 @@ enum DocRenderer {
                 let model = demoModel(.unlocked)
                 window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("main-grid-\(tag)\(suffix).png"))
             }
+            if want("main-update") {
+                // Invented pending update; the updater itself is not started (enabled: false), nothing touches the network.
+                let model = demoModel(.unlocked)
+                let updater = UpdaterModel(enabled: false, demoPending: .init(version: "1.1.0", ready: false))
+                window(RootView(model: model, updater: updater), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("main-update-\(tag)\(suffix).png"))
+            }
             if want("main-list") {
                 let model = demoModel(.unlocked)
                 model.settings.listMode = true
@@ -62,6 +68,40 @@ enum DocRenderer {
                                                 skipped: ["Altsystem (alt@beispiel.example) – Codetyp „steam“ wird nicht unterstützt",
                                                           "Wartungskonto – Schlüssel ungültig"])
                 sheet(ReviewSheet(model: model, session: session), scheme: scheme, to: url.appendingPathComponent("import-file-review-\(tag)\(suffix).png"))
+            }
+            if want("import-chooser") {
+                let model = demoModel(.unlocked)
+                sheet(ImportSheet(model: model), scheme: scheme, to: url.appendingPathComponent("import-chooser-\(tag)\(suffix).png"))
+            }
+            if want("import-apple") {
+                let model = demoModel(.unlocked)
+                sheet(ImportSheet(model: model, initialGuide: .applePasswords), scheme: scheme, to: url.appendingPathComponent("import-apple-\(tag)\(suffix).png"))
+            }
+            if want("import-other-app") {
+                let model = demoModel(.unlocked)
+                sheet(ImportSheet(model: model, initialGuide: .otherApp), scheme: scheme, to: url.appendingPathComponent("import-other-app-\(tag)\(suffix).png"))
+            }
+            if want("import-apple-review") {
+                let model = demoModel(.unlocked)
+                let session = model.makeSession(source: .file, delivery: .passwordFile, accounts: DemoData.reviewAccounts, groups: [],
+                                                format: .applePasswordsCSV, rowsWithoutCode: 37)
+                sheet(ReviewSheet(model: model, session: session), scheme: scheme, to: url.appendingPathComponent("import-apple-review-\(tag)\(suffix).png"))
+            }
+            if want("export-plain") {
+                let model = demoModel(.unlocked)
+                sheet(PlainExportSheet(model: model), scheme: scheme, to: url.appendingPathComponent("export-plain-\(tag)\(suffix).png"))
+            }
+            if want("export-plain-warning") {
+                let model = demoModel(.unlocked)
+                sheet(PlainExportSheet(model: model, stage: .warning, target: .apple), scheme: scheme,
+                      to: url.appendingPathComponent("export-plain-warning-\(tag)\(suffix).png"))
+            }
+            if want("export-plain-done") {
+                let model = demoModel(.unlocked)
+                let done = PlainExportSheet.Outcome(count: 6, skipped: [ExportSkippedEntry(label: "Altsystem (wartung@beispiel.example)", reason: .hotpNotSupported)],
+                                                    fileName: "MacAuth-Passwoerter-2026-11-14.csv")
+                sheet(PlainExportSheet(model: model, stage: .done, target: .apple, previewOutcome: done), scheme: scheme,
+                      to: url.appendingPathComponent("export-plain-done-\(tag)\(suffix).png"))
             }
             if want("locked-cannot-open") {
                 let model = demoModel(.locked, notice: .cannotOpen)

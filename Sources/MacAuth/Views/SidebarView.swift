@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SidebarView: View {
     @Bindable var model: AppModel
+    @Environment(UpdaterModel.self) private var updater: UpdaterModel?
     @State private var groupToDelete: AccountGroup?
     @State private var dropTarget: UUID?
 
@@ -74,6 +75,33 @@ struct SidebarView: View {
 
     private var footer: some View {
         VStack(spacing: 8) {
+            if let pending = updater?.pending {
+                Button {
+                    updater?.checkForUpdates()
+                } label: {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "arrow.down.circle").foregroundStyle(Color.accentColor)
+                        VStack(alignment: .leading, spacing: 2) {
+                            if pending.version.isEmpty {
+                                Text("Update verfügbar").font(.callout.weight(.medium))
+                            } else {
+                                Text("Update verfügbar – Version \(pending.version)").font(.callout.weight(.medium))
+                            }
+                            Text(pending.ready ? "Wird beim Beenden installiert. Jetzt ansehen." : "Zum Installieren anklicken.")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .floatingGlass(RoundedRectangle(cornerRadius: 16, style: .continuous), tint: Color.accentColor.opacity(0.2))
+                .help(Text("Das Update-Fenster öffnen"))
+                .accessibilityElement(children: .combine)
+            }
             if model.settings.needsBackup(hasAccounts: !model.accounts.isEmpty) {
                 VStack(alignment: .leading, spacing: 6) {
                     Label("Noch kein Backup seit der letzten Änderung", systemImage: "externaldrive.badge.exclamationmark")

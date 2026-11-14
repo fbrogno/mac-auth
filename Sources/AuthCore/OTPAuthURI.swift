@@ -101,7 +101,12 @@ public enum OTPAuthURI {
     /// Serialises an account. The URI contains the secret; treat the result as sensitive.
     public static func string(for account: Account) -> String {
         var label = ""
-        if !account.issuer.isEmpty { label += PercentCoding.encode(account.issuer) + ":" }
+        if !account.issuer.isEmpty {
+            label += PercentCoding.encode(account.issuer) + ":"
+        } else if account.name.contains(":") {
+            // Keeps a colon inside the name from being read back as an issuer separator.
+            label += ":"
+        }
         label += PercentCoding.encode(account.name)
         var items = ["secret=" + Base32.encode(account.secret)]
         if !account.issuer.isEmpty { items.append("issuer=" + PercentCoding.encode(account.issuer)) }

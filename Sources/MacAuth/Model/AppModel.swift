@@ -18,6 +18,7 @@ enum ActiveSheet: Identifiable {
     case review(ImportSession)
     case restoreBackup(preset: BackupPreset?, replace: Bool)
     case exportBackup
+    case exportPlain
     case transfer(Set<UUID>?)
     case newGroup
     case editGroup(UUID)
@@ -32,6 +33,7 @@ enum ActiveSheet: Identifiable {
         case .review(let s): "review-\(s.id)"
         case .restoreBackup(let p, let replace): "restore-\(p?.id.uuidString ?? "none")-\(replace)"
         case .exportBackup: "export"
+        case .exportPlain: "exportPlain"
         case .transfer: "transfer"
         case .newGroup: "newGroup"
         case .editGroup(let id): "editGroup-\(id)"
@@ -47,7 +49,7 @@ enum ActiveSheet: Identifiable {
         case .review(let session):
             return session.intent == .replaceVault ? phase == .locked : (phase == .firstRun || phase == .unlocked)
         case .add, .importer: return phase == .firstRun || phase == .unlocked
-        case .exportBackup, .transfer, .edit, .newGroup, .editGroup, .confirmDelete: return phase == .unlocked
+        case .exportBackup, .exportPlain, .transfer, .edit, .newGroup, .editGroup, .confirmDelete: return phase == .unlocked
         }
     }
 }
@@ -143,6 +145,8 @@ final class AppModel {
 
     @ObservationIgnored private(set) var epoch = LockEpoch()
     @ObservationIgnored private var prompt = UnlockPromptPolicy()
+    /// Set by a successful system authentication on the lock screen; every recovery needs it (see `authorizeRecovery`).
+    @ObservationIgnored private var recovery = RecoveryAuthorization()
     @ObservationIgnored private let store: VaultStore?
     @ObservationIgnored private var started = false
     @ObservationIgnored private var saveSeq = 0
@@ -228,21 +232,32 @@ final class AppModel {
         defer { isUnlocking = false }
         do {
             let identifier = await store.protectorIdentifier
+            var authenticated = false
             let protector: any KeyProtector
             switch identifier {
             case "secure-enclave":
                 protector = SecureEnclaveProtector(context: Self.makeContext())
             case "keychain":
-                if await store.requiresAppAuthentication, !(await authenticate(reason: String(localized: "MacAuth entsperren"))) {
-                    if epoch.isCurrent(generation) { lockNotice = .cancelled }
-                    return
+                if await store.requiresAppAuthentication {
+                    // Only the user's own cancel is "cancelled"; any other failure must reach the screen that offers the
+                    // recovery options (restore from backup), so it is reported as a failure.
+                    switch await authenticateOutcome(reason: String(localized: "MacAuth entsperren")) {
+                    case .success, .noPasscode: authenticated = true
+                    case .cancelled:
+                        if epoch.isCurrent(generation) { lockNotice = .cancelled }
+                        return
+                    case .failed:
+                        if epoch.isCurrent(generation) { lockNotice = .failed(String(localized: "Die Abfrage mit Touch ID oder Passwort ist fehlgeschlagen.")) }
+                        return
+                    }
                 }
                 protector = KeychainProtector()
             default:
                 lockNotice = .cannotOpen
                 return
             }
-            let data = try await store.unlock(using: protector)
+            var data = try await store.unlock(using: protector, appAuthenticated: authenticated)
+            data = await migratingLegacySettings(in: data, store: store)
             guard epoch.isCurrent(generation), phase == .locked else {
                 await store.lock()   // locked while the prompt was open: drop the result
                 return
@@ -257,7 +272,23 @@ final class AppModel {
         }
     }
 
+    /// One-time migration of the old preferences-file values into the vault (1.0.0 kept them unauthenticated): an old
+    /// value is adopted only if it is at least as strict as the default. The old keys are removed once the vault
+    /// holds the result; if saving fails they stay and the next unlock tries again.
+    private func migratingLegacySettings(in data: VaultData, store: VaultStore) async -> VaultData {
+        let legacy = settings.legacySecurityValues()
+        guard !legacy.isEmpty else { return data }
+        var result = data
+        if let migrated = VaultData.settingsToMigrate(vault: data.security, legacy: legacy) {
+            result.security = migrated
+            do { try await store.save(result) } catch { return data }
+        }
+        settings.removeLegacySecurityValues()
+        return result
+    }
+
     private func show(_ data: VaultData) {
+        settings.security = data.security ?? .strict
         accounts = data.accounts
         groups = data.groups
         phase = .unlocked
@@ -274,12 +305,16 @@ final class AppModel {
         epoch.bump()
         prompt.didLock()
         let wasUnlocked = phase == .unlocked
-        let unsaved: VaultData? = wasUnlocked && savedSeq != saveSeq ? VaultData(accounts: accounts, groups: groups) : nil
+        let unsaved: VaultData? = wasUnlocked && savedSeq != saveSeq ? storedVault : nil
+        // While locked the strict defaults apply (screen protection on, shortest auto-lock, ...).
+        settings.security = .strict
         autoLockTimer?.invalidate()
         autoLockTimer = nil
         keepAliveSince = nil
         sheet = nil
         alert = nil
+        FilePanels.cancelAll()   // no open/save panel stays over the lock screen
+        recovery.consume()
         importer.reset()
         copiedTask?.cancel()
         copiedID = nil
@@ -380,21 +415,79 @@ final class AppModel {
         }
     }
 
-    /// Fresh Touch ID / password check for sensitive actions.
-    func authenticate(reason: String) async -> Bool {
-        if isDemo { return true }
+    /// Touch ID / password check without any dialog of its own; the caller decides what each outcome means.
+    func authenticateOutcome(reason: String) async -> AuthOutcome {
+        if isDemo { return .success }
         let context = LAContext()
         do {
-            return try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason)
-        } catch let error as LAError where error.code == .passcodeNotSet {
-            return true
-        } catch let error as LAError where [.userCancel, .systemCancel, .appCancel].contains(error.code) {
-            return false
+            return try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) ? .success : .failed
+        } catch let error as LAError {
+            return AuthOutcome.from(error.code)
         } catch {
+            return .failed
+        }
+    }
+
+    /// Fresh Touch ID / password check for sensitive actions. A Mac without login password passes (the check cannot
+    /// ask anything); exports, QR transfer and backups use `authenticateForExport`, which says so first.
+    func authenticate(reason: String) async -> Bool {
+        switch await authenticateOutcome(reason: reason) {
+        case .success, .noPasscode: return true
+        case .cancelled: return false
+        case .failed:
             alert = AppAlert(title: String(localized: "Authentifizierung nicht möglich"),
                              message: String(localized: "Die Abfrage mit Touch ID oder Passwort ist fehlgeschlagen."))
             return false
         }
+    }
+
+    /// Like `authenticate`, for actions that take secrets out of the app (backup, plain-text export, QR transfer).
+    /// On a Mac without login password nothing protects the action, so the user has to confirm that explicitly.
+    func authenticateForExport(reason: String) async -> Bool {
+        let t = ticket
+        switch await authenticateOutcome(reason: reason) {
+        case .success: return true
+        case .cancelled: return false
+        case .failed:
+            alert = AppAlert(title: String(localized: "Authentifizierung nicht möglich"),
+                             message: String(localized: "Die Abfrage mit Touch ID oder Passwort ist fehlgeschlagen."))
+            return false
+        case .noPasscode:
+            guard isCurrent(t) else { return false }
+            let box = NSAlert()
+            box.alertStyle = .warning
+            box.messageText = String(localized: "Dieser Mac hat kein Anmeldepasswort")
+            box.informativeText = String(localized: "Ohne Anmeldepasswort schützt nichts diesen Export: Wer an diesem Mac sitzt, erhält damit alle Schlüssel deiner Konten. Lege in den Systemeinstellungen ein Anmeldepasswort fest. Willst du trotzdem fortfahren?")
+            let cancel = box.addButton(withTitle: String(localized: "Abbrechen"))
+            cancel.keyEquivalent = "\r"
+            box.addButton(withTitle: String(localized: "Trotzdem fortfahren")).keyEquivalent = ""
+            let proceed = box.runModal() == .alertSecondButtonReturn
+            return proceed && isCurrent(t)
+        }
+    }
+
+    // MARK: Recovery from the lock screen
+
+    /// Every recovery from the lock screen (earlier version, set-aside file, previous generation, backup file) first
+    /// needs a successful system authentication: a vault file written while the unlock prompt was off must not turn
+    /// the lock screen into a way in. Works with the login password even if the Secure Enclave key is lost.
+    func authorizeRecovery() async -> Bool {
+        guard phase == .locked else { return false }
+        let t = ticket
+        guard await authenticate(reason: String(localized: "Tresor wiederherstellen")), isCurrent(t) else { return false }
+        recovery.grant(generation: epoch.generation)
+        return true
+    }
+
+    /// Opens a recovery sheet after the authentication.
+    func beginRecovery(_ target: ActiveSheet) async {
+        guard await authorizeRecovery() else { return }
+        sheet = target
+    }
+
+    private func recoveryPermitted() async -> Bool {
+        if recovery.permits(generation: epoch.generation) { return true }
+        return await authorizeRecovery()
     }
 
     private func startOrphanCleanup(generation: Int) {
@@ -472,6 +565,7 @@ final class AppModel {
             guard await authenticate(reason: String(localized: "Schutz von MacAuth ändern")), isCurrent(t) else { return }
         }
         apply()
+        persist(accountsChanged: false)   // these settings live in the vault, not in the preferences
     }
 
     // MARK: Global shortcut
@@ -555,7 +649,9 @@ final class AppModel {
     /// Brings a file back, then offers the normal unlock (the user pressed the button).
     func restore(_ entry: RescueEntry) async -> Bool {
         guard let store, phase == .locked else { return false }
+        guard await recoveryPermitted() else { return false }
         let t = ticket
+        recovery.consume()
         do {
             switch entry.kind {
             case .previous: try await store.recoverPreviousGeneration()
@@ -579,7 +675,11 @@ final class AppModel {
 
     // MARK: Persistence
 
+    /// Accounts and groups: what exports, backups and imports see. Never carries the security settings.
     private var vaultData: VaultData { VaultData(accounts: accounts, groups: groups) }
+
+    /// What is written to the vault file: the above plus this device's security settings.
+    private var storedVault: VaultData { VaultData(accounts: accounts, groups: groups, security: settings.security) }
 
     /// The complete current vault (for exports).
     var currentVault: VaultData { vaultData }
@@ -592,12 +692,12 @@ final class AppModel {
     }
 
     /// Newest state wins: older queued saves skip themselves; a lock writes whatever is still unsaved.
-    private func persist() {
-        settings.lastAccountChange = Date().timeIntervalSince1970
+    private func persist(accountsChanged: Bool = true) {
+        if accountsChanged { settings.lastAccountChange = Date().timeIntervalSince1970 }
         saveSeq += 1
         guard let store else { savedSeq = saveSeq; return }
         let seq = saveSeq
-        let data = vaultData
+        let data = storedVault
         let generation = epoch.generation
         Task { [weak self] in
             guard let self, self.epoch.isCurrent(generation), seq == self.saveSeq else { return }
@@ -627,6 +727,7 @@ final class AppModel {
             }
             accounts = data.accounts
             groups = data.groups
+            settings.security = .strict   // a new vault starts with the strict defaults
             settings.lastAccountChange = Date().timeIntervalSince1970
             phase = .unlocked
             lockNotice = nil
@@ -826,7 +927,8 @@ final class AppModel {
     // MARK: Import
 
     func makeSession(source: ImportSession.Source, delivery: ImportSession.Delivery, accounts found: [Account],
-                     skipped: [String] = [], groups incoming: [AccountGroup] = [], intent: ImportIntent? = nil) -> ImportSession {
+                     skipped: [String] = [], groups incoming: [AccountGroup] = [], intent: ImportIntent? = nil,
+                     format: ImportFormat? = nil, rowsWithoutCode: Int = 0) -> ImportSession {
         let defaultGroup = UUID(uuidString: settings.defaultGroupID).flatMap { id in groups.contains { $0.id == id } ? id : nil }
         let resolved: ImportIntent
         if let intent {
@@ -840,13 +942,19 @@ final class AppModel {
         }
         return ImportSession(source: source, delivery: delivery, intent: resolved, accounts: found, skipped: skipped,
                              existing: phase == .unlocked ? accounts : [],
-                             existingGroups: phase == .locked ? [] : groups, incomingGroups: incoming, defaultGroupID: defaultGroup)
+                             existingGroups: phase == .locked ? [] : groups, incomingGroups: incoming, defaultGroupID: defaultGroup,
+                             format: format, rowsWithoutCode: rowsWithoutCode)
     }
 
     /// Stores the confirmed rows according to the session's intent.
     func commit(_ session: ImportSession) async -> Bool {
         guard AppPolicy.canCommit(session.intent, phase: phase, generation: epoch.generation, replaceConfirmed: session.replaceConfirmed) else {
             return false
+        }
+        if session.intent == .replaceVault {
+            guard await recoveryPermitted(),   // may ask the system once more; then the state is checked again
+                  AppPolicy.canCommit(session.intent, phase: phase, generation: epoch.generation, replaceConfirmed: session.replaceConfirmed)
+            else { return false }
         }
         let chosen = session.rows.filter(\.include)
         guard !chosen.isEmpty else { return false }
@@ -871,6 +979,7 @@ final class AppModel {
         case .replaceVault:
             let merged = VaultData(accounts: [], groups: []).merging(accounts: added, groups: incomingGroups)
             ok = await createVault(merged, replacing: true)
+            if ok { recovery.consume() }
         }
         if ok { announceCleanup(for: session.delivery) }
         return ok
@@ -884,6 +993,9 @@ final class AppModel {
         case .file:
             alert = AppAlert(title: String(localized: "Exportdatei jetzt löschen"),
                              message: String(localized: "Lösche die Exportdatei jetzt, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle Schlüssel im Klartext."))
+        case .passwordFile:
+            alert = AppAlert(title: String(localized: "Exportdatei jetzt löschen"),
+                             message: String(localized: "Lösche die Datei jetzt, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle deine Passwörter und alle Schlüssel im Klartext."))
         case .camera, .text, .backup:
             break
         }

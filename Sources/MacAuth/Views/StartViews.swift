@@ -108,8 +108,9 @@ struct LockedView: View {
 
     private var recoveryButtons: some View {
         HStack(spacing: 10) {
-            Button("Aus Backup wiederherstellen …") { model.sheet = .restoreBackup(preset: nil, replace: true) }
-            Button("Frühere Fassung wiederherstellen …") { model.sheet = .rescue }
+            // Both ask for Touch ID / password first: a restored vault must never open the lock screen without it.
+            Button("Aus Backup wiederherstellen …") { Task { await model.beginRecovery(.restoreBackup(preset: nil, replace: true)) } }
+            Button("Frühere Fassung wiederherstellen …") { Task { await model.beginRecovery(.rescue) } }
         }
         .padding(.top, 4)
     }

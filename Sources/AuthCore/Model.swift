@@ -94,10 +94,21 @@ public struct AccountGroup: Codable, Sendable, Hashable, Identifiable {
 public struct VaultData: Codable, Sendable, Equatable {
     public var accounts: [Account]
     public var groups: [AccountGroup]
+    /// Security settings of this device's vault. nil = never stored (strict defaults apply). Written to the vault
+    /// file only; backups neither carry nor restore it, and imports never merge it.
+    public var security: SecuritySettings?
 
-    public init(accounts: [Account] = [], groups: [AccountGroup] = AccountGroup.makeDefaults()) {
+    public init(accounts: [Account] = [], groups: [AccountGroup] = AccountGroup.makeDefaults(), security: SecuritySettings? = nil) {
         self.accounts = accounts
         self.groups = groups
+        self.security = security
+    }
+
+    /// The same vault without settings (what a backup or an export may hold).
+    public var withoutSecuritySettings: VaultData {
+        var copy = self
+        copy.security = nil
+        return copy
     }
 
     static func makeEncoder() -> JSONEncoder {
