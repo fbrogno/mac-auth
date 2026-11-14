@@ -16,6 +16,8 @@ extension EnvironmentValues {
 
 struct RootView: View {
     @Bindable var model: AppModel
+    /// Optional: the documentation renderer passes an updater with an invented pending update.
+    var updater: UpdaterModel?
 
     var body: some View {
         ZStack {
@@ -27,6 +29,7 @@ struct RootView: View {
             }
         }
         .frame(minWidth: 760, minHeight: 520)
+        .environment(updater)
         .environment(\.protectScreen, model.settings.protectScreen)
         .background(WindowConfigurator(isMainWindow: true))
         .sheet(item: $model.sheet) { sheet in SheetRouter(model: model, sheet: sheet).environment(\.protectScreen, model.settings.protectScreen) }

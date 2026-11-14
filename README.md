@@ -49,7 +49,7 @@ The screenshots show demo data.
 1. Download the DMG from the [latest release](https://github.com/fbrogno/mac-auth/releases/latest).
 2. Open it and drag MacAuth to Applications.
 
-Requires macOS 15 or newer. The app is signed with a Developer ID and notarized by Apple. It updates itself (Sparkle, signed updates); you can switch automatic checks off.
+Requires macOS 15 or newer. The app is signed with a Developer ID and notarized by Apple. It updates itself (Sparkle, signed updates); new versions are shown as a notice in the sidebar and, by default, installed when you quit; you can switch automatic checks and automatic installation off.
 
 Releases can be verified: each has a SHA-256 file (`shasum -a 256 -c MacAuth-<version>.dmg.sha256`) and a build provenance attestation from GitHub Actions (`gh attestation verify MacAuth-<version>.dmg --repo fbrogno/mac-auth`).
 

@@ -185,6 +185,15 @@ on, switchable. Optional: codes hidden until hover/selection.
 Unlock (Touch ID/password required, auto-lock time), clipboard clearing, hide after copy, screen
 protection, hide codes, default group for imports, updates (Sparkle), backup reminder.
 
+Updates: Sparkle checks every 6 hours (`SUScheduledCheckInterval`) plus one quiet background check about 12 s
+after launch (not if the last check was under 15 minutes ago). Background checks never open a window (gentle
+reminders: `standardUserDriverShouldHandleShowingScheduledUpdate` returns false). A found update shows as a notice
+at the bottom of the sidebar ("Update verfügbar – Version X"); a click opens Sparkle's window. The notice stays until
+the update is installed or skipped; it is only shown in the main window, so while the vault is locked nothing is
+shown and it appears again after unlocking. "Updates automatisch installieren" (`automaticallyDownloadsUpdates`,
+default on via `SUAutomaticallyUpdate`) downloads in the background and installs when the app quits; it needs
+automatic checks. The updater never starts in demo mode.
+
 ## Verification
 - `swift test`: RFC 6238 and RFC 4226 vectors, Base32, otpauth URIs, migration reader/writer against fixed
   byte fixtures, vault round trip, backup round trip, wrong password, tampered header/ciphertext.

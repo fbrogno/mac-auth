@@ -31,6 +31,12 @@ enum DocRenderer {
                 let model = demoModel(.unlocked)
                 window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("main-grid-\(tag)\(suffix).png"))
             }
+            if want("main-update") {
+                // Invented pending update; the updater itself is not started (enabled: false), nothing touches the network.
+                let model = demoModel(.unlocked)
+                let updater = UpdaterModel(enabled: false, demoPending: .init(version: "1.1.0", ready: false))
+                window(RootView(model: model, updater: updater), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("main-update-\(tag)\(suffix).png"))
+            }
             if want("main-list") {
                 let model = demoModel(.unlocked)
                 model.settings.listMode = true

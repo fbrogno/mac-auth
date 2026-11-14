@@ -138,8 +138,12 @@ struct SettingsView: View {
                 Toggle("An Backups erinnern", isOn: Binding(get: { settings.backupReminder }, set: { settings.backupReminder = $0 }))
             }
             Section("Updates") {
-                Toggle("Automatisch nach Updates suchen", isOn: Binding(get: { updater?.automaticChecks ?? true }, set: { updater?.automaticChecks = $0 }))
+                Toggle("Automatisch nach Updates suchen", isOn: Binding(get: { updater?.automaticChecks ?? true }, set: { updater?.setAutomaticChecks($0) }))
                     .disabled(updater == nil)
+                Toggle("Updates automatisch installieren", isOn: Binding(get: { updater?.automaticInstall ?? false }, set: { updater?.setAutomaticInstall($0) }))
+                    .disabled(updater == nil || !(updater?.canAutomaticInstall ?? false))
+                Text("Neue Versionen werden im Hintergrund geladen und beim nächsten Beenden von MacAuth installiert. Ohne diese Option zeigt MacAuth einen Hinweis in der Seitenleiste, und du entscheidest selbst.")
+                    .font(.callout).foregroundStyle(.secondary)
                 HStack {
                     Button("Nach Updates suchen …") { updater?.checkForUpdates() }.disabled(!(updater?.canCheck ?? false))
                     Spacer()
