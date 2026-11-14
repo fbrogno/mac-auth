@@ -1,0 +1,55 @@
+name: MacAuth
+options:
+  bundleIdPrefix: com.fbrogno
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+  developmentLanguage: de    # texts are German at the source, English comes from the .xcstrings catalogs
+configFiles:
+  Debug: Config/Sparkle.xcconfig
+  Release: Config/Sparkle.xcconfig
+packages:
+  MacAuthPackage:
+    path: .
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.1 # a release never pulls a newer Sparkle
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0.0"      # build-app.sh overrides this from VERSION
+    CURRENT_PROJECT_VERSION: "1"    # build-app.sh overrides this with the commit count
+targets:
+  MacAuth:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/MacAuth
+      # The icon is a prebuilt .icns, copied as a plain resource.
+      - path: Resources/AppIcon.icns
+        buildPhase: resources
+      # Localised Info.plist values (camera usage text, app name).
+      - path: Resources/InfoPlist.xcstrings
+        buildPhase: resources
+    dependencies:
+      - package: MacAuthPackage
+        product: AuthCore
+      - package: Sparkle
+        product: Sparkle
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.fbrogno.macauth
+        PRODUCT_NAME: MacAuth
+        INFOPLIST_FILE: Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_APP_SANDBOX: YES
+        # Signing and entitlements (Resources/MacAuth.entitlements) are applied by scripts/build-app.sh.
+        CODE_SIGN_STYLE: Manual
+        COMBINE_HIDPI_IMAGES: YES
+schemes:
+  MacAuth:
+    build:
+      targets:
+        MacAuth: all

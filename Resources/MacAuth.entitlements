@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.app-sandbox</key><true/>
+    <key>com.apple.security.network.client</key><true/>
+    <key>com.apple.security.device.camera</key><true/>
+    <key>com.apple.security.files.user-selected.read-write</key><true/>
+    <!-- Sparkle in a sandbox (https://sparkle-project.org/documentation/sandboxing/): the app talks to
+         Sparkle's installer launcher/status services. codesign does not expand build variables, so the
+         bundle ID is written out; scripts/release.sh checks that these two names match it. -->
+    <key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
+    <array>
+        <string>com.fbrogno.macauth-spks</string>
+        <string>com.fbrogno.macauth-spki</string>
+    </array>
+</dict>
+</plist>

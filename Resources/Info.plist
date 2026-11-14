@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key><string>de</string>
+    <key>CFBundleLocalizations</key>
+    <array><string>de</string><string>en</string></array>
+    <key>CFBundleExecutable</key><string>MacAuth</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
+    <key>CFBundleIdentifier</key><string>com.fbrogno.macauth</string>
+    <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+    <key>CFBundleName</key><string>MacAuth</string>
+    <key>CFBundleDisplayName</key><string>MacAuth</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
+    <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
+    <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
+    <key>LSMinimumSystemVersion</key><string>15.0</string>
+    <key>NSCameraUsageDescription</key><string>MacAuth scannt mit der Kamera den QR-Code deines Authenticator-Exports. Das Bild wird nicht gespeichert.</string>
+    <key>SUFeedURL</key><string>https://github.com/fbrogno/mac-auth/releases/latest/download/appcast.xml</string>
+    <key>SUPublicEDKey</key><string>$(SPARKLE_PUBLIC_ED_KEY)</string>
+    <key>SUEnableAutomaticChecks</key><true/>
+    <!-- Sandbox: Sparkle installs through its installer launcher XPC service. The downloader service
+         is not needed because the app has com.apple.security.network.client. -->
+    <key>SUEnableInstallerLauncherService</key><true/>
+    <key>NSHumanReadableCopyright</key><string>© 2026 Fabio Brogno</string>
+</dict>
+</plist>
