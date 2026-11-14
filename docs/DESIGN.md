@@ -177,8 +177,8 @@ A normal window with Dock icon (min. 760 × 520): sidebar + card grid.
 - **Shortcuts:** `⌘N` add · `⌘F` search · `⌘L` lock · `⌘,` settings · `⌘C` copy selection · `⌥⌘C` copy
   next code · `⌘⌫` delete with confirmation (only when no text field has focus; "Cancel" is the default
   button of every destructive dialog).
-- **Global shortcut** (optional, off by default): shows or hides the window from anywhere; with "hide after
-  copying" the previous app is in front again as soon as the code is on the clipboard.
+- **Quick access** (optional, off by default): a global shortcut and an optional menu bar item open a small panel over
+  any app, see "Quick access" below. It replaces the former "global shortcut shows or hides the window" option.
 - **Context menu:** copy, copy next code, edit, move to group, pin, show QR code (after re-authentication),
   delete. Drag to reorder, drag onto a sidebar group to move.
 - **List mode** as a denser alternative to the grid.
@@ -223,6 +223,64 @@ settings live in the vault (see "Security settings"); the remaining preferences 
 domain only, so launch arguments cannot override them. `--print-settings` shows what a naive `UserDefaults` read
 returns next to what the app uses (the strict defaults while no vault is unlocked).
 
+### Quick access
+A Spotlight-like panel for the most common job: find an account, copy its code, get out of the way. Off by default
+(Settings, General, "Schnellzugriff": enable switch, shortcut recorder with ⌃⌥Space as the suggestion, switch "Symbol in der
+Menüleiste"); nothing is registered until the user turns it on. Registration uses Carbon `RegisterEventHotKey` (no
+accessibility permission, no event taps) and needs at least one of ⌘ ⌥ ⌃. Carbon reports success even when another app
+uses the same combination, so "already taken" is only detected within MacAuth itself (and reported in the settings);
+the settings text says that another app may be the reason if pressing the shortcut does nothing. The suggestion is
+⌃⌥Space, not ⌥Space (that types a non-breaking space on German layouts and is the default of several launchers); a
+stored or migrated combination is never changed. An enabled hotkey of the former option is migrated once to the same keys (`QuickAccessShortcut.migrate`,
+the old keys are removed).
+- **Panel:** borderless, non-activating `NSPanel` (MacAuth does not become the active app, the previous app keeps its
+  place and has the focus again after the panel closes), 560 pt wide, centred on the screen of the mouse, top edge in
+  the upper third (`QuickAccess.panelTopLeft`), or under the menu bar item. Liquid Glass on macOS 26, a blurred
+  material on macOS 15, solid with "Reduce transparency"; no show/hide animation with "Reduce motion". It closes on
+  esc (the first esc clears the query), on losing key status, on ⌘W and on a second press of the shortcut. A new panel
+  and a new view state are created for every opening and dropped on close.
+- **List:** at most 9 rows (monogram, issuer, name, code in grouped monospaced digits, countdown ring, ⌘1–⌘9).
+  Empty query: favourites, then accounts used before (`lastUsedAt`, newest first), then the rest in the order of the
+  main window. With a query: the main window's search and ranking (`AccountSearch`). The order is frozen while the
+  panel is open (`QuickAccess.rowIDs` / `resolve`): it is computed when the panel opens, after an unlock in it and when
+  the query changes, never because usage data changed, so a copied row stays where it is; the new order shows the next
+  time. Hidden codes stay masked until a row is hovered or chosen with the arrow keys (and are left out of the
+  accessibility label while masked, in the panel and in the main window).
+- **Keys** (`QuickAccess.copyAction`, `QuickAccess.commandOutcome`): ↵, ⌘1–⌘9 (resolved by key code, so also on AZERTY)
+  and a click copy the code that is displayed, as in the main window; for HOTP the counter does not move. ⌥↵ copies the
+  next code: the next period for TOTP, and for HOTP "next code and count on" (the main window's ⌥⌘C: the counter moves
+  on and is saved at once). ↑/↓ move. ⌘L locks, ⌘W closes; ⌘A ⌘V ⌘X ⌘Z (also with ⇧), ⌘←, ⌘→ and ⌘⌫ are text commands of
+  the search field, ⌘C copies selected text of the field and without a selection does nothing (it never reaches the main
+  window's copy); every other ⌘ command is swallowed. Under 5 s left (`QuickAccess.isExpiring`, the threshold of the cards) a TOTP code turns red, the next one is shown small
+  and the footer names ⌥↵. After a copy the row says "Kopiert" for 0.4 s (immediately closing with "Reduce motion"), then
+  the panel closes. Every copy goes through `AppModel.copyCode` and the clipboard service (concealed, this Mac only,
+  cleared after the set time) and notes `lastUsedAt` (the main window does the same). The note lives in memory and is
+  written only with the next real change, or when the vault locks or the app quits, through `VaultStore.saveUsage`: it
+  does not rotate `vault.previous.json` (which keeps pointing at the last real change) and failures are silent (no
+  "Speichern fehlgeschlagen", no lock warning). It is never part of a `.macauth` file or a plain-text export, and
+  `AppPolicy.backupCoversCurrent` and the backup reminder ignore it. An HOTP counter change stays a real change, saved at
+  once.
+- **Locked vault:** the panel shows no account data, only "MacAuth ist gesperrt" and "Mit Touch ID entsperren". Opening
+  it with the shortcut or a click on the menu bar item is a user action, so the unlock prompt may start by itself
+  (`QuickAccess.mayPromptUnlock`; never after "cannot open", which needs the main window). It is `AppModel.unlock()`, the
+  same path as the lock screen's button (recovery and pending-authentication rules included). The panel stays open while the
+  system dialog has key status; after a success the list appears in the same panel, after a cancel or failure it stays in
+  the lock state (and closes when it loses the focus).
+- **Lock discipline:** `AppModel.lock()` closes the panel at once (auto-lock, sleep, screen lock, user switch, ⌘L): hosted
+  view, query and selection are dropped and the confirmation timer is cancelled. The list carries the `Ticket` (phase and
+  lock generation) it was built in, taken whenever the list first appears (also if the vault was unlocked by another
+  prompt while the panel was open); a copy checks it (`AppModel.copyFromQuickAccess`), so nothing completes after a lock.
+- **Edit sheet:** saving applies only the sheet's fields (`AccountEdit`) to the current account, so a counter or usage
+  note that moved meanwhile survives.
+- **Screen protection:** the panel follows `protectScreen` like the main window (`WindowConfigurator`, live; strict
+  while locked).
+- **Auto-lock:** opening the panel and every key or mouse event in it count as activity, like the main window; an idle
+  open panel does not extend the unlocked time.
+- **Menu bar item:** `NSStatusItem` with a fixed lock symbol, the accessibility label "MacAuth" and no tooltip. Codes or
+  account names never appear there. A click opens the same panel under the item.
+- No synthetic key events, no auto-paste, no entitlements, no network. The panel always works on the model that owns
+  it, so a demo model (`--demo`, documentation renders) only ever shows demo data.
+
 ### Clipboard
 Copied codes carry `org.nspasteboard.ConcealedType` (clipboard managers skip them), stay on this Mac
 (no Universal Clipboard) and are cleared after 30 s (10/30/60/never) if the clipboard still holds the code.
@@ -233,7 +291,7 @@ on, switchable. Optional: codes hidden until hover/selection.
 
 ### Settings
 Unlock (Touch ID/password required, auto-lock time), clipboard clearing, screen protection and hide codes (these four
-are stored in the vault), hide after copy, default group for imports, updates (Sparkle), backup reminder.
+are stored in the vault), hide after copy, quick access (shortcut, menu bar item), default group for imports, updates (Sparkle), backup reminder.
 
 Updates: Sparkle checks every 6 hours (`SUScheduledCheckInterval`) plus one quiet background check about 12 s
 after launch (not if the last check was under 15 minutes ago). Background checks never open a window (gentle

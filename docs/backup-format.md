@@ -52,7 +52,7 @@ JSON, UTF-8. Dates are ISO 8601 (`2023-11-14T22:13:20Z`), binary values Base64.
     "algorithm": "sha1 | sha256 | sha512", "digits": 6, "period": 30,
     "kind": "totp | hotp", "counter": 0,
     "groupID": "UUID or absent", "pinned": false, "sortIndex": 0,
-    "createdAt": "ISO 8601", "lastUsedAt": "ISO 8601 or absent", "note": ""
+    "createdAt": "ISO 8601", "lastUsedAt": "absent (never written to a backup; ignored when reading)", "note": ""
   }],
   "groups": [{ "id": "UUID", "name": "Firma", "symbol": "building.2", "colour": "#3B82F6" }]
 }

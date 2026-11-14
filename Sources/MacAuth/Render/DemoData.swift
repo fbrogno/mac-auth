@@ -33,6 +33,16 @@ enum DemoData {
         account(9, "Zeiterfassung Pro", "m.muster@firma.example", group: firma),
     ]
 
+    /// For the quick access panel: "Git-Server" and "Mailstadt" were used recently (their order shows in the empty-query list).
+    static var quickAccessAccounts: [Account] {
+        accounts.map { account in
+            var copy = account
+            if account.issuer == "Git-Server" { copy.lastUsedAt = now.addingTimeInterval(-90) }
+            if account.issuer == "Mailstadt" { copy.lastUsedAt = now.addingTimeInterval(-3_600) }
+            return copy
+        }
+    }
+
     /// Accounts for the transfer image: the last two cannot be written in Google's format (45 s interval, 7 digits).
     static var transferAccounts: [Account] {
         accounts + [

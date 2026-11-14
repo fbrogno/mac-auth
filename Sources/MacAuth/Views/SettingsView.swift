@@ -116,22 +116,23 @@ struct SettingsView: View {
                 .disabled(locked)
                 Toggle("Fenster nach dem Kopieren ausblenden", isOn: Binding(get: { settings.hideAfterCopy }, set: { settings.hideAfterCopy = $0 }))
             }
-            Section("Tastenkombination") {
-                Toggle("MacAuth mit einer Tastenkombination anzeigen", isOn: Binding(get: { settings.hotKeyEnabled }, set: { on in
-                    settings.hotKeyEnabled = on
-                    model.applyHotKey()
-                }))
-                if settings.hotKeyEnabled {
+            Section("Schnellzugriff") {
+                Toggle("Schnellzugriff mit Tastenkombination", isOn: Binding(get: { settings.quickAccessEnabled }, set: { model.setQuickAccessEnabled($0) }))
+                if settings.quickAccessEnabled {
                     HStack {
-                        Text("MacAuth anzeigen")
+                        Text("Tastenkombination")
                         Spacer()
                         HotKeyRecorder(model: model)
                     }
-                    if let error = model.hotKeyError {
+                    if let error = model.quickAccessError {
                         Label(error, systemImage: "exclamationmark.triangle").font(.callout).foregroundStyle(.orange)
                     }
+                    Toggle("Symbol in der Menüleiste", isOn: Binding(get: { settings.menuBarItem }, set: { on in
+                        settings.menuBarItem = on
+                        model.applyQuickAccess()
+                    }))
                 }
-                Text("Die Kombination holt das Fenster nach vorn, wenn du es brauchst, und blendet es beim erneuten Drücken wieder aus. Sie braucht mindestens ⌘, ⌥ oder ⌃.")
+                Text("Ein kleines Fenster über jeder App: Konto tippen, mit ↵ den Code kopieren, das Fenster verschwindet und die vorige App ist wieder vorn. Ist MacAuth gesperrt, zeigt es nur die Entsperrung. Die Kombination braucht mindestens ⌘, ⌥ oder ⌃. Passiert beim Drücken nichts, benutzt vielleicht eine andere App dieselbe Kombination.")
                     .font(.callout).foregroundStyle(.secondary)
             }
             Section("Import und Backup") {
@@ -169,7 +170,7 @@ struct HotKeyRecorder: View {
     @State private var monitor: Any?
 
     var body: some View {
-        Button(recording ? String(localized: "Taste drücken …") : (model.settings.hotKeyLabel.isEmpty ? String(localized: "Aufnehmen") : model.settings.hotKeyLabel)) {
+        Button(recording ? String(localized: "Taste drücken …") : (model.settings.quickAccessLabel.isEmpty ? String(localized: "Aufnehmen") : model.settings.quickAccessLabel)) {
             recording ? stop() : start()
         }
         .font(.system(.body, design: .rounded))
@@ -177,7 +178,7 @@ struct HotKeyRecorder: View {
     }
 
     private func start() {
-        model.pauseHotKey()
+        model.pauseQuickAccessShortcut()
         recording = true
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             let keyCode = event.keyCode
@@ -186,13 +187,13 @@ struct HotKeyRecorder: View {
             MainActor.assumeIsolated {
                 if keyCode == 53 { stop(); return }   // Esc
                 guard HotKeyService.isAcceptable(flags) else {
-                    model.hotKeyError = String(localized: "Die Kombination braucht mindestens ⌘, ⌥ oder ⌃.")
+                    model.quickAccessError = String(localized: "Die Kombination braucht mindestens ⌘, ⌥ oder ⌃.")
                     return
                 }
                 let settings = model.settings
-                settings.hotKeyCode = Int(keyCode)
-                settings.hotKeyModifiers = Int(flags.rawValue)
-                settings.hotKeyLabel = HotKeyLabel.text(keyCode: keyCode, modifiers: flags, characters: characters)
+                settings.quickAccessKeyCode = Int(keyCode)
+                settings.quickAccessModifiers = Int(flags.rawValue)
+                settings.quickAccessLabel = HotKeyLabel.text(keyCode: keyCode, modifiers: flags, characters: characters)
                 stop()
             }
             return nil   // the key press never reaches the window
@@ -204,7 +205,7 @@ struct HotKeyRecorder: View {
         monitor = nil
         if recording {
             recording = false
-            model.applyHotKey()
+            model.applyQuickAccess()
         }
     }
 }

@@ -16,21 +16,22 @@ struct AccountDisplay {
         code = raw
         groupedCode = raw.isEmpty ? "— — —" : OTP.grouped(raw)
         remaining = account.remainingSeconds(at: now)
-        let urgent = account.kind == .totp && remaining <= 5
+        let urgent = QuickAccess.isExpiring(kind: account.kind, remaining: remaining)
         nextCode = urgent ? (try? account.nextCode(at: now)).map(OTP.grouped) : nil
         self.groupName = groupName
     }
 
-    var urgent: Bool { account.kind == .totp && remaining <= 5 }
+    var urgent: Bool { QuickAccess.isExpiring(kind: account.kind, remaining: remaining) }
 
-    var accessibilitySummary: String {
+    /// Spoken summary. While the code is masked ("Codes verbergen") it is not part of it either.
+    func accessibilitySummary(showCode: Bool) -> String {
         let label = account.issuer.isEmpty ? account.name : "\(account.issuer), \(account.name)"
         let spokenCode = groupedCode
         if account.kind == .totp {
             let left = Measurement(value: Double(remaining), unit: UnitDuration.seconds).formatted(.measurement(width: .wide, usage: .asProvided))
-            return String(localized: "\(label), Code \(spokenCode), noch \(left)")
+            return showCode ? String(localized: "\(label), Code \(spokenCode), noch \(left)") : String(localized: "\(label), noch \(left)")
         }
-        return String(localized: "\(label), Code \(spokenCode)")
+        return showCode ? String(localized: "\(label), Code \(spokenCode)") : label
     }
 }
 
@@ -106,7 +107,7 @@ struct AccountCard: View {
         .pointerStyle(.link)
         .onTapGesture(perform: onCopy)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(display.accessibilitySummary)
+        .accessibilityLabel(display.accessibilitySummary(showCode: codeVisible))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction(named: Text("Kopieren"), onCopy)
     }
@@ -231,7 +232,7 @@ struct AccountRow: View {
         .pointerStyle(.link)
         .onTapGesture(perform: onCopy)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(display.accessibilitySummary)
+        .accessibilityLabel(display.accessibilitySummary(showCode: codeVisible))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction(named: Text("Kopieren"), onCopy)
     }

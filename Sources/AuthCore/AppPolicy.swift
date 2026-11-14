@@ -101,8 +101,18 @@ public enum AppPolicy {
 
     /// The backup reminder may only be reset by a backup of the complete current vault.
     public static func backupCoversCurrent(exported: VaultData, current: VaultData) -> Bool {
-        // Security settings are not part of a backup, so they are not compared.
-        !exported.accounts.isEmpty && exported.accounts == current.accounts && exported.groups == current.groups
+        // Security settings and the usage history (`lastUsedAt`) are not part of a backup, so they are not compared.
+        let (exported, current) = (exported.withoutUsage, current.withoutUsage)
+        return !exported.accounts.isEmpty && exported.accounts == current.accounts && exported.groups == current.groups
+    }
+
+    /// What has to be written when the vault locks or the app quits. A real change is saved as usual (rotating the
+    /// previous generation); a bare usage note (`lastUsedAt` after copying) is written without rotating it.
+    public enum ExitWrite: Equatable, Sendable { case nothing, full, usageOnly }
+
+    public static func exitWrite(unsavedChange: Bool, unsavedUsage: Bool) -> ExitWrite {
+        if unsavedChange { return .full }
+        return unsavedUsage ? .usageOnly : .nothing
     }
 
     /// The version shown in the update notice comes from the (unsigned) appcast: only a short, harmless string is

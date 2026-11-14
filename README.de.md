@@ -26,7 +26,7 @@ MacAuth ist eine native macOS-App für Zwei-Faktor-Codes (TOTP/HOTP). Die Geheim
 - Code kopieren per Klick auf die Karte, mit `↵` oder mit `⌘1`–`⌘9`. Den nächsten Code kopierst du mit `⌥⌘C`.
 - Suche durch bloßes Tippen; Gruppen und Favoriten; Raster- oder Listenansicht.
 - Tresor mit Schlüsselschutz in der Secure Enclave und Touch ID (oder Anmeldepasswort).
-- Optionales globales Tastenkürzel (standardmäßig aus, braucht mindestens eines von ⌘ ⌥ ⌃), das MacAuth anzeigt und wieder ausblendet.
+- Optionaler Schnellzugriff (standardmäßig aus): ein globales Tastenkürzel (braucht mindestens eines von ⌘ ⌥ ⌃) und auf Wunsch ein Symbol in der Menüleiste öffnen ein kleines Fenster über jeder App. Konto tippen, `↵` kopiert den Code, das Fenster schließt und die vorige App hat wieder den Fokus. Ist MacAuth gesperrt, bietet das Fenster nur die Entsperrung an.
 - Lässt sich der Tresor nicht öffnen, wird nichts gelöscht: erneut versuchen, Backup einspielen oder eine frühere Fassung zurückholen (**Frühere Fassung wiederherstellen**). Eine ersetzte Tresordatei bleibt immer erhalten.
 - Automatische Sperre nach Inaktivität (1, 5, 15, 60 Minuten oder nie), immer beim Ruhezustand, gesperrtem Bildschirm und Benutzerwechsel.
 - Kopierte Codes sind als vertraulich markiert und werden nach 10, 30 oder 60 Sekunden (oder nie) aus der Zwischenablage entfernt.
@@ -74,6 +74,13 @@ Du kommst von Apple Passwörter? Wähle in der App „Passwörter“ **Ablage** 
   </picture>
 </p>
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/quick-access-dark.png">
+    <img src="docs/images/quick-access-light.png" alt="Schnellzugriff über einer anderen App: Suchfeld und die ersten Konten mit Codes und Countdown-Ringen" width="560">
+  </picture>
+</p>
+
 ## Tastenkürzel
 
 | Kürzel | Aktion |
@@ -90,7 +97,7 @@ Du kommst von Apple Passwörter? Wähle in der App „Passwörter“ **Ablage** 
 | `⇧⌘E` | Backup exportieren |
 | `⌘L` | sperren |
 | `⌘⌫` | gewähltes Konto löschen (mit Rückfrage; nur bei gewählter Karte und ohne Textfeld-Fokus, nicht im Suchfeld) |
-| optional | globales Kürzel zum Ein- und Ausblenden von MacAuth (Einstellungen, Allgemein) |
+| optional | globales Kürzel für den Schnellzugriff (Einstellungen, Allgemein): Tippen sucht, `↵` kopiert, `⌘1`–`⌘9` kopieren eine Zeile, `⌥↵` den nächsten Code, `esc` leert oder schließt |
 | `⌘,` | Einstellungen |
 
 ## Sicherheit
