@@ -1121,6 +1121,22 @@
         }
       }
     },
+    "Das Update-Fenster öffnen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Update-Fenster öffnen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the update window"
+          }
+        }
+      }
+    },
     "Das ist die einzige Verbindung, die MacAuth ins Internet aufbaut. Es werden keine Daten über dich gesendet.": {
       "localizations": {
         "de": {
@@ -3905,6 +3921,22 @@
         }
       }
     },
+    "Neue Versionen werden im Hintergrund geladen und beim nächsten Beenden von MacAuth installiert. Ohne diese Option zeigt MacAuth einen Hinweis in der Seitenleiste, und du entscheidest selbst.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Versionen werden im Hintergrund geladen und beim nächsten Beenden von MacAuth installiert. Ohne diese Option zeigt MacAuth einen Hinweis in der Seitenleiste, und du entscheidest selbst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New versions are downloaded in the background and installed the next time MacAuth quits. Without this option MacAuth shows a notice in the sidebar and you decide yourself."
+          }
+        }
+      }
+    },
     "Neuen Tresor anlegen": {
       "localizations": {
         "de": {
@@ -4977,6 +5009,22 @@
         }
       }
     },
+    "Update verfügbar – Version %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update verfügbar – Version %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update available – version %@"
+          }
+        }
+      }
+    },
     "Updates": {
       "localizations": {
         "de": {
@@ -4989,6 +5037,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Updates"
+          }
+        }
+      }
+    },
+    "Updates automatisch installieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updates automatisch installieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install updates automatically"
           }
         }
       }
@@ -5117,6 +5181,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Welcome to MacAuth"
+          }
+        }
+      }
+    },
+    "Wird beim Beenden installiert. Jetzt ansehen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird beim Beenden installiert. Jetzt ansehen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installs when MacAuth quits. View now."
           }
         }
       }
@@ -5325,6 +5405,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "There is no account for “%@”. You can create one."
+          }
+        }
+      }
+    },
+    "Zum Installieren anklicken.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Installieren anklicken."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click to install."
           }
         }
       }

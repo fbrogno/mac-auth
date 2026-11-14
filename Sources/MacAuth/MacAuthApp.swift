@@ -27,29 +27,141 @@ enum Entry {
     static var isDemo: Bool { CommandLine.arguments.contains("--demo") }
 }
 
+/// What Sparkle's delegates report, reduced to values that can cross into the main actor.
+enum UpdateEvent: Sendable {
+    /// A valid update was found (scheduled or user-initiated check).
+    case found(version: String)
+    /// The update is downloaded and will be installed when the app quits (automatic installation).
+    case readyToInstall(version: String)
+    /// Installed, skipped, or no longer offered: the notice goes away.
+    case cleared
+}
+
+/// Sparkle callbacks. Sparkle calls them on the main thread; they only forward value-type events.
+///
+/// Gentle reminders: for scheduled (background) checks Sparkle never opens its own window, it only tells us
+/// that an update exists (`standardUserDriverShouldHandleShowingScheduledUpdate` returns false). The window comes
+/// up when the user asks for it, which is also what keeps the lock screen free of surprise windows.
+final class UpdateDelegate: NSObject, SPUUpdaterDelegate, SPUStandardUserDriverDelegate, @unchecked Sendable {
+    var onEvent: (@Sendable (UpdateEvent) -> Void)?
+
+    var supportsGentleScheduledUpdateReminders: Bool { true }
+
+    func standardUserDriverShouldHandleShowingScheduledUpdate(_ update: SUAppcastItem, andInImmediateFocus immediateFocus: Bool) -> Bool {
+        false
+    }
+
+    func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
+        onEvent?(.found(version: item.displayVersionString))
+    }
+
+    func updater(_ updater: SPUUpdater, willInstallUpdateOnQuit item: SUAppcastItem, immediateInstallationBlock immediateInstallHandler: @escaping () -> Void) -> Bool {
+        onEvent?(.readyToInstall(version: item.displayVersionString))
+        return false   // Sparkle keeps its scheduler running and installs on quit
+    }
+
+    func updater(_ updater: SPUUpdater, userDidMake choice: SPUUserUpdateChoice, forUpdate updateItem: SUAppcastItem, state: SPUUserUpdateState) {
+        // Dismissing ("Später") keeps the notice; installing or skipping ends it.
+        if choice != .dismiss { onEvent?(.cleared) }
+    }
+
+    func updater(_ updater: SPUUpdater, willInstallUpdate item: SUAppcastItem) {
+        onEvent?(.cleared)
+    }
+
+    func updater(_ updater: SPUUpdater, didFinishUpdateCycleFor updateCheck: SPUUpdateCheck, error: (any Error)?) {
+        if let error = error as NSError?, error.domain == SUSparkleErrorDomain, error.code == Int(SUError.noUpdateError.rawValue) {
+            onEvent?(.cleared)   // the server no longer offers anything newer than what runs
+        }
+    }
+}
+
 /// Sparkle updater. Without a public EdDSA key there is nothing to verify updates against: checking stays off.
 @MainActor @Observable
 final class UpdaterModel {
-    @ObservationIgnored private let controller = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
-    @ObservationIgnored private var observation: NSKeyValueObservation?
-    private(set) var canCheck = false
-    var automaticChecks = false {
-        didSet { if automaticChecks != controller.updater.automaticallyChecksForUpdates { controller.updater.automaticallyChecksForUpdates = automaticChecks } }
+    /// An update Sparkle has found and the user has not installed or skipped yet.
+    struct Pending: Equatable {
+        var version: String
+        /// Already downloaded; installs when MacAuth quits.
+        var ready: Bool
     }
 
-    init(enabled: Bool = true) {
+    @ObservationIgnored private let delegate = UpdateDelegate()
+    @ObservationIgnored private let controller: SPUStandardUpdaterController
+    @ObservationIgnored private var observations: [NSKeyValueObservation] = []
+    @ObservationIgnored private var started = false
+    private(set) var canCheck = false
+    private(set) var automaticChecks = false
+    private(set) var automaticInstall = false
+    /// Whether Sparkle allows the automatic-install option right now (needs automatic checks).
+    private(set) var canAutomaticInstall = false
+    private(set) var pending: Pending?
+
+    /// Demo and documentation renders: no updater, optionally with an invented pending update.
+    init(enabled: Bool = true, demoPending: Pending? = nil) {
+        controller = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: delegate, userDriverDelegate: delegate)
+        pending = demoPending
         guard enabled else { return }
+        delegate.onEvent = { [weak self] event in
+            Task { @MainActor in self?.handle(event) }
+        }
         let key = Bundle.main.object(forInfoDictionaryKey: "SUPublicEDKey") as? String
         if !(key ?? "").trimmingCharacters(in: .whitespaces).isEmpty {
             controller.startUpdater()
+            started = true
         }
-        automaticChecks = controller.updater.automaticallyChecksForUpdates
-        observation = controller.updater.observe(\.canCheckForUpdates, options: [.initial, .new]) { [weak self] updater, _ in
-            let can = updater.canCheckForUpdates
-            Task { @MainActor in self?.canCheck = can }
+        let updater = controller.updater
+        refresh()
+        observations = [
+            updater.observe(\.canCheckForUpdates, options: [.new]) { [weak self] _, _ in Task { @MainActor in self?.refresh() } },
+            updater.observe(\.automaticallyChecksForUpdates, options: [.new]) { [weak self] _, _ in Task { @MainActor in self?.refresh() } },
+            updater.observe(\.allowsAutomaticUpdates, options: [.new]) { [weak self] _, _ in Task { @MainActor in self?.refresh() } },
+            updater.observe(\.automaticallyDownloadsUpdates, options: [.new]) { [weak self] _, _ in Task { @MainActor in self?.refresh() } },
+        ]
+        if started { scheduleLaunchCheck() }
+    }
+
+    private func refresh() {
+        let updater = controller.updater
+        canCheck = updater.canCheckForUpdates
+        automaticChecks = updater.automaticallyChecksForUpdates
+        canAutomaticInstall = updater.allowsAutomaticUpdates
+        automaticInstall = updater.automaticallyDownloadsUpdates
+    }
+
+    private func handle(_ event: UpdateEvent) {
+        switch event {
+        case .found(let version): pending = Pending(version: version, ready: pending?.version == version && pending?.ready == true)
+        case .readyToInstall(let version): pending = Pending(version: version, ready: true)
+        case .cleared: pending = nil
         }
     }
 
+    /// Sparkle's own schedule waits out the rest of the interval after a launch. One quiet background check a
+    /// few seconds after launch makes a new release show up promptly. It never opens a window (gentle reminders),
+    /// and a relaunch within a quarter of an hour does not ask the server again.
+    private func scheduleLaunchCheck() {
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(12))
+            guard let updater = self?.controller.updater, updater.automaticallyChecksForUpdates, !updater.sessionInProgress else { return }
+            if let last = updater.lastUpdateCheckDate, Date().timeIntervalSince(last) < 15 * 60 { return }
+            updater.checkForUpdatesInBackground()
+        }
+    }
+
+    func setAutomaticChecks(_ on: Bool) {
+        guard on != controller.updater.automaticallyChecksForUpdates else { return }
+        controller.updater.automaticallyChecksForUpdates = on
+        refresh()
+    }
+
+    func setAutomaticInstall(_ on: Bool) {
+        guard on != controller.updater.automaticallyDownloadsUpdates else { return }
+        controller.updater.automaticallyDownloadsUpdates = on
+        refresh()
+    }
+
+    /// Menu item, settings button and the sidebar notice: with an update already shown, Sparkle brings its window forward.
     func checkForUpdates() { controller.checkForUpdates(nil) }
 }
 
@@ -73,7 +185,7 @@ struct MacAuthApp: App {
 
     var body: some Scene {
         Window("MacAuth", id: "main") {
-            RootView(model: model)
+            RootView(model: model, updater: updater)
         }
         .defaultSize(width: 980, height: 660)
         .windowResizability(.contentMinSize)

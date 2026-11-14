@@ -20,6 +20,10 @@
     <key>SUFeedURL</key><string>https://github.com/fbrogno/mac-auth/releases/latest/download/appcast.xml</string>
     <key>SUPublicEDKey</key><string>$(SPARKLE_PUBLIC_ED_KEY)</string>
     <key>SUEnableAutomaticChecks</key><true/>
+    <!-- Check every 6 hours (Sparkle's minimum is 1 hour). Automatic installation is on unless the user turns it off
+         in the settings; it only takes effect while automatic checks are on (SUAllowsAutomaticUpdates is left unset). -->
+    <key>SUScheduledCheckInterval</key><integer>21600</integer>
+    <key>SUAutomaticallyUpdate</key><true/>
     <!-- Sandbox: Sparkle installs through its installer launcher XPC service. The downloader service
          is not needed because the app has com.apple.security.network.client. -->
     <key>SUEnableInstallerLauncherService</key><true/>
