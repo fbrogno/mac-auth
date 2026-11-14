@@ -26,7 +26,7 @@ MacAuth is a native macOS app for two-factor codes (TOTP/HOTP). It keeps your se
 - Copy a code by clicking its card, with `↵` or with `⌘1`–`⌘9`. The next code is copied with `⌥⌘C`.
 - Search by just typing; groups and favorites; grid or list view.
 - Vault with Secure Enclave key protection and Touch ID (or login password).
-- Optional global shortcut (off by default, needs at least one of ⌘ ⌥ ⌃) that shows MacAuth and hides it again.
+- Optional quick access (off by default): a global shortcut (needs at least one of ⌘ ⌥ ⌃) and, if you like, a menu bar icon open a small panel over any app. Type to find an account, `↵` copies the code, the panel closes and the previous app has the focus again. While MacAuth is locked the panel only offers to unlock.
 - If the vault cannot be opened, nothing is deleted: try again, restore a backup or bring back an earlier version (**Restore Earlier Version**). A replaced vault file is always kept.
 - Auto-lock after inactivity (1, 5, 15, 60 minutes or never), and always on sleep, screen lock and user switching.
 - Copied codes are marked as concealed and cleared from the clipboard after 10, 30 or 60 seconds (or never).
@@ -74,6 +74,13 @@ Coming from Apple Passwords? In the Passwords app choose **File** > **Export All
   </picture>
 </p>
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/quick-access-dark-en.png">
+    <img src="docs/images/quick-access-light-en.png" alt="Quick access panel over another app: search field and the first accounts with their codes and countdown rings" width="560">
+  </picture>
+</p>
+
 ## Keyboard shortcuts
 
 | Shortcut | Action |
@@ -90,7 +97,7 @@ Coming from Apple Passwords? In the Passwords app choose **File** > **Export All
 | `⇧⌘E` | export backup |
 | `⌘L` | lock |
 | `⌘⌫` | delete the selected account (with confirmation; only when a card is selected and no text field has focus, not in the search field) |
-| optional | global shortcut to show or hide MacAuth (Settings, General) |
+| optional | global shortcut for quick access (Settings, General): typing finds, `↵` copies, `⌘1`–`⌘9` copy a row, `⌥↵` the next code, `esc` clears or closes |
 | `⌘,` | settings |
 
 ## Security

@@ -124,7 +124,8 @@ final class AppModel {
     private(set) var protection: Protection = .unknown
     /// Bumped to ask the search field for focus.
     private(set) var focusSearchTick = 0
-    var hotKeyError: String?
+    /// Why the quick access shortcut is not registered (plain words), shown in the settings.
+    var quickAccessError: String?
     /// Set when the last change could not be saved while locking; stays on the lock screen until the next unlock.
     private(set) var lockWarning: String?
     /// After restoring a version with weaker protection than this Mac can do: offer the Secure Enclave, never switch silently.
@@ -199,7 +200,7 @@ final class AppModel {
         guard !started, let store else { return }
         started = true
         input.start()
-        applyHotKey()
+        quick.apply()
         lockObserver = SystemLockObserver(onLock: { [weak self] in self?.lock(fromSystem: true) },
                                           onReturn: { [weak self] in self?.userReturned() },
                                           onResign: { [weak self] in self?.appResigned() })
@@ -314,6 +315,7 @@ final class AppModel {
         sheet = nil
         alert = nil
         FilePanels.cancelAll()   // no open/save panel stays over the lock screen
+        quick.vaultDidLock()     // the quick access panel drops its content and closes
         recovery.consume()
         importer.reset()
         copiedTask?.cancel()
@@ -350,11 +352,9 @@ final class AppModel {
         if phase == .locked { prompt.appResignedWhileLocked() }
     }
 
-    /// The user brought the window forward on purpose (global shortcut): unlock prompt allowed.
-    func userRequestedShow() {
-        focusSearch()
-        if phase == .locked, lockNotice == nil || lockNotice == .cancelled { Task { await unlock() } }
-    }
+    /// Whether a user action (shortcut, menu bar click) may start the unlock prompt right now: after the user's own
+    /// cancel or no failure at all, never after "cannot open" or other failures (those need the main window).
+    var noticeAllowsUnlockPrompt: Bool { lockNotice == nil || lockNotice == .cancelled }
 
     var autoPromptAllowed: Bool { prompt.autoAllowed }
 
@@ -568,48 +568,27 @@ final class AppModel {
         persist(accountsChanged: false)   // these settings live in the vault, not in the preferences
     }
 
-    // MARK: Global shortcut
+    // MARK: Quick access (global shortcut, menu bar item, panel)
 
-    @ObservationIgnored private let hotKey = HotKeyService()
+    @ObservationIgnored private(set) lazy var quick = QuickAccessController(model: self)
 
-    /// Registers or removes the global shortcut according to the settings. Sets `hotKeyError` in plain words.
-    func applyHotKey() {
-        hotKeyError = nil
-        guard settings.hotKeyEnabled else { hotKey.unregister(); return }
-        guard settings.hotKeyCode >= 0 else {
-            hotKey.unregister()
-            hotKeyError = String(localized: "Nimm zuerst eine Tastenkombination auf.")
-            return
+    /// Registers or removes the shortcut and the menu bar item according to the settings.
+    func applyQuickAccess() { quick.apply() }
+
+    /// Switches the quick access on or off. Switching on without a recorded combination suggests ⌥Space.
+    func setQuickAccessEnabled(_ on: Bool) {
+        if on, settings.quickAccessKeyCode < 0 {
+            let suggestion = QuickAccessShortcut.suggestion
+            settings.quickAccessKeyCode = suggestion.keyCode
+            settings.quickAccessModifiers = suggestion.modifiers
+            settings.quickAccessLabel = suggestion.label
         }
-        let flags = NSEvent.ModifierFlags(rawValue: UInt(settings.hotKeyModifiers))
-        switch hotKey.register(keyCode: UInt32(settings.hotKeyCode), modifiers: flags, onPress: { [weak self] in self?.hotKeyPressed() }) {
-        case .success: break
-        case .failure(.needsModifier):
-            hotKeyError = String(localized: "Die Kombination braucht mindestens ⌘, ⌥ oder ⌃.")
-        case .failure(.taken):
-            hotKeyError = String(localized: "Diese Kombination wird schon von einer anderen App oder vom System benutzt. Wähle eine andere.")
-        case .failure(.other):
-            hotKeyError = String(localized: "Die Tastenkombination konnte nicht angemeldet werden.")
-        }
+        settings.quickAccessEnabled = on
+        quick.apply()
     }
 
-    func pauseHotKey() { hotKey.unregister() }
-
-    /// Shortcut pressed: bring the window forward (search focused, unlock prompt if locked); pressed again: hide.
-    func hotKeyPressed() {
-        if NSApp.isActive, !NSApp.isHidden, mainWindow?.isVisible == true, mainWindow?.isKeyWindow == true {
-            NSApp.hide(nil)
-            return
-        }
-        NSApp.unhide(nil)
-        NSApp.activate()
-        mainWindow?.makeKeyAndOrderFront(nil)
-        userRequestedShow()
-    }
-
-    private var mainWindow: NSWindow? {
-        NSApp.windows.first { $0.title == "MacAuth" && !($0 is NSPanel) } ?? NSApp.windows.first { $0.canBecomeMain && !($0 is NSPanel) }
-    }
+    /// While the shortcut is being recorded it is unregistered, so the recording keys do not trigger it.
+    func pauseQuickAccessShortcut() { quick.pauseShortcut() }
 
     /// `--demo`: proves registration and the "already taken" detection, printed to stdout (not the system log).
     func demoHotKeySelfTest() {
@@ -619,6 +598,7 @@ final class AppModel {
         func failure(_ result: Result<Void, HotKeyService.Failure>) -> HotKeyService.Failure? {
             if case .failure(let f) = result { f } else { nil }
         }
+        let hotKey = HotKeyService()
         let first = failure(hotKey.register(keyCode: code, modifiers: flags, onPress: {}))
         say("HotKey ⌃⌥⌘M: \(first == nil ? "registriert" : "Fehler \(first!)")")
         let other = HotKeyService(signature: "MAU2")
@@ -902,11 +882,7 @@ final class AppModel {
     // MARK: Copying
 
     func copy(_ id: UUID?, next: Bool = false) {
-        guard phase == .unlocked, let id, let account = account(id) else { return }
-        let now = Date()
-        guard let code = try? (next ? account.nextCode(at: now) : account.code(at: now)) else { return }
-        ClipboardService.shared.copy(code, clearAfter: settings.clipboardClearSeconds)
-        if next, account.kind == .hotp { advanceHOTP(id) }
+        guard let id, copyCode(id, next: next) else { return }
         selection = id
         copiedID = id
         copiedTask?.cancel()
@@ -916,6 +892,36 @@ final class AppModel {
             self?.copiedID = nil
         }
         if settings.hideAfterCopy { NSApp.hide(nil) }
+    }
+
+    /// The one place that puts a code on the clipboard (main window and quick access): concealed, current host only,
+    /// cleared after the configured time. TOTP: the current or the next code. HOTP with `next`: the next code, and the
+    /// counter moves on and is saved (the main window's "copy next code and count on"). Notes the use for the
+    /// quick access order. Does nothing unless the vault is unlocked.
+    @discardableResult
+    private func copyCode(_ id: UUID, next: Bool) -> Bool {
+        guard phase == .unlocked, let index = accounts.firstIndex(where: { $0.id == id }) else { return false }
+        let account = accounts[index]
+        let now = Date()
+        guard let code = try? (next ? account.nextCode(at: now) : account.code(at: now)) else { return false }
+        ClipboardService.shared.copy(code, clearAfter: settings.clipboardClearSeconds)
+        let advanced = next && account.kind == .hotp
+        if advanced { accounts[index].advanceCounter() }
+        accounts[index].lastUsedAt = now
+        persist(accountsChanged: advanced)   // a plain copy only notes the use; it does not make the backup outdated
+        return true
+    }
+
+    /// Quick access copy: only in the lock generation and phase the panel's list was built in, so a copy that was
+    /// started before a lock never completes after it. No selection, toast or hiding of the main window.
+    @discardableResult
+    func copyFromQuickAccess(_ action: QuickAccess.CopyAction, ticket t: Ticket) -> Bool {
+        guard isCurrent(t) else { return false }
+        switch action {
+        case .current(let id): return copyCode(id, next: false)
+        case .next(let id): return copyCode(id, next: true)
+        case .advancingHOTP(let id): return copyCode(id, next: true)
+        }
     }
 
     func copyVisible(at position: Int) {

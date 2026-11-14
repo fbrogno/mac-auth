@@ -1,14 +1,13 @@
-import AuthCore
 import Foundation
 
-enum AccountSearch {
+public enum AccountSearch {
     private static func fold(_ s: String) -> String {
         s.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
     }
 
     /// Keeps accounts matching every word of `query` (issuer, name, group, note); best hits first
     /// (prefix before contains, issuer before name). Without a query the order is unchanged.
-    static func filter(_ accounts: [Account], query: String, groupName: (UUID?) -> String?) -> [Account] {
+    public static func filter(_ accounts: [Account], query: String, groupName: (UUID?) -> String?) -> [Account] {
         let words = fold(query).split(whereSeparator: \.isWhitespace).map(String.init)
         guard !words.isEmpty else { return accounts }
         var scored: [(account: Account, score: Int, position: Int)] = []

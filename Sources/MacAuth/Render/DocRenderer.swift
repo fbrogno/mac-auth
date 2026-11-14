@@ -24,7 +24,7 @@ enum DocRenderer {
         for scheme in [ColorScheme.light, .dark] {
             let tag = scheme == .light ? "light" : "dark"
             let suffix = englishOnly ? "-en" : ""
-            let english = ["main-grid", "first-run", "import-review", "settings"]
+            let english = ["main-grid", "first-run", "import-review", "settings", "quick-access", "quick-access-search", "quick-access-locked"]
             func want(_ name: String) -> Bool { (only == nil || only!.contains(name)) && (!englishOnly || english.contains(name)) }
 
             if want("main-grid") {
@@ -132,7 +132,30 @@ enum DocRenderer {
             }
             if want("settings") {
                 let model = demoModel(.unlocked)
+                model.settings.quickAccessEnabled = true
+                model.settings.quickAccessKeyCode = 49
+                model.settings.quickAccessModifiers = QuickAccessShortcut.optionBit
+                model.settings.quickAccessLabel = "⌥Space"
+                model.settings.menuBarItem = true
                 sheet(SettingsView(model: model, updater: nil, initialTab: 1), scheme: scheme, to: url.appendingPathComponent("settings-general-\(tag)\(suffix).png"))
+            }
+            if want("quick-access") {
+                let model = demoModel(.unlocked, accounts: DemoData.quickAccessAccounts)
+                panel(model: model, scheme: scheme, to: url.appendingPathComponent("quick-access-\(tag)\(suffix).png"))
+            }
+            if want("quick-access-search") {
+                // One hit whose code is about to expire: red code, the next one small, hint for ⌥↵.
+                let model = demoModel(.unlocked, accounts: DemoData.quickAccessAccounts)
+                panel(model: model, query: "git", scheme: scheme, to: url.appendingPathComponent("quick-access-search-\(tag)\(suffix).png"))
+            }
+            if want("quick-access-locked") {
+                let model = demoModel(.locked)
+                panel(model: model, scheme: scheme, to: url.appendingPathComponent("quick-access-locked-\(tag)\(suffix).png"))
+            }
+            if want("quick-access-hidden") {
+                let model = demoModel(.unlocked, accounts: DemoData.quickAccessAccounts)
+                model.settings.hideCodes = true
+                panel(model: model, selected: 2, explicit: true, scheme: scheme, to: url.appendingPathComponent("quick-access-hidden-\(tag)\(suffix).png"))
             }
             if want("transfer") {
                 let model = demoModel(.unlocked)
@@ -192,7 +215,16 @@ enum DocRenderer {
         sheet(shot, scheme: scheme, to: file, padding: 36, opaque: model.phase != .unlocked)
     }
 
-    private static func sheet(_ content: some View, scheme: ColorScheme, to file: URL, padding: CGFloat = 40, opaque: Bool = true) {
+    /// The quick access panel on its own (it is a floating panel without window chrome), with its shadow on the backdrop.
+    private static func panel(model: AppModel, query: String = "", selected: Int = 0, explicit: Bool = false, scheme: ColorScheme, to file: URL) {
+        let state = QuickPanelState()
+        state.query = query
+        state.selectedIndex = selected
+        state.selectionExplicit = explicit
+        sheet(QuickAccessView(model: model, state: state, controller: nil), scheme: scheme, to: file, padding: 56, opaque: false, framed: false)
+    }
+
+    private static func sheet(_ content: some View, scheme: ColorScheme, to file: URL, padding: CGFloat = 40, opaque: Bool = true, framed: Bool = true) {
         let hosting = NSHostingView(rootView: content
             .background(opaque ? Color(nsColor: .windowBackgroundColor) : Color.clear)
             .environment(\.fixedNow, DemoData.now)
@@ -215,7 +247,7 @@ enum DocRenderer {
             FileHandle.standardError.write(Data("Konnte \(file.lastPathComponent) nicht rendern\n".utf8))
             return
         }
-        write(Backdrop(image: image, scheme: scheme, padding: padding), to: file)
+        write(Backdrop(image: image, scheme: scheme, padding: padding, framed: framed), to: file)
     }
 
     /// On a screen but fully transparent: macOS stops drawing windows that are far off screen.
@@ -267,12 +299,14 @@ private struct Backdrop: View {
     let image: NSImage
     let scheme: ColorScheme
     var padding: CGFloat = 36
+    /// False for the panel: it brings its own rounded shape, no window frame is drawn around it.
+    var framed = true
 
     var body: some View {
         let dark = scheme == .dark
         Image(nsImage: image)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.primary.opacity(dark ? 0.16 : 0.1)))
+            .clipShape(RoundedRectangle(cornerRadius: framed ? 12 : 0, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.primary.opacity(framed ? (dark ? 0.16 : 0.1) : 0)))
             .shadow(color: .black.opacity(dark ? 0.5 : 0.22), radius: 22, y: 10)
             .padding(padding)
             .background(dark ? Color(red: 0.08, green: 0.09, blue: 0.12) : Color(red: 0.90, green: 0.92, blue: 0.95))

@@ -38,17 +38,21 @@ final class AppSettings {
     var defaultGroupID: String { didSet { defaults.set(defaultGroupID, forKey: "defaultGroupID") } }
     var backupReminder: Bool { didSet { defaults.set(backupReminder, forKey: "backupReminder") } }
     var listMode: Bool { didSet { defaults.set(listMode, forKey: "listMode") } }
-    /// Optional system-wide shortcut that shows or hides the window. Off by default.
-    var hotKeyEnabled: Bool { didSet { defaults.set(hotKeyEnabled, forKey: "hotKeyEnabled") } }
+    /// Quick access panel (global shortcut and optional menu bar item). Off by default; nothing is registered until the
+    /// user switches it on. These are ordinary preferences: they lower no protection.
+    var quickAccessEnabled: Bool { didSet { defaults.set(quickAccessEnabled, forKey: "quickAccessEnabled") } }
     /// Virtual key code, -1 = none recorded.
-    var hotKeyCode: Int { didSet { defaults.set(hotKeyCode, forKey: "hotKeyCode") } }
+    var quickAccessKeyCode: Int { didSet { defaults.set(quickAccessKeyCode, forKey: "quickAccessKeyCode") } }
     /// `NSEvent.ModifierFlags` raw value (device-independent bits only).
-    var hotKeyModifiers: Int { didSet { defaults.set(hotKeyModifiers, forKey: "hotKeyModifiers") } }
-    var hotKeyLabel: String { didSet { defaults.set(hotKeyLabel, forKey: "hotKeyLabel") } }
+    var quickAccessModifiers: Int { didSet { defaults.set(quickAccessModifiers, forKey: "quickAccessModifiers") } }
+    var quickAccessLabel: String { didSet { defaults.set(quickAccessLabel, forKey: "quickAccessLabel") } }
+    /// Menu bar item that opens the panel. Off by default.
+    var menuBarItem: Bool { didSet { defaults.set(menuBarItem, forKey: "menuBarItem") } }
     /// Seconds since 1970; 0 = never.
     var lastBackupExport: Double { didSet { defaults.set(lastBackupExport, forKey: "lastBackupExport") } }
     var lastAccountChange: Double { didSet { defaults.set(lastAccountChange, forKey: "lastAccountChange") } }
 
+    private static let legacyHotKeyKeys = ["hotKeyEnabled", "hotKeyCode", "hotKeyModifiers", "hotKeyLabel"]
     private static let legacyKeys = ["autoLockMinutes", "protectScreen", "hideCodes", "clipboardClearSeconds"]
 
     /// The values 1.0.0 kept in the preferences file (only those actually stored). Read from the app's persistent
@@ -79,12 +83,29 @@ final class AppSettings {
         defaultGroupID = stored["defaultGroupID"] as? String ?? ""
         backupReminder = bool("backupReminder", true)
         listMode = bool("listMode", false)
-        hotKeyEnabled = bool("hotKeyEnabled", false)
-        hotKeyCode = int("hotKeyCode", -1)
-        hotKeyModifiers = int("hotKeyModifiers", 0)
-        hotKeyLabel = stored["hotKeyLabel"] as? String ?? ""
+        quickAccessEnabled = bool("quickAccessEnabled", false)
+        quickAccessKeyCode = int("quickAccessKeyCode", -1)
+        quickAccessModifiers = int("quickAccessModifiers", 0)
+        quickAccessLabel = stored["quickAccessLabel"] as? String ?? ""
+        menuBarItem = bool("menuBarItem", false)
         lastBackupExport = stored["lastBackupExport"] as? Double ?? 0
         lastAccountChange = stored["lastAccountChange"] as? Double ?? 0
+
+        // The former option "global shortcut shows or hides the window" is replaced by the quick access: an enabled
+        // shortcut moves over with the same keys, then the old keys are removed (also if nothing moves).
+        let legacy = QuickAccessShortcut.Legacy(enabled: stored["hotKeyEnabled"] as? Bool, keyCode: stored["hotKeyCode"] as? Int,
+                                                modifiers: stored["hotKeyModifiers"] as? Int, label: stored["hotKeyLabel"] as? String)
+        if let migrated = QuickAccessShortcut.migrate(legacy: legacy, alreadyStored: stored["quickAccessEnabled"] != nil) {
+            quickAccessEnabled = migrated.enabled
+            quickAccessKeyCode = migrated.keyCode
+            quickAccessModifiers = migrated.modifiers
+            quickAccessLabel = migrated.label
+            defaults.set(migrated.enabled, forKey: "quickAccessEnabled")
+            defaults.set(migrated.keyCode, forKey: "quickAccessKeyCode")
+            defaults.set(migrated.modifiers, forKey: "quickAccessModifiers")
+            defaults.set(migrated.label, forKey: "quickAccessLabel")
+        }
+        for key in Self.legacyHotKeyKeys { defaults.removeObject(forKey: key) }
     }
 
     /// True if accounts changed after the last exported backup.
@@ -108,7 +129,7 @@ enum SettingsProbe {
             ("protectScreen", defaults.object(forKey: "protectScreen"), "\(settings.protectScreen) \(source)"),
             ("hideCodes", defaults.object(forKey: "hideCodes"), "\(settings.hideCodes) \(source)"),
             ("clipboardClearSeconds", defaults.object(forKey: "clipboardClearSeconds"), "\(settings.clipboardClearSeconds) \(source)"),
-            ("hotKeyEnabled", defaults.object(forKey: "hotKeyEnabled"), settings.hotKeyEnabled),
+            ("quickAccessEnabled", defaults.object(forKey: "quickAccessEnabled"), settings.quickAccessEnabled),
             ("requireAuth", defaults.object(forKey: "requireAuth"), "(keine Einstellung mehr, steht im Tresor-Kopf)"),
         ]
         for (key, naive, actual) in rows {

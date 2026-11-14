@@ -16,12 +16,12 @@ struct AccountDisplay {
         code = raw
         groupedCode = raw.isEmpty ? "— — —" : OTP.grouped(raw)
         remaining = account.remainingSeconds(at: now)
-        let urgent = account.kind == .totp && remaining <= 5
+        let urgent = QuickAccess.isExpiring(kind: account.kind, remaining: remaining)
         nextCode = urgent ? (try? account.nextCode(at: now)).map(OTP.grouped) : nil
         self.groupName = groupName
     }
 
-    var urgent: Bool { account.kind == .totp && remaining <= 5 }
+    var urgent: Bool { QuickAccess.isExpiring(kind: account.kind, remaining: remaining) }
 
     var accessibilitySummary: String {
         let label = account.issuer.isEmpty ? account.name : "\(account.issuer), \(account.name)"

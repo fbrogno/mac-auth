@@ -1889,6 +1889,22 @@
         }
       }
     },
+    "Der Tresor lässt sich nicht öffnen. Öffne MacAuth, dort stehen die weiteren Möglichkeiten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Tresor lässt sich nicht öffnen. Öffne MacAuth, dort stehen die weiteren Möglichkeiten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault cannot be opened. Open MacAuth, where the further options are."
+          }
+        }
+      }
+    },
     "Der bisherige Tresor lässt sich gerade nicht öffnen. Seine Datei bleibt erhalten, du kannst sie später über „Frühere Fassung wiederherstellen“ zurückholen. Der neue Tresor enthält nur die ausgewählten Konten.": {
       "localizations": {
         "de": {
@@ -2189,22 +2205,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "The shortcut needs at least ⌘, ⌥ or ⌃."
-          }
-        }
-      }
-    },
-    "Die Kombination holt das Fenster nach vorn, wenn du es brauchst, und blendet es beim erneuten Drücken wieder aus. Sie braucht mindestens ⌘, ⌥ oder ⌃.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Die Kombination holt das Fenster nach vorn, wenn du es brauchst, und blendet es beim erneuten Drücken wieder aus. Sie braucht mindestens ⌘, ⌥ oder ⌃."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The shortcut brings the window to the front when you need it and hides it when pressed again. It needs at least ⌘, ⌥ or ⌃."
           }
         }
       }
@@ -2689,6 +2689,22 @@
         }
       }
     },
+    "Ein kleines Fenster über jeder App: Konto tippen, mit ↵ den Code kopieren, das Fenster verschwindet und die vorige App ist wieder vorn. Ist MacAuth gesperrt, zeigt es nur die Entsperrung. Die Kombination braucht mindestens ⌘, ⌥ oder ⌃.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein kleines Fenster über jeder App: Konto tippen, mit ↵ den Code kopieren, das Fenster verschwindet und die vorige App ist wieder vorn. Ist MacAuth gesperrt, zeigt es nur die Entsperrung. Die Kombination braucht mindestens ⌘, ⌥ oder ⌃."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A small window above any app: type an account, press ↵ to copy the code, the window disappears and the previous app is in front again. While MacAuth is locked it only shows the unlock button. The shortcut needs at least ⌘, ⌥ or ⌃."
+          }
+        }
+      }
+    },
     "Ein unverschlüsselter Aegis-Tresor mit Gruppen, Favoriten und Notizen.": {
       "localizations": {
         "de": {
@@ -2833,6 +2849,22 @@
         }
       }
     },
+    "Entsperren abgebrochen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entsperren abgebrochen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock cancelled."
+          }
+        }
+      }
+    },
     "Entsperren abgebrochen. Tippe auf „Entsperren“, wenn du bereit bist.": {
       "localizations": {
         "de": {
@@ -2861,6 +2893,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Require Touch ID or password to unlock"
+          }
+        }
+      }
+    },
+    "Entsperren nicht möglich. Versuche es noch einmal.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entsperren nicht möglich. Versuche es noch einmal."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not unlock. Try again."
           }
         }
       }
@@ -3649,6 +3697,22 @@
         }
       }
     },
+    "Hier ist noch nichts zu kopieren. Öffne MacAuth, um loszulegen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hier ist noch nichts zu kopieren. Öffne MacAuth, um loszulegen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to copy yet. Open MacAuth to get started."
+          }
+        }
+      }
+    },
     "Hinzufügen": {
       "localizations": {
         "de": {
@@ -4337,22 +4401,6 @@
         }
       }
     },
-    "MacAuth anzeigen": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacAuth anzeigen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show MacAuth"
-          }
-        }
-      }
-    },
     "MacAuth entsperren": {
       "localizations": {
         "de": {
@@ -4449,22 +4497,6 @@
         }
       }
     },
-    "MacAuth mit einer Tastenkombination anzeigen": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "MacAuth mit einer Tastenkombination anzeigen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show MacAuth with a keyboard shortcut"
-          }
-        }
-      }
-    },
     "MacAuth sperren (⌘L)": {
       "localizations": {
         "de": {
@@ -4477,6 +4509,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lock MacAuth (⌘L)"
+          }
+        }
+      }
+    },
+    "MacAuth öffnen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth öffnen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open MacAuth"
           }
         }
       }
@@ -4541,6 +4589,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Scan with Camera"
+          }
+        }
+      }
+    },
+    "Mit Touch ID entsperren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit Touch ID entsperren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock with Touch ID"
           }
         }
       }
@@ -5313,6 +5377,38 @@
         }
       }
     },
+    "Schnellzugriff": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schnellzugriff"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Access"
+          }
+        }
+      }
+    },
+    "Schnellzugriff mit Tastenkombination": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schnellzugriff mit Tastenkombination"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Access with keyboard shortcut"
+          }
+        }
+      }
+    },
     "Schon vorhanden": {
       "localizations": {
         "de": {
@@ -5681,6 +5777,22 @@
         }
       }
     },
+    "Symbol in der Menüleiste": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symbol in der Menüleiste"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu bar icon"
+          }
+        }
+      }
+    },
     "Systemeinstellungen öffnen": {
       "localizations": {
         "de": {
@@ -5981,6 +6093,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Previous version"
+          }
+        }
+      }
+    },
+    "Warte auf Touch ID …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warte auf Touch ID …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for Touch ID …"
           }
         }
       }
@@ -6465,6 +6593,22 @@
         }
       }
     },
+    "esc schließen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "esc schließen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "esc to close"
+          }
+        }
+      }
+    },
     "optional": {
       "localizations": {
         "de": {
@@ -6637,6 +6781,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "••••••••••••"
+          }
+        }
+      }
+    },
+    "↵ kopieren · ⌘1–⌘9 direkt": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↵ kopieren · ⌘1–⌘9 direkt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↵ copy · ⌘1–⌘9 directly"
+          }
+        }
+      }
+    },
+    "↵ kopiert den aktuellen Code, ⌥↵ den nächsten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↵ kopiert den aktuellen Code, ⌥↵ den nächsten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↵ copies the current code, ⌥↵ the next one"
+          }
+        }
+      }
+    },
+    "↵ kopiert den nächsten Code und zählt weiter": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↵ kopiert den nächsten Code und zählt weiter"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↵ copies the next code and counts on"
           }
         }
       }
