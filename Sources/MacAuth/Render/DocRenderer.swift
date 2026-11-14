@@ -24,7 +24,7 @@ enum DocRenderer {
         for scheme in [ColorScheme.light, .dark] {
             let tag = scheme == .light ? "light" : "dark"
             let suffix = englishOnly ? "-en" : ""
-            let english = ["main-grid", "first-run", "import-review", "settings", "quick-access", "quick-access-search", "quick-access-locked"]
+            let english = ["main-grid", "first-run", "import-review", "settings", "quick-access", "quick-access-search", "quick-access-locked", "quick-access-frames"]
             func want(_ name: String) -> Bool { (only == nil || only!.contains(name)) && (!englishOnly || english.contains(name)) }
 
             if want("main-grid") {
@@ -148,6 +148,15 @@ enum DocRenderer {
                 let model = demoModel(.unlocked, accounts: DemoData.quickAccessAccounts)
                 panel(model: model, query: "git", scheme: scheme, to: url.appendingPathComponent("quick-access-search-\(tag)\(suffix).png"))
             }
+            if want("quick-access-frames") {
+                // Frames for the README animation, with a transparent backdrop so they can sit over the main window:
+                // empty, then typing "g", "gi", "git", then the copied confirmation. Demo data only.
+                for (name, query, copied) in [("qa-0", "", false), ("qa-g", "g", false), ("qa-gi", "gi", false), ("qa-git", "git", false), ("qa-copied", "git", true)] {
+                    let model = demoModel(.unlocked, accounts: DemoData.quickAccessAccounts)
+                    panel(model: model, query: query, copied: copied, transparent: true, scheme: scheme,
+                          to: url.appendingPathComponent("\(name)-\(tag)\(suffix).png"))
+                }
+            }
             if want("quick-access-locked") {
                 let model = demoModel(.locked)
                 panel(model: model, scheme: scheme, to: url.appendingPathComponent("quick-access-locked-\(tag)\(suffix).png"))
@@ -216,15 +225,16 @@ enum DocRenderer {
     }
 
     /// The quick access panel on its own (it is a floating panel without window chrome), with its shadow on the backdrop.
-    private static func panel(model: AppModel, query: String = "", selected: Int = 0, explicit: Bool = false, scheme: ColorScheme, to file: URL) {
+    private static func panel(model: AppModel, query: String = "", selected: Int = 0, explicit: Bool = false, copied: Bool = false, transparent: Bool = false, scheme: ColorScheme, to file: URL) {
         let state = QuickPanelState(model: model)
         state.query = query
         state.selectedIndex = selected
         state.selectionExplicit = explicit
-        sheet(QuickAccessView(model: model, state: state, controller: nil), scheme: scheme, to: file, padding: 56, opaque: false, framed: false)
+        if copied { state.copiedID = state.rows(in: model).first?.id }
+        sheet(QuickAccessView(model: model, state: state, controller: nil), scheme: scheme, to: file, padding: 56, opaque: false, framed: false, clear: transparent)
     }
 
-    private static func sheet(_ content: some View, scheme: ColorScheme, to file: URL, padding: CGFloat = 40, opaque: Bool = true, framed: Bool = true) {
+    private static func sheet(_ content: some View, scheme: ColorScheme, to file: URL, padding: CGFloat = 40, opaque: Bool = true, framed: Bool = true, clear: Bool = false) {
         let hosting = NSHostingView(rootView: content
             .background(opaque ? Color(nsColor: .windowBackgroundColor) : Color.clear)
             .environment(\.fixedNow, DemoData.now)
@@ -247,7 +257,7 @@ enum DocRenderer {
             FileHandle.standardError.write(Data("Konnte \(file.lastPathComponent) nicht rendern\n".utf8))
             return
         }
-        write(Backdrop(image: image, scheme: scheme, padding: padding, framed: framed), to: file)
+        write(Backdrop(image: image, scheme: scheme, padding: padding, framed: framed, clear: clear), to: file)
     }
 
     /// On a screen but fully transparent: macOS stops drawing windows that are far off screen.
@@ -301,6 +311,8 @@ private struct Backdrop: View {
     var padding: CGFloat = 36
     /// False for the panel: it brings its own rounded shape, no window frame is drawn around it.
     var framed = true
+    /// No backdrop colour: for frames that are composited over another image.
+    var clear = false
 
     var body: some View {
         let dark = scheme == .dark
@@ -309,7 +321,7 @@ private struct Backdrop: View {
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.primary.opacity(framed ? (dark ? 0.16 : 0.1) : 0)))
             .shadow(color: .black.opacity(dark ? 0.5 : 0.22), radius: 22, y: 10)
             .padding(padding)
-            .background(dark ? Color(red: 0.08, green: 0.09, blue: 0.12) : Color(red: 0.90, green: 0.92, blue: 0.95))
+            .background(clear ? Color.clear : (dark ? Color(red: 0.08, green: 0.09, blue: 0.12) : Color(red: 0.90, green: 0.92, blue: 0.95)))
     }
 }
 

@@ -9,7 +9,11 @@ von `releases/latest/download/appcast.xml`.
 1. Version in der Datei `VERSION` erhöhen (z. B. `1.1.0`), committen, per PR nach `main`.
 2. Auf `main` den Tag setzen und pushen: `git tag v$(cat VERSION) && git push origin v$(cat VERSION)`.
 3. Der Workflow `Release` bricht ab, wenn Tag und `VERSION` nicht übereinstimmen. Sonst entstehen
-   `MacAuth-<Version>.dmg` und `appcast.xml` am Release, mit automatisch erzeugten Release-Notes.
+   `MacAuth-<Version>.dmg` und `appcast.xml` am Release, mit automatisch erzeugten Release-Notes. Dazu kommt
+   `MacAuth.dmg`, eine byte-gleiche Kopie der DMG unter festem Namen: Der Link
+   `https://github.com/fbrogno/mac-auth/releases/latest/download/MacAuth.dmg` im README zeigt dadurch immer auf die
+   neueste Version. Der Appcast verweist weiter auf die versionierte Datei; die Kopie hat dieselbe Attestation
+   (der Workflow nennt beide Dateien als Subject), und die `.sha256`-Datei nennt die versionierte Datei, der Hash ist derselbe.
 
 Die Build-Nummer ist die Anzahl der Commits (`git rev-list --count HEAD`), Sparkle vergleicht sie.
 
@@ -106,7 +110,8 @@ Ad-hoc-Builds (CI, `SIGN_IDENTITY=-`) tragen dieselben Entitlements, aber ohne H
 
 ## Release prüfen
 
-Jeder Release enthält `MacAuth-<Version>.dmg`, `MacAuth-<Version>.dmg.sha256` und `appcast.xml`. Die DMG hat eine
+Jeder Release enthält `MacAuth-<Version>.dmg`, `MacAuth-<Version>.dmg.sha256`, `appcast.xml` und `MacAuth.dmg` (Kopie
+der versionierten DMG, siehe oben). Die DMGs haben eine
 Build-Provenance-Attestation (GitHub Actions, Sigstore). Prüfen, dass eine heruntergeladene DMG aus diesem Repo
 und diesem Workflow stammt:
 
