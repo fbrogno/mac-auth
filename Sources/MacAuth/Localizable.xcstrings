@@ -1,0 +1,4406 @@
+{
+  "sourceLanguage": "de",
+  "strings": {
+    "%@, Code %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, Code %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, code %2$@"
+          }
+        }
+      }
+    },
+    "%@, Code %@, noch %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, Code %2$@, noch %3$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, code %2$@, %3$@ left"
+          }
+        }
+      }
+    },
+    "%lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        }
+      }
+    },
+    "%lld Konten": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Konto"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Konten"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld account"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld accounts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Konten gefunden. Es wird erst gespeichert, wenn du auf „Importieren“ klickst.": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Konto gefunden. Es wird erst gespeichert, wenn du auf „Importieren“ klickst."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Konten gefunden. Es wird erst gespeichert, wenn du auf „Importieren“ klickst."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld account found. Nothing is saved until you click “Import”."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld accounts found. Nothing is saved until you click “Import”."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Konten importieren": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Konto importieren"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Konten importieren"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Import %lld account"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Import %lld accounts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld davon gibt es schon und sind abgewählt.": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld davon gibt es schon und ist abgewählt."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld davon gibt es schon und sind abgewählt."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld of them already exists and is deselected."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld of them already exist and are deselected."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld von %lld gescannt": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld von %2$lld gescannt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld of %2$lld scanned"
+          }
+        }
+      }
+    },
+    "10 Sekunden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 Sekunden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 seconds"
+          }
+        }
+      }
+    },
+    "30 Sekunden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 Sekunden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 seconds"
+          }
+        }
+      }
+    },
+    "6": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6"
+          }
+        }
+      }
+    },
+    "60 Sekunden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "60 Sekunden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "60 seconds"
+          }
+        }
+      }
+    },
+    "7": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7"
+          }
+        }
+      }
+    },
+    "8": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "8"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "8"
+          }
+        }
+      }
+    },
+    "Abbrechen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abbrechen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Abfrage ausschalten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abfrage ausschalten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off prompt"
+          }
+        }
+      }
+    },
+    "Algorithmus": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algorithmus"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algorithm"
+          }
+        }
+      }
+    },
+    "Alle": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All"
+          }
+        }
+      }
+    },
+    "Alle Konten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Konten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All accounts"
+          }
+        }
+      }
+    },
+    "Alle Konten der Gruppe übertragen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Konten der Gruppe übertragen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transfer all accounts in this group …"
+          }
+        }
+      }
+    },
+    "Alle Konten und Gruppen, verschlüsselt mit einem Passwort deiner Wahl.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Konten und Gruppen, verschlüsselt mit einem Passwort deiner Wahl."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All accounts and groups, encrypted with a password of your choice."
+          }
+        }
+      }
+    },
+    "Alle in Gruppe …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle in Gruppe …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move all to group …"
+          }
+        }
+      }
+    },
+    "Alle wählen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle wählen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select all"
+          }
+        }
+      }
+    },
+    "Alles auswählen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles auswählen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select All"
+          }
+        }
+      }
+    },
+    "Allgemein": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allgemein"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General"
+          }
+        }
+      }
+    },
+    "Als Liste": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Als Liste"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As List"
+          }
+        }
+      }
+    },
+    "Als Raster": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Als Raster"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As Grid"
+          }
+        }
+      }
+    },
+    "An Backups erinnern": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An Backups erinnern"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remind me to back up"
+          }
+        }
+      }
+    },
+    "An diesem Mac wurde keine Kamera gefunden. Wähle stattdessen einen Screenshot des QR-Codes.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An diesem Mac wurde keine Kamera gefunden. Wähle stattdessen einen Screenshot des QR-Codes."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No camera was found on this Mac. Choose a screenshot of the QR code instead."
+          }
+        }
+      }
+    },
+    "Anlegen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anlegen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create"
+          }
+        }
+      }
+    },
+    "Anzeige": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anzeige"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display"
+          }
+        }
+      }
+    },
+    "Auf Handy übertragen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf Handy übertragen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transfer to Phone"
+          }
+        }
+      }
+    },
+    "Auf Handy übertragen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf Handy übertragen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transfer to Phone …"
+          }
+        }
+      }
+    },
+    "Aus Backup wiederherstellen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Backup wiederherstellen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore from Backup …"
+          }
+        }
+      }
+    },
+    "Aus Favoriten entfernen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Favoriten entfernen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove from Favorites"
+          }
+        }
+      }
+    },
+    "Aus Google Authenticator importieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Google Authenticator importieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import from Google Authenticator"
+          }
+        }
+      }
+    },
+    "Aus Google Authenticator importieren …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Google Authenticator importieren …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import from Google Authenticator …"
+          }
+        }
+      }
+    },
+    "Ausschneiden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ausschneiden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cut"
+          }
+        }
+      }
+    },
+    "Aussteller": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aussteller"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Issuer"
+          }
+        }
+      }
+    },
+    "Authentifizierung nicht möglich": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentifizierung nicht möglich"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication not possible"
+          }
+        }
+      }
+    },
+    "Automatisch sperren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatisch sperren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock automatically"
+          }
+        }
+      }
+    },
+    "Backup exportieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup exportieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export Backup"
+          }
+        }
+      }
+    },
+    "Backup exportieren …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup exportieren …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export Backup …"
+          }
+        }
+      }
+    },
+    "Backup wiederherstellen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup wiederherstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Backup"
+          }
+        }
+      }
+    },
+    "Backup wiederherstellen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup wiederherstellen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Backup …"
+          }
+        }
+      }
+    },
+    "Bearbeiten …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bearbeiten …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit …"
+          }
+        }
+      }
+    },
+    "Bei mehreren QR-Codes scannst du einen nach dem anderen. Ein Bild kannst du auch auf das Fenster ziehen oder mit ⌘V einfügen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei mehreren QR-Codes scannst du einen nach dem anderen. Ein Bild kannst du auch auf das Fenster ziehen oder mit ⌘V einfügen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If there are several QR codes, scan them one after another. You can also drag an image onto the window or paste it with ⌘V."
+          }
+        }
+      }
+    },
+    "Beim Ruhezustand, bei gesperrtem Bildschirm und beim Benutzerwechsel sperrt MacAuth immer.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beim Ruhezustand, bei gesperrtem Bildschirm und beim Benutzerwechsel sperrt MacAuth immer."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth always locks on sleep, when the screen is locked and when switching users."
+          }
+        }
+      }
+    },
+    "Code kopieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code kopieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Code"
+          }
+        }
+      }
+    },
+    "Codes erst bei Hover oder Auswahl zeigen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codes erst bei Hover oder Auswahl zeigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show codes only on hover or selection"
+          }
+        }
+      }
+    },
+    "Danach": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danach"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        }
+      }
+    },
+    "Darstellung": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Darstellung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View"
+          }
+        }
+      }
+    },
+    "Darstellung wechseln": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Darstellung wechseln"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change view"
+          }
+        }
+      }
+    },
+    "Das Backup wurde gespeichert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Backup wurde gespeichert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The backup was saved."
+          }
+        }
+      }
+    },
+    "Das Konto „%@“ lässt sich nicht im Google-Format übertragen. Nutze stattdessen einen QR-Code je Konto.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Konto „%@“ lässt sich nicht im Google-Format übertragen. Nutze stattdessen einen QR-Code je Konto."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The account “%@” cannot be transferred in Google’s format. Use one QR code per account instead."
+          }
+        }
+      }
+    },
+    "Das Passwort muss mindestens %lld Zeichen lang sein.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Passwort muss mindestens %lld Zeichen lang sein."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The password must be at least %lld characters long."
+          }
+        }
+      }
+    },
+    "Das ist die einzige Verbindung, die MacAuth ins Internet aufbaut. Es werden keine Daten über dich gesendet.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist die einzige Verbindung, die MacAuth ins Internet aufbaut. Es werden keine Daten über dich gesendet."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is the only connection MacAuth makes to the internet. No data about you is sent."
+          }
+        }
+      }
+    },
+    "Das ist kein Authenticator-Code.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist kein Authenticator-Code."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is not an authenticator code."
+          }
+        }
+      }
+    },
+    "Das ist kein Google-Authenticator-Export.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist kein Google-Authenticator-Export."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is not a Google Authenticator export."
+          }
+        }
+      }
+    },
+    "Das ist kein otpauth-Link.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist kein otpauth-Link."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is not an otpauth link."
+          }
+        }
+      }
+    },
+    "Das ist keine MacAuth-Sicherung.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist keine MacAuth-Sicherung."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is not a MacAuth backup."
+          }
+        }
+      }
+    },
+    "Datei wählen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datei wählen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose File …"
+          }
+        }
+      }
+    },
+    "Deine Codes bleiben auf diesem Mac.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Codes bleiben auf diesem Mac."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your codes stay on this Mac."
+          }
+        }
+      }
+    },
+    "Der Export enthält zu viele Konten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Export enthält zu viele Konten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The export contains too many accounts."
+          }
+        }
+      }
+    },
+    "Der Link enthält einen ungültigen Wert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Link enthält einen ungültigen Wert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The link contains an invalid value."
+          }
+        }
+      }
+    },
+    "Der Schlüssel bleibt verborgen und lässt sich nicht ändern. Für einen anderen Schlüssel lege ein neues Konto an.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel bleibt verborgen und lässt sich nicht ändern. Für einen anderen Schlüssel lege ein neues Konto an."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key stays hidden and cannot be changed. To use a different key, create a new account."
+          }
+        }
+      }
+    },
+    "Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar, zum Beispiel nach einer Neuinstallation oder einem anderen Mac. Deine Codes lassen sich nur noch aus einem Backup wiederherstellen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar, zum Beispiel nach einer Neuinstallation oder einem anderen Mac. Deine Codes lassen sich nur noch aus einem Backup wiederherstellen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key to this vault can no longer be used on this Mac, for example after a reinstall or on a different Mac. Your codes can only be restored from a backup."
+          }
+        }
+      }
+    },
+    "Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key to this vault can no longer be used on this Mac."
+          }
+        }
+      }
+    },
+    "Der Schlüssel enthält ungültige Zeichen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel enthält ungültige Zeichen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key contains invalid characters."
+          }
+        }
+      }
+    },
+    "Der Schlüssel hat eine ungültige Länge.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel hat eine ungültige Länge."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key has an invalid length."
+          }
+        }
+      }
+    },
+    "Der Schlüssel im Link ist ungültig.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel im Link ist ungültig."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key in the link is invalid."
+          }
+        }
+      }
+    },
+    "Der Schlüssel ist leer.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel ist leer."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key is empty."
+          }
+        }
+      }
+    },
+    "Der Schlüssel ist zu lang.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel ist zu lang."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key is too long."
+          }
+        }
+      }
+    },
+    "Der Schlüssel liegt im Schlüsselbund. Wer an deinem entsperrten Mac sitzt, kann MacAuth ohne Abfrage öffnen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel liegt im Schlüsselbund. Wer an deinem entsperrten Mac sitzt, kann MacAuth ohne Abfrage öffnen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key is in the keychain. Anyone at your unlocked Mac can open MacAuth without a prompt."
+          }
+        }
+      }
+    },
+    "Der Schlüssel liegt in der Secure Enclave deines Macs. Ohne Touch ID oder Passwort lässt sich der Tresor nicht öffnen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel liegt in der Secure Enclave deines Macs. Ohne Touch ID oder Passwort lässt sich der Tresor nicht öffnen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key is in your Mac’s Secure Enclave. The vault cannot be opened without Touch ID or your password."
+          }
+        }
+      }
+    },
+    "Der Schlüssel wandert dann aus der Secure Enclave in den Schlüsselbund. Jeder, der an deinem entsperrten Mac sitzt, kommt an die Codes.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel wandert dann aus der Secure Enclave in den Schlüsselbund. Jeder, der an deinem entsperrten Mac sitzt, kommt an die Codes."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key then moves from the Secure Enclave to the keychain. Anyone at your unlocked Mac can reach the codes."
+          }
+        }
+      }
+    },
+    "Der Schlüsselbund meldet einen Fehler.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüsselbund meldet einen Fehler."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The keychain reported an error."
+          }
+        }
+      }
+    },
+    "Der Tresor hat ein unbekanntes Format. Bitte aktualisiere MacAuth.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Tresor hat ein unbekanntes Format. Bitte aktualisiere MacAuth."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault has an unknown format. Please update MacAuth."
+          }
+        }
+      }
+    },
+    "Der Tresor ist beschädigt oder wurde verändert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Tresor ist beschädigt oder wurde verändert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault is damaged or has been altered."
+          }
+        }
+      }
+    },
+    "Der Tresor ist gesperrt.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Tresor ist gesperrt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault is locked."
+          }
+        }
+      }
+    },
+    "Der Tresor ist mit einer anderen Schutzart gesichert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Tresor ist mit einer anderen Schutzart gesichert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault is protected in a different way."
+          }
+        }
+      }
+    },
+    "Der otpauth-Link ist fehlerhaft.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der otpauth-Link ist fehlerhaft."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The otpauth link is malformed."
+          }
+        }
+      }
+    },
+    "Der otpauth-Link ist zu lang.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der otpauth-Link ist zu lang."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The otpauth link is too long."
+          }
+        }
+      }
+    },
+    "Der vorhandene, nicht mehr nutzbare Tresor wird dabei ersetzt.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der vorhandene, nicht mehr nutzbare Tresor wird dabei ersetzt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The existing vault, which can no longer be used, will be replaced."
+          }
+        }
+      }
+    },
+    "Der vorhandene, nicht mehr nutzbare Tresor wird ersetzt.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der vorhandene, nicht mehr nutzbare Tresor wird ersetzt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The existing vault, which can no longer be used, will be replaced."
+          }
+        }
+      }
+    },
+    "Die Abfrage mit Touch ID oder Passwort ist fehlgeschlagen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Abfrage mit Touch ID oder Passwort ist fehlgeschlagen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Touch ID or password prompt failed."
+          }
+        }
+      }
+    },
+    "Die Angaben zur Reihenfolge der QR-Codes sind widersprüchlich.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Angaben zur Reihenfolge der QR-Codes sind widersprüchlich."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The information about the order of the QR codes is contradictory."
+          }
+        }
+      }
+    },
+    "Die Authentifizierung ist fehlgeschlagen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Authentifizierung ist fehlgeschlagen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication failed."
+          }
+        }
+      }
+    },
+    "Die Datei konnte nicht gelesen oder geschrieben werden.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datei konnte nicht gelesen oder geschrieben werden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file could not be read or written."
+          }
+        }
+      }
+    },
+    "Die Entsperrung wurde abgebrochen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Entsperrung wurde abgebrochen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlocking was cancelled."
+          }
+        }
+      }
+    },
+    "Die Exportdaten sind beschädigt oder unvollständig.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Exportdaten sind beschädigt oder unvollständig."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The export data is damaged or incomplete."
+          }
+        }
+      }
+    },
+    "Die Exportdaten sind zu groß.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Exportdaten sind zu groß."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The export data is too large."
+          }
+        }
+      }
+    },
+    "Die Konten bleiben erhalten und sind danach in keiner Gruppe.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Konten bleiben erhalten und sind danach in keiner Gruppe."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The accounts are kept and will no longer be in any group."
+          }
+        }
+      }
+    },
+    "Die Passwörter stimmen nicht überein.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Passwörter stimmen nicht überein."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The passwords do not match."
+          }
+        }
+      }
+    },
+    "Die Sicherung hat ein unbekanntes Format. Bitte aktualisiere MacAuth.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Sicherung hat ein unbekanntes Format. Bitte aktualisiere MacAuth."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The backup has an unknown format. Please update MacAuth."
+          }
+        }
+      }
+    },
+    "Die Sicherung verwendet nicht unterstützte oder unsichere Parameter.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Sicherung verwendet nicht unterstützte oder unsichere Parameter."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The backup uses unsupported or insecure parameters."
+          }
+        }
+      }
+    },
+    "Die Tresordatei konnte nicht gelesen oder geschrieben werden.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Tresordatei konnte nicht gelesen oder geschrieben werden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault file could not be read or written."
+          }
+        }
+      }
+    },
+    "Die Zugriffsregel für den Schlüssel konnte nicht erstellt werden.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Zugriffsregel für den Schlüssel konnte nicht erstellt werden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The access rule for the key could not be created."
+          }
+        }
+      }
+    },
+    "Diese Gruppe ist leer": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Gruppe ist leer"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This group is empty"
+          }
+        }
+      }
+    },
+    "Diese QR-Codes enthalten deine Geheimnisse. Zeige sie niemandem und schließe das Fenster danach.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese QR-Codes enthalten deine Geheimnisse. Zeige sie niemandem und schließe das Fenster danach."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These QR codes contain your secrets. Show them to no one and close the window afterwards."
+          }
+        }
+      }
+    },
+    "Dieser Codetyp wird nicht unterstützt.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Codetyp wird nicht unterstützt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This code type is not supported."
+          }
+        }
+      }
+    },
+    "Dieser Mac hat keine Secure Enclave.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Mac hat keine Secure Enclave."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac has no Secure Enclave."
+          }
+        }
+      }
+    },
+    "Dieser QR-Code gehört zu einem anderen Export. Scanne die Codes eines Exports nacheinander.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser QR-Code gehört zu einem anderen Export. Scanne die Codes eines Exports nacheinander."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This QR code belongs to a different export. Scan the codes of one export one after another."
+          }
+        }
+      }
+    },
+    "Dieses Konto gibt es schon.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Konto gibt es schon."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This account already exists."
+          }
+        }
+      }
+    },
+    "Du siehst die Konten vorher durch. Es wird nichts überschrieben.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du siehst die Konten vorher durch. Es wird nichts überschrieben."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You review the accounts first. Nothing is overwritten."
+          }
+        }
+      }
+    },
+    "Ein QR-Code je Konto": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein QR-Code je Konto"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One QR code per account"
+          }
+        }
+      }
+    },
+    "Einfügen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einfügen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste"
+          }
+        }
+      }
+    },
+    "Einstellung nicht geändert": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einstellung nicht geändert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setting not changed"
+          }
+        }
+      }
+    },
+    "Entsperren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entsperren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock"
+          }
+        }
+      }
+    },
+    "Entsperren abgebrochen. Tippe auf „Entsperren“, wenn du bereit bist.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entsperren abgebrochen. Tippe auf „Entsperren“, wenn du bereit bist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlocking was cancelled. Click “Unlock” when you are ready."
+          }
+        }
+      }
+    },
+    "Entsperren mit Touch ID oder Passwort verlangen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entsperren mit Touch ID oder Passwort verlangen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Require Touch ID or password to unlock"
+          }
+        }
+      }
+    },
+    "Entsperren ohne Touch ID oder Passwort?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entsperren ohne Touch ID oder Passwort?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock without Touch ID or password?"
+          }
+        }
+      }
+    },
+    "Erst wenn du etwas hinzufügst, legt MacAuth den geschützten Tresor an.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erst wenn du etwas hinzufügst, legt MacAuth den geschützten Tresor an."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth only creates the protected vault once you add something."
+          }
+        }
+      }
+    },
+    "Erweitert": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erweitert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Advanced"
+          }
+        }
+      }
+    },
+    "Es gibt bereits einen Tresor.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es gibt bereits einen Tresor."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A vault already exists."
+          }
+        }
+      }
+    },
+    "Es gibt keine ältere Fassung des Tresors.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es gibt keine ältere Fassung des Tresors."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no earlier version of the vault."
+          }
+        }
+      }
+    },
+    "Es gibt noch keinen Tresor.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es gibt noch keinen Tresor."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no vault yet."
+          }
+        }
+      }
+    },
+    "Es ist ein unerwarteter Fehler aufgetreten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es ist ein unerwarteter Fehler aufgetreten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An unexpected error occurred."
+          }
+        }
+      }
+    },
+    "Exportieren …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportieren …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export …"
+          }
+        }
+      }
+    },
+    "Farbe": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Farbe"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colour"
+          }
+        }
+      }
+    },
+    "Farbe %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Farbe %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colour %@"
+          }
+        }
+      }
+    },
+    "Favoriten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoriten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorites"
+          }
+        }
+      }
+    },
+    "Fenster bei Bildschirmfreigabe und Screenshots ausblenden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fenster bei Bildschirmfreigabe und Screenshots ausblenden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide window from screen sharing and screenshots"
+          }
+        }
+      }
+    },
+    "Fenster nach dem Kopieren ausblenden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fenster nach dem Kopieren ausblenden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide window after copying"
+          }
+        }
+      }
+    },
+    "Fertig": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fertig"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Format": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Format"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Format"
+          }
+        }
+      }
+    },
+    "Füge den Schlüssel aus dem QR-Code-Fenster der Website ein. Einen otpauth-Link kannst du direkt hier einfügen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Füge den Schlüssel aus dem QR-Code-Fenster der Website ein. Einen otpauth-Link kannst du direkt hier einfügen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste the key shown next to the website’s QR code. You can paste an otpauth link right here."
+          }
+        }
+      }
+    },
+    "Gib einen Setup-Schlüssel oder otpauth-Link ein.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gib einen Setup-Schlüssel oder otpauth-Link ein."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a setup key or otpauth link."
+          }
+        }
+      }
+    },
+    "Google-Format": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google-Format"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google format"
+          }
+        }
+      }
+    },
+    "Gruppe": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppe"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group"
+          }
+        }
+      }
+    },
+    "Gruppe bearbeiten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppe bearbeiten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Group"
+          }
+        }
+      }
+    },
+    "Gruppe bearbeiten …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppe bearbeiten …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Group …"
+          }
+        }
+      }
+    },
+    "Gruppe löschen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppe löschen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Group"
+          }
+        }
+      }
+    },
+    "Gruppe löschen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppe löschen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Group …"
+          }
+        }
+      }
+    },
+    "Gruppe „%@“ löschen?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppe „%@“ löschen?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete group “%@”?"
+          }
+        }
+      }
+    },
+    "Gruppen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groups"
+          }
+        }
+      }
+    },
+    "Gut": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gut"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good"
+          }
+        }
+      }
+    },
+    "Gültiger Schlüssel": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gültiger Schlüssel"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valid key"
+          }
+        }
+      }
+    },
+    "HOTP": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HOTP"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HOTP"
+          }
+        }
+      }
+    },
+    "Halte den QR-Code ruhig ins Bild. Das Bild wird nicht gespeichert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte den QR-Code ruhig ins Bild. Das Bild wird nicht gespeichert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold the QR code steady in view. The image is not saved."
+          }
+        }
+      }
+    },
+    "Halte den QR-Code vor die Kamera deines Macs oder mache einen Screenshot und wähle ihn hier aus.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte den QR-Code vor die Kamera deines Macs oder mache einen Screenshot und wähle ihn hier aus."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold the QR code up to your Mac’s camera, or take a screenshot and choose it here."
+          }
+        }
+      }
+    },
+    "Hinzufügen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinzufügen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        }
+      }
+    },
+    "Im Export-Link fehlen die Daten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Im Export-Link fehlen die Daten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The export link has no data."
+          }
+        }
+      }
+    },
+    "Im Link fehlt der Schlüssel.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Im Link fehlt der Schlüssel."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The link has no key."
+          }
+        }
+      }
+    },
+    "Import und Backup": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import und Backup"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import and backup"
+          }
+        }
+      }
+    },
+    "Importiere deine Codes aus Google Authenticator oder lege ein Konto von Hand an.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importiere deine Codes aus Google Authenticator oder lege ein Konto von Hand an."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import your codes from Google Authenticator or add an account by hand."
+          }
+        }
+      }
+    },
+    "Importieren …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importieren …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import …"
+          }
+        }
+      }
+    },
+    "In Gruppe verschieben": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Gruppe verschieben"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to Group"
+          }
+        }
+      }
+    },
+    "In der Zwischenablage liegt kein Bild und kein otpauth-Link.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In der Zwischenablage liegt kein Bild und kein otpauth-Link."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The clipboard holds neither an image nor an otpauth link."
+          }
+        }
+      }
+    },
+    "In diesem Bild wurde kein QR-Code gefunden.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In diesem Bild wurde kein QR-Code gefunden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No QR code was found in this image."
+          }
+        }
+      }
+    },
+    "In dieser Auswahl gibt es keine Konten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In dieser Auswahl gibt es keine Konten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There are no accounts in this selection."
+          }
+        }
+      }
+    },
+    "Intervall: %lld Sekunden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intervall: %lld Sekunden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval: %lld seconds"
+          }
+        }
+      }
+    },
+    "Keine": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
+    "Keine Datei gewählt": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Datei gewählt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No file chosen"
+          }
+        }
+      }
+    },
+    "Keine Gruppe": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Gruppe"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No group"
+          }
+        }
+      }
+    },
+    "Keine Treffer": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Treffer"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Results"
+          }
+        }
+      }
+    },
+    "Konten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accounts"
+          }
+        }
+      }
+    },
+    "Konten durchsuchen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konten durchsuchen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search accounts"
+          }
+        }
+      }
+    },
+    "Konten prüfen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konten prüfen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review Accounts"
+          }
+        }
+      }
+    },
+    "Konto": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konto"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account"
+          }
+        }
+      }
+    },
+    "Konto bearbeiten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konto bearbeiten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Account"
+          }
+        }
+      }
+    },
+    "Konto hinzufügen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konto hinzufügen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Account"
+          }
+        }
+      }
+    },
+    "Konto hinzufügen (⌘N)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konto hinzufügen (⌘N)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add account (⌘N)"
+          }
+        }
+      }
+    },
+    "Konto importieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konto importieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import account"
+          }
+        }
+      }
+    },
+    "Konto löschen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konto löschen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Account …"
+          }
+        }
+      }
+    },
+    "Kopieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kopieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        }
+      }
+    },
+    "Kopiert": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kopiert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        }
+      }
+    },
+    "Liste": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "List"
+          }
+        }
+      }
+    },
+    "Löschen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Löschen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "Löschen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Löschen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete …"
+          }
+        }
+      }
+    },
+    "MacAuth": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth"
+          }
+        }
+      }
+    },
+    "MacAuth entsperren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth entsperren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock MacAuth"
+          }
+        }
+      }
+    },
+    "MacAuth hat keinen Zugriff auf die Kamera. Du kannst ihn in den Systemeinstellungen erlauben oder stattdessen einen Screenshot wählen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth hat keinen Zugriff auf die Kamera. Du kannst ihn in den Systemeinstellungen erlauben oder stattdessen einen Screenshot wählen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth has no access to the camera. You can allow it in System Settings, or choose a screenshot instead."
+          }
+        }
+      }
+    },
+    "MacAuth ist gesperrt": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth ist gesperrt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth is locked"
+          }
+        }
+      }
+    },
+    "MacAuth sperren (⌘L)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth sperren (⌘L)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock MacAuth (⌘L)"
+          }
+        }
+      }
+    },
+    "Manuell hinzufügen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manuell hinzufügen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add manually"
+          }
+        }
+      }
+    },
+    "Markiere ein Konto per Rechtsklick als Favorit, dann steht es hier und immer ganz oben.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markiere ein Konto per Rechtsklick als Favorit, dann steht es hier und immer ganz oben."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right-click an account and mark it as a favorite. It will appear here and always at the top."
+          }
+        }
+      }
+    },
+    "Mindestens %lld Zeichen. Ein Passwort aus einem Passwortmanager oder mehrere zufällige Wörter sind am besten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mindestens %lld Zeichen. Ein Passwort aus einem Passwortmanager oder mehrere zufällige Wörter sind am besten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At least %lld characters. A password from a password manager or several random words works best."
+          }
+        }
+      }
+    },
+    "Mit Kamera scannen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit Kamera scannen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan with Camera"
+          }
+        }
+      }
+    },
+    "Nach 1 Minute": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach 1 Minute"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After 1 minute"
+          }
+        }
+      }
+    },
+    "Nach 15 Minuten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach 15 Minuten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After 15 minutes"
+          }
+        }
+      }
+    },
+    "Nach 5 Minuten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach 5 Minuten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After 5 minutes"
+          }
+        }
+      }
+    },
+    "Nach 60 Minuten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach 60 Minuten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After 60 minutes"
+          }
+        }
+      }
+    },
+    "Nach Updates suchen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach Updates suchen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for Updates …"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Neue Gruppe": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Gruppe"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Group"
+          }
+        }
+      }
+    },
+    "Neue Gruppe …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Gruppe …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Group …"
+          }
+        }
+      }
+    },
+    "Neues Konto …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neues Konto …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Account …"
+          }
+        }
+      }
+    },
+    "Nie": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nie"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Never"
+          }
+        }
+      }
+    },
+    "Noch kein Backup seit der letzten Änderung": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch kein Backup seit der letzten Änderung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No backup since the last change"
+          }
+        }
+      }
+    },
+    "Noch kein Passwort": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch kein Passwort"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No password yet"
+          }
+        }
+      }
+    },
+    "Noch keine Favoriten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch keine Favoriten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Favorites Yet"
+          }
+        }
+      }
+    },
+    "Noch keine Konten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch keine Konten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Accounts Yet"
+          }
+        }
+      }
+    },
+    "Notiz": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notiz"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
+    "Nächsten Code kopieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächsten Code kopieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Next Code"
+          }
+        }
+      }
+    },
+    "Nächsten Code kopieren und weiterzählen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächsten Code kopieren und weiterzählen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Next Code and Advance Counter"
+          }
+        }
+      }
+    },
+    "Nächster Code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächster Code"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next code"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Ohne diesen Code kommst du eventuell nicht mehr in dein Konto. Prüfe vorher, dass du einen anderen Zugang hast, zum Beispiel Wiederherstellungscodes, oder den Code auf einem anderen Gerät. Das Löschen lässt sich nicht rückgängig machen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ohne diesen Code kommst du eventuell nicht mehr in dein Konto. Prüfe vorher, dass du einen anderen Zugang hast, zum Beispiel Wiederherstellungscodes, oder den Code auf einem anderen Gerät. Das Löschen lässt sich nicht rückgängig machen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without this code you may no longer be able to sign in to your account. Make sure first that you have another way in, such as recovery codes, or the code on another device. Deleting cannot be undone."
+          }
+        }
+      }
+    },
+    "Ohne dieses Passwort lässt sich das Backup nicht öffnen. Es gibt keine Möglichkeit, es zurückzusetzen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ohne dieses Passwort lässt sich das Backup nicht öffnen. Es gibt keine Möglichkeit, es zurückzusetzen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without this password the backup cannot be opened. There is no way to reset it."
+          }
+        }
+      }
+    },
+    "Okay": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okay"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Okay"
+          }
+        }
+      }
+    },
+    "Passwort": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passwort"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password"
+          }
+        }
+      }
+    },
+    "Passwort falsch oder Datei beschädigt.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passwort falsch oder Datei beschädigt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wrong password or damaged file."
+          }
+        }
+      }
+    },
+    "Passwort wiederholen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passwort wiederholen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat password"
+          }
+        }
+      }
+    },
+    "QR-Code %lld von %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR-Code %1$lld von %2$lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR code %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "QR-Code anzeigen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR-Code anzeigen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show QR Code …"
+          }
+        }
+      }
+    },
+    "QR-Code des Kontos anzeigen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR-Code des Kontos anzeigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the account’s QR code"
+          }
+        }
+      }
+    },
+    "QR-Code zur Übertragung": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR-Code zur Übertragung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR code for transfer"
+          }
+        }
+      }
+    },
+    "QR-Codes für die Übertragung anzeigen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR-Codes für die Übertragung anzeigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show QR codes for transfer"
+          }
+        }
+      }
+    },
+    "Raster": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Raster"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grid"
+          }
+        }
+      }
+    },
+    "SHA-1": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SHA-1"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SHA-1"
+          }
+        }
+      }
+    },
+    "SHA-256": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SHA-256"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SHA-256"
+          }
+        }
+      }
+    },
+    "SHA-512": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SHA-512"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SHA-512"
+          }
+        }
+      }
+    },
+    "Scanne den Export-QR-Code oder wähle einen Screenshot.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne den Export-QR-Code oder wähle einen Screenshot."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan the export QR code or choose a screenshot."
+          }
+        }
+      }
+    },
+    "Scanne die QR-Codes mit Google Authenticator: Menü, „Konten übertragen“, „Konten importieren“.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne die QR-Codes mit Google Authenticator: Menü, „Konten übertragen“, „Konten importieren“."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan the QR codes with Google Authenticator: menu, “Transfer accounts”, “Import accounts”."
+          }
+        }
+      }
+    },
+    "Schließen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schließen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "Schlüssel anzeigen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schlüssel anzeigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show key"
+          }
+        }
+      }
+    },
+    "Schlüssel oder otpauth-Link": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schlüssel oder otpauth-Link"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key or otpauth link"
+          }
+        }
+      }
+    },
+    "Schlüssel verbergen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schlüssel verbergen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide key"
+          }
+        }
+      }
+    },
+    "Schon vorhanden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schon vorhanden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already exists"
+          }
+        }
+      }
+    },
+    "Screenshot wählen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshot wählen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose Screenshot …"
+          }
+        }
+      }
+    },
+    "Setup-Schlüssel": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setup-Schlüssel"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setup key"
+          }
+        }
+      }
+    },
+    "Sicherheit": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sicherheit"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Security"
+          }
+        }
+      }
+    },
+    "Sichern": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sichern"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "So holst du deine Konten aus der Handy-App:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "So holst du deine Konten aus der Handy-App:"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is how you get your accounts out of the phone app:"
+          }
+        }
+      }
+    },
+    "Speichern fehlgeschlagen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speichern fehlgeschlagen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving failed"
+          }
+        }
+      }
+    },
+    "Sperren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sperren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock"
+          }
+        }
+      }
+    },
+    "Standardgruppe für Importe": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standardgruppe für Importe"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default group for imports"
+          }
+        }
+      }
+    },
+    "Stark": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stark"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strong"
+          }
+        }
+      }
+    },
+    "Stellen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Digits"
+          }
+        }
+      }
+    },
+    "Suche löschen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suche löschen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear search"
+          }
+        }
+      }
+    },
+    "Suchen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suchen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
+          }
+        }
+      }
+    },
+    "Symbol": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symbol"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symbol"
+          }
+        }
+      }
+    },
+    "Systemeinstellungen öffnen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systemeinstellungen öffnen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open System Settings"
+          }
+        }
+      }
+    },
+    "Tresor konnte nicht angelegt werden": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tresor konnte nicht angelegt werden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault could not be created"
+          }
+        }
+      }
+    },
+    "Typ": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Typ"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type"
+          }
+        }
+      }
+    },
+    "Ungültige Stellenzahl (erlaubt: 6 bis 8).": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ungültige Stellenzahl (erlaubt: 6 bis 8)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid number of digits (allowed: 6 to 8)."
+          }
+        }
+      }
+    },
+    "Ungültiges Intervall (erlaubt: 15 bis 120 Sekunden).": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ungültiges Intervall (erlaubt: 15 bis 120 Sekunden)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid interval (allowed: 15 to 120 seconds)."
+          }
+        }
+      }
+    },
+    "Updates": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updates"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updates"
+          }
+        }
+      }
+    },
+    "Version %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %@"
+          }
+        }
+      }
+    },
+    "Vorherige Fassung wiederherstellen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorherige Fassung wiederherstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Previous Version"
+          }
+        }
+      }
+    },
+    "Weiter": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weiter"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        }
+      }
+    },
+    "Weiter mit dem nächsten QR-Code.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weiter mit dem nächsten QR-Code."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue with the next QR code."
+          }
+        }
+      }
+    },
+    "Wiederherstellen nicht möglich": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wiederherstellen nicht möglich"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restoring not possible"
+          }
+        }
+      }
+    },
+    "Willkommen bei MacAuth": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Willkommen bei MacAuth"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome to MacAuth"
+          }
+        }
+      }
+    },
+    "Wähle die Backup-Datei und gib das Passwort ein, mit dem du sie gesichert hast.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle die Backup-Datei und gib das Passwort ein, mit dem du sie gesichert hast."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the backup file and enter the password you protected it with."
+          }
+        }
+      }
+    },
+    "Wähle eine MacAuth-Backup-Datei.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle eine MacAuth-Backup-Datei."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a MacAuth backup file."
+          }
+        }
+      }
+    },
+    "Wähle einen Screenshot oder ein Foto mit dem QR-Code. Das Bild wird nicht gespeichert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle einen Screenshot oder ein Foto mit dem QR-Code. Das Bild wird nicht gespeichert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a screenshot or photo with the QR code. The image is not saved."
+          }
+        }
+      }
+    },
+    "Wähle „Konten übertragen“ und dann „Konten exportieren“. Wähle die Konten aus.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle „Konten übertragen“ und dann „Konten exportieren“. Wähle die Konten aus."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose “Transfer accounts”, then “Export accounts”. Select the accounts."
+          }
+        }
+      }
+    },
+    "Wähle, wo das verschlüsselte Backup liegen soll.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle, wo das verschlüsselte Backup liegen soll."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose where the encrypted backup should be saved."
+          }
+        }
+      }
+    },
+    "Zeitbasiert (TOTP)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeitbasiert (TOTP)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time-based (TOTP)"
+          }
+        }
+      }
+    },
+    "Ziehe Konten auf die Gruppe in der Seitenleiste oder lege ein neues an.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ziehe Konten auf die Gruppe in der Seitenleiste oder lege ein neues an."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag accounts onto the group in the sidebar, or add a new one."
+          }
+        }
+      }
+    },
+    "Zu Favoriten hinzufügen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu Favoriten hinzufügen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to Favorites"
+          }
+        }
+      }
+    },
+    "Zu kurz": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu kurz"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too short"
+          }
+        }
+      }
+    },
+    "Zu „%@“ gibt es kein Konto. Du kannst es neu anlegen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu „%@“ gibt es kein Konto. Du kannst es neu anlegen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no account for “%@”. You can create one."
+          }
+        }
+      }
+    },
+    "Zurück": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zurück"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        }
+      }
+    },
+    "Zwischenablage leeren nach": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zwischenablage leeren nach"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear clipboard after"
+          }
+        }
+      }
+    },
+    "Zähler: %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zähler: %lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Counter: %lld"
+          }
+        }
+      }
+    },
+    "Zählerbasiert (HOTP)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zählerbasiert (HOTP)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Counter-based (HOTP)"
+          }
+        }
+      }
+    },
+    "bis zu %lld Konten je Code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "bis zu %lld Konten je Code"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "up to %lld accounts per code"
+          }
+        }
+      }
+    },
+    "optional": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "optional"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "optional"
+          }
+        }
+      }
+    },
+    "z. B. GitHub": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "z. B. GitHub"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. GitHub"
+          }
+        }
+      }
+    },
+    "z. B. name@firma.de": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "z. B. name@firma.de"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. name@company.com"
+          }
+        }
+      }
+    },
+    "Öffne Google Authenticator auf dem Handy und tippe auf das Menü.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne Google Authenticator auf dem Handy und tippe auf das Menü."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Google Authenticator on your phone and tap the menu."
+          }
+        }
+      }
+    },
+    "Öffne eine Backup-Datei und gib das Passwort ein.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne eine Backup-Datei und gib das Passwort ein."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open a backup file and enter the password."
+          }
+        }
+      }
+    },
+    "Übersprungen, weil MacAuth sie nicht unterstützt:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Übersprungen, weil MacAuth sie nicht unterstützt:"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipped because MacAuth does not support them:"
+          }
+        }
+      }
+    },
+    "„%@“ löschen?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "„%@“ löschen?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete “%@”?"
+          }
+        }
+      }
+    },
+    "••••••••••••": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "••••••••••••"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "••••••••••••"
+          }
+        }
+      }
+    },
+    "⌘%lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘%lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘%lld"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

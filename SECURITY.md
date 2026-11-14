@@ -32,7 +32,58 @@ Examples of what we want to hear about:
 
 ## Threat model
 
-_To be written. See [docs/DESIGN.md](docs/DESIGN.md) for the design and its principles._
+The design is described in [docs/DESIGN.md](docs/DESIGN.md). This section says what it is meant to
+withstand and where it stops.
+
+### What MacAuth protects against
+
+- **Someone who gets a copy of your files** (stolen backup disk, synced home folder, another user on the
+  Mac): the vault file is encrypted with ChaCha20-Poly1305. With the default protection the vault key is
+  wrapped by a key that never leaves this Mac's Secure Enclave, so the file is useless on any other
+  device and cannot be attacked by guessing a password.
+- **Someone at your unlocked Mac for a moment:** opening the vault needs Touch ID or the login password.
+  This is enforced by the Secure Enclave, not by a check in the app's own code. The vault locks itself
+  after inactivity and on sleep, screen lock and user switching.
+- **Other apps reading the clipboard history:** copied codes are marked as concealed, which clipboard
+  managers that follow the convention skip, and are removed after a short time.
+- **Screen sharing and screenshots:** the window content is excluded by default.
+- **Hostile input:** QR codes and backup files are parsed by small hand-written parsers with size limits
+  and tests against malformed data. The app runs in the App Sandbox with the Hardened Runtime.
+- **A tampered update:** updates must carry a valid EdDSA signature and come as a notarized,
+  Developer-ID-signed app.
+- **A lost backup file:** it is encrypted with AES-256-GCM under a key derived from your password
+  (PBKDF2-HMAC-SHA256, 600,000 rounds). Its strength is the strength of that password.
+
+### What it does not protect against
+
+- **Malware running as you while the vault is unlocked.** Software with your user rights that can read
+  the app's memory, record the screen through other means, log keystrokes or control the app can obtain
+  codes or secrets. No authenticator on a general-purpose computer can prevent this.
+- **An attacker with your login password.** The unlock step accepts Touch ID or the login password, by
+  design, so that a broken sensor does not lock you out.
+- **Codes after they left the app.** A copied code is in the clipboard until it is cleared; apps that
+  read the clipboard in that window see it. A code is only valid for seconds, a secret is not – secrets
+  are never put on the clipboard.
+- **Having both factors on one device.** If your passwords live on the same Mac, a full compromise of
+  that Mac exposes both. Keep this in mind for high-value accounts.
+- **Weak backup passwords.** A backup file can be attacked offline. Use a long passphrase.
+- **Loss of the Mac without a backup.** The Secure Enclave key cannot be exported. Without a backup file
+  the codes are gone. This is intended; the app reminds you to export a backup.
+
+### Protection levels
+
+| Setting | Vault key | Unlock |
+|---|---|---|
+| Default (Mac with Secure Enclave) | wrapped by a Secure Enclave key, bound to this Mac | Touch ID or login password, enforced by the enclave |
+| Unlock prompt switched off, or no Secure Enclave | stored in the login keychain, never synchronised | optional app lock; protection is that of the login keychain and the app's code signature |
+
+The second level is weaker: the keychain item is guarded by macOS for this app's signature, but the lock
+shown by the app is then a check in the app's own code. The settings say so where the option is offered.
+
+### Network
+
+MacAuth opens exactly one kind of connection: the Sparkle update check against this repository's GitHub
+Releases. No account data, identifiers or usage data are sent. Automatic checks can be switched off.
 
 ## Releases
 
