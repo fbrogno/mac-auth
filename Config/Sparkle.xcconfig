@@ -1,5 +1,3 @@
 // Public EdDSA key for Sparkle update verification. Written by scripts/setup-release-secrets.sh.
-// Empty until MacAuth's OWN key pair exists (generate_keys --account macauth). It must never be the
-// MacMonitor key: scripts/release.sh and setup-release-secrets.sh refuse that. Without a key the app
-// builds and runs, but its updater stays off, and scripts/release.sh aborts.
-SPARKLE_PUBLIC_ED_KEY =
+// Key pair: keychain account "macauth" (generate_keys --account macauth). Never the MacMonitor key.
+SPARKLE_PUBLIC_ED_KEY = SptlIDiti8VzbC8CQjUxryMBLGgAzNT8UbpAmk2u9E8=
