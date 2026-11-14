@@ -41,11 +41,33 @@ language, English comes from `.xcstrings` catalogs · code and comments in Engli
   silently changed parameters. They can be transferred as single `otpauth://` QR codes.
 
 ### Other import formats
-`ImportDetector` recognises a file by its content: a text file with one `otpauth://` link per line (Ente
-Auth and many others), Aegis (unencrypted JSON export), 2FAS (unencrypted `.2fas` export), MacAuth's own
-backup and Google migration links. Encrypted Aegis/2FAS files are recognised and refused with a hint to
-export unencrypted. Entries that cannot be used are listed with their label and the reason, never with
-their secret.
+`ImportDetector` recognises a file by its content, not by its extension: a text file with one `otpauth://` link
+per line (Ente Auth and many others), Aegis (unencrypted JSON export), 2FAS (unencrypted `.2fas` export),
+MacAuth's own backup, Google migration links, and the following password-manager formats:
+- **Apple Passwords CSV** (`Title,URL,Username,Password,Notes,OTPAuth`; the OTPAuth cell holds an `otpauth://` link).
+- **Generic CSV** with a header row and an OTP column named `OTPAuth`, `totp`, `login_totp` (Bitwarden CSV), `2fa`,
+  `otp` or `One-time password` (case-insensitive); covers 1Password (`OTPAuth`) and Proton Pass (`totp`) CSV. The
+  cell is an `otpauth://` link or a bare Base32 setup key (then SHA1/6/30). Issuer and name come from the link,
+  otherwise from the title/name and username/login/email columns.
+- **Bitwarden JSON** (unencrypted): `items[].login.totp`, link or bare Base32 key; `steam://` entries are listed as unusable.
+- **andOTP** plain JSON backup (top-level array, Base32 `secret`, `type` TOTP/HOTP; STEAM/MOTP listed as unusable).
+
+Encrypted Aegis/2FAS/Bitwarden files are recognised and refused with a hint to export unencrypted. Entries that
+cannot be used are listed with their label and the reason, never with their secret.
+CSV files are read by an own RFC 4180 parser (quotes, doubled quotes, embedded commas/newlines, CRLF/LF, BOM) with
+limits (rows, columns, field size); malformed input throws a typed `ImportError`. **Passwords are never read:** the
+parser drops every column except the OTP column and the label columns while scanning, so no password reaches a
+result, error or description. Rows without a code are skipped silently and counted in
+`ImportResult.rowsWithoutCode` ("37 Einträge ohne Code übersprungen").
+
+### Other export formats
+`AccountExporter` (pure functions, `[Account]` to `Data`) writes an `otpauth://` list (one link per line), an
+unencrypted Aegis vault (`header.slots/params` null, db version 3) and a CSV for the Apple Passwords app (TOTP
+only; Title = issuer, Username = name, URL/Password empty, OTPAuth label-less like the Passwords app writes it).
+Each function reports accounts it cannot represent (HOTP in the Passwords CSV, invalid parameters) as
+`ExportSkippedEntry` with label and reason; parameters are never changed silently. CSV label cells starting with
+`=`, `+`, `-`, `@`, tab or CR get a leading apostrophe against spreadsheet formula injection; the OTPAuth cell is
+left untouched. All three outputs contain every secret in plain text and need a fresh authentication in the UI.
 
 ### Model
 `Account`: id (UUID), issuer, name, secret (bytes), algorithm, digits, period, kind (totp/hotp), counter,

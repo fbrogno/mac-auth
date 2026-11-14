@@ -170,6 +170,8 @@ public enum ImportError: Error, Equatable, LocalizedError {
     /// An encrypted Aegis or 2FAS file. Not decrypted; the user should export unencrypted.
     case encryptedFile(ImportFormat)
     case unsupportedVersion(String)
+    /// The file looks like CSV but cannot be parsed. Carries a fixed reason text, never file content.
+    case malformedCSV(String)
 
     public var errorDescription: String? {
         switch self {
@@ -179,6 +181,7 @@ public enum ImportError: Error, Equatable, LocalizedError {
         case .unrecognizedFormat: "Das Dateiformat wird nicht erkannt."
         case .encryptedFile(let f): "Die \(f.displayName)-Datei ist verschlüsselt. Bitte unverschlüsselt exportieren."
         case .unsupportedVersion(let v): "Die Dateiversion (\(v)) wird nicht unterstützt."
+        case .malformedCSV(let r): "Die CSV-Datei ist fehlerhaft (\(r))."
         }
     }
 }

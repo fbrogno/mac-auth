@@ -5,17 +5,29 @@ public enum ImportFormat: String, Sendable, Equatable, CaseIterable {
     case otpauthLines
     case aegis
     case twoFAS
+    /// CSV export of the macOS/iOS Passwords app (`Title,URL,Username,Password,Notes,OTPAuth`).
+    case applePasswordsCSV
+    /// Any other CSV with a header row and a column holding `otpauth://` links or Base32 setup keys.
+    case genericCSV
+    /// Bitwarden unencrypted JSON export.
+    case bitwarden
+    /// andOTP plain-text JSON backup.
+    case andOTP
 
     public var displayName: String {
         switch self {
         case .otpauthLines: "otpauth-Liste"
         case .aegis: "Aegis"
         case .twoFAS: "2FAS"
+        case .applePasswordsCSV: "Apple Passwörter (CSV)"
+        case .genericCSV: "CSV"
+        case .bitwarden: "Bitwarden"
+        case .andOTP: "andOTP"
         }
     }
 }
 
-public enum SkipReason: Sendable, Equatable {
+public enum SkipReason: Error, Sendable, Equatable {
     case unsupportedType(String)
     case unsupportedAlgorithm(String)
     case invalidSecret
@@ -47,6 +59,9 @@ public struct ImportResult: Sendable {
     /// Groups referenced by `accounts[].groupID` (Aegis, 2FAS). Merge with `VaultData.merging`.
     public var groups: [AccountGroup]
     public var skipped: [SkippedEntry]
+    /// Rows/items that carry no one-time code at all (typical for password-manager exports). Not an error;
+    /// the UI can say "37 Einträge ohne Code übersprungen". Their content is never kept.
+    public var rowsWithoutCode: Int = 0
 }
 
 public enum ImportDetection: Sendable {
@@ -63,6 +78,11 @@ public enum ImportDetection: Sendable {
 /// Sources of the formats (read from the projects' code and docs):
 /// - Aegis: https://github.com/beemdevelopment/Aegis/blob/master/docs/vault.md
 /// - 2FAS: `BackupContent`/`BackupService` in twofas/2fas-android, `ExchangeData*.swift` in twofas/2fas-ios
+/// - Apple Passwords CSV: header `Title,URL,Username,Password,Notes,OTPAuth`; the OTPAuth cell holds an
+///   `otpauth://totp?secret=…` link without label (community sources; Apple publishes no specification)
+/// - Bitwarden: https://bitwarden.com/help/condition-bitwarden-import/ (`items[].login.totp`, `encrypted`)
+/// - andOTP: https://github.com/andOTP/andOTP/wiki/Backup-Format and `Entry.java` (JSON array, Base32 secret)
+/// Passwords in CSV/JSON files are never read into a result: only the OTP and label columns are kept.
 public enum ImportDetector {
     public static let maxEntries = 10_000
 
@@ -77,6 +97,10 @@ public enum ImportDetector {
         if trimmed.hasPrefix("{") {
             return try detectJSON(Data(trimmed.utf8), now: now)
         }
+        if trimmed.hasPrefix("[") {
+            return .accounts(try parseAndOTP(Data(trimmed.utf8), now: now))
+        }
+        if let csv = try detectCSV(text, now: now) { return .accounts(csv) }
         return try detectLines(trimmed, now: now)
     }
 
@@ -135,6 +159,7 @@ public enum ImportDetector {
         if root["services"] != nil || root["servicesEncrypted"] != nil || root["reference"] != nil {
             return .accounts(try parseTwoFAS(root, now: now))
         }
+        if root["items"] != nil || root["encrypted"] != nil { return .accounts(try parseBitwarden(root, now: now)) }
         throw ImportError.unrecognizedFormat
     }
 
@@ -262,6 +287,175 @@ public enum ImportDetector {
                                     groupID: groupID, sortIndex: accounts.count, createdAt: created))
         }
         return ImportResult(format: .twoFAS, accounts: accounts, groups: groups, skipped: skipped)
+    }
+
+    // MARK: OTP values shared by CSV, Bitwarden and andOTP
+
+    /// Turns the OTP cell of a password-manager export into an account: an `otpauth://` link or a bare Base32
+    /// setup key (then SHA1/6/30). Issuer and name from the link win; missing parts come from `title`/`username`.
+    /// The failure reason never contains the value.
+    private static func account(fromOTPValue raw: String, title: String, username: String, now: Date) -> Result<Account, SkipReason> {
+        let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if value.lowercased().hasPrefix("steam://") { return .failure(.unsupportedType("steam")) }
+        var account: Account
+        if OTPAuthURI.isOTPAuthURI(value) {
+            do { account = try OTPAuthURI.parse(value, now: now) } catch let e as OTPAuthError {
+                return .failure(reason(for: e))
+            } catch { return .failure(.malformed) }
+        } else {
+            guard !value.contains("://"), let secret = try? Base32.decode(value), !secret.isEmpty,
+                  secret.count <= Limits.maxSecretBytes else { return .failure(.invalidSecret) }
+            account = Account(name: "", secret: secret, createdAt: now)
+        }
+        if account.issuer.isEmpty { account.issuer = clip(title) }
+        if account.name.isEmpty { account.name = clip(username) }
+        return .success(account)
+    }
+
+    private static func clip(_ s: String) -> String {
+        let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard t.utf8.count > Limits.maxTextBytes else { return t }
+        var out = ""
+        var bytes = 0
+        for ch in t {
+            bytes += String(ch).utf8.count
+            if bytes > Limits.maxTextBytes { break }
+            out.append(ch)
+        }
+        return out
+    }
+
+    private static func label(title: String, username: String, fallback: String) -> String {
+        let t = String(title.trimmingCharacters(in: .whitespacesAndNewlines).prefix(100))
+        let u = String(username.trimmingCharacters(in: .whitespacesAndNewlines).prefix(100))
+        switch (t.isEmpty, u.isEmpty) {
+        case (false, false): return "\(t) (\(u))"
+        case (false, true): return t
+        case (true, false): return u
+        case (true, true): return fallback
+        }
+    }
+
+    // MARK: CSV (Apple Passwords and generic)
+
+    private static let otpColumnNames = ["otpauth", "totp", "login_totp", "2fa", "otp", "one-time password", "one time password"]
+    private static let titleColumnNames = ["title", "name", "service", "issuer", "login_name"]
+    private static let usernameColumnNames = ["username", "login_username", "user name", "email", "e-mail", "login", "account"]
+    private static let appleHeader = ["title", "url", "username", "password", "notes", "otpauth"]
+
+    /// Returns nil when the text is not a CSV with a recognisable OTP column (the caller then tries other formats).
+    private static func detectCSV(_ text: String, now: Date) throws -> ImportResult? {
+        let firstLine = text.prefix(while: { $0 != "\n" && $0 != "\r" })
+        guard firstLine.contains(","), !OTPAuthURI.isOTPAuthURI(String(firstLine)),
+              !MigrationCodec.isMigrationURI(String(firstLine)) else { return nil }
+        guard let headerRow = (try? CSV.parse(text, maxRecords: 1))?.first else { return nil }
+        let names = headerRow.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+        func column(_ candidates: [String]) -> Int? {
+            for c in candidates { if let i = names.firstIndex(of: c) { return i } }
+            return nil
+        }
+        guard let otpColumn = column(otpColumnNames) else { return nil }
+        var seen = Set<String>()
+        for n in names where !n.isEmpty {
+            guard seen.insert(n).inserted else { throw ImportError.malformedCSV("doppelte Spaltennamen") }
+        }
+        let titleColumn = column(titleColumnNames)
+        let userColumn = column(usernameColumnNames)
+        // Only these columns are read; every other column (notably the password) is dropped while scanning.
+        let keep = Set([otpColumn, titleColumn, userColumn].compactMap { $0 })
+        let rows = try CSV.parse(text, keep: keep).dropFirst()
+        let format: ImportFormat = names == appleHeader ? .applePasswordsCSV : .genericCSV
+
+        var accounts: [Account] = []
+        var skipped: [SkippedEntry] = []
+        var withoutCode = 0
+        for (offset, row) in rows.enumerated() {
+            func cell(_ c: Int?) -> String { c.flatMap { $0 < row.count ? row[$0] : nil } ?? "" }
+            let otp = cell(otpColumn)
+            if otp.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { withoutCode += 1; continue }
+            let title = cell(titleColumn), username = cell(userColumn)
+            switch account(fromOTPValue: otp, title: title, username: username, now: now) {
+            case .success(var account):
+                account.sortIndex = accounts.count
+                accounts.append(account)
+            case .failure(let reason):
+                skipped.append(SkippedEntry(label: label(title: title, username: username, fallback: "Zeile \(offset + 2)"), reason: reason))
+            }
+        }
+        return ImportResult(format: format, accounts: accounts, groups: [], skipped: skipped, rowsWithoutCode: withoutCode)
+    }
+
+    // MARK: Bitwarden
+
+    private static func parseBitwarden(_ root: [String: Any], now: Date) throws -> ImportResult {
+        if (root["encrypted"] as? Bool) == true || (root["passwordProtected"] as? Bool) == true {
+            throw ImportError.encryptedFile(.bitwarden)
+        }
+        guard let items = root["items"] as? [Any] else { throw ImportError.unrecognizedFormat }
+        guard items.count <= maxEntries else { throw ImportError.tooManyEntries }
+        var accounts: [Account] = []
+        var skipped: [SkippedEntry] = []
+        var withoutCode = 0
+        for (index, any) in items.enumerated() {
+            guard let item = any as? [String: Any] else { skipped.append(SkippedEntry(label: "Eintrag \(index + 1)", reason: .malformed)); continue }
+            let login = item["login"] as? [String: Any]
+            let totp = (login?["totp"] as? String) ?? ""
+            if totp.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { withoutCode += 1; continue }
+            let title = text(item["name"]) ?? ""
+            let username = text(login?["username"]) ?? ""
+            switch account(fromOTPValue: totp, title: title, username: username, now: now) {
+            case .success(var account):
+                account.sortIndex = accounts.count
+                accounts.append(account)
+            case .failure(let reason):
+                skipped.append(SkippedEntry(label: label(title: title, username: username, fallback: "Eintrag \(index + 1)"), reason: reason))
+            }
+        }
+        return ImportResult(format: .bitwarden, accounts: accounts, groups: [], skipped: skipped, rowsWithoutCode: withoutCode)
+    }
+
+    // MARK: andOTP
+
+    private static func parseAndOTP(_ data: Data, now: Date) throws -> ImportResult {
+        guard let array = (try? JSONSerialization.jsonObject(with: data)) as? [Any],
+              let first = array.first as? [String: Any], first["secret"] != nil, first["label"] != nil else {
+            throw ImportError.unrecognizedFormat
+        }
+        guard array.count <= maxEntries else { throw ImportError.tooManyEntries }
+        var accounts: [Account] = []
+        var skipped: [SkippedEntry] = []
+        for (index, any) in array.enumerated() {
+            guard let e = any as? [String: Any] else { skipped.append(SkippedEntry(label: "Eintrag \(index + 1)", reason: .malformed)); continue }
+            let issuer = text(e["issuer"]) ?? ""
+            let name = text(e["label"]) ?? ""
+            let entryLabel = label(title: issuer, username: name, fallback: "Eintrag \(index + 1)")
+            func skip(_ r: SkipReason) { skipped.append(SkippedEntry(label: entryLabel, reason: r)) }
+            let type = ((e["type"] as? String) ?? "TOTP").uppercased()
+            guard type == "TOTP" || type == "HOTP" else { skip(.unsupportedType(String(type.lowercased().prefix(16)))); continue }
+            guard let secret = secret(e["secret"]) else { skip(.invalidSecret); continue }
+            let algorithmText = e["algorithm"] as? String
+            guard let algorithm = algorithmText == nil ? OTPAlgorithm.sha1 : algorithm(algorithmText) else {
+                skip(.unsupportedAlgorithm(String((algorithmText ?? "?").prefix(16)))); continue
+            }
+            let digits = e["digits"] == nil ? 6 : (int(e["digits"]) ?? 0)
+            guard OTP.allowedDigits.contains(digits) else { skip(.invalidParameter("digits")); continue }
+            var period = OTP.defaultPeriod
+            var counter: UInt64 = 0
+            if type == "TOTP" {
+                if e["period"] != nil {
+                    guard let p = int(e["period"]), OTP.allowedPeriods.contains(p) else { skip(.invalidParameter("period")); continue }
+                    period = p
+                }
+            } else {
+                guard let c = uint(e["counter"]) else { skip(.invalidParameter("counter")); continue }
+                counter = c
+            }
+            guard issuer.utf8.count <= Limits.maxTextBytes, name.utf8.count <= Limits.maxTextBytes else { skip(.malformed); continue }
+            accounts.append(Account(issuer: issuer, name: name, secret: secret, algorithm: algorithm, digits: digits,
+                                    period: period, kind: type == "HOTP" ? .hotp : .totp, counter: counter,
+                                    sortIndex: accounts.count, createdAt: now))
+        }
+        return ImportResult(format: .andOTP, accounts: accounts, groups: [], skipped: skipped)
     }
 
     // MARK: JSON value helpers

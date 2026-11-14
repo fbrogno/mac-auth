@@ -11,6 +11,10 @@ enum Limits {
     static let maxFileBytes = 32 * 1024 * 1024
     static let maxEnvelopeFields = 16
     static let maxEnvelopeFieldBytes = 8 * 1024
+    /// CSV imports: rows (including the header), columns per row and bytes per field.
+    static let maxCSVRows = 10_000
+    static let maxCSVColumns = 64
+    static let maxCSVFieldBytes = 16 * 1024
 }
 
 enum Base64Util {
