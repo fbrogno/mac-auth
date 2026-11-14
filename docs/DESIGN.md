@@ -66,8 +66,10 @@ unencrypted Aegis vault (`header.slots/params` null, db version 3) and a CSV for
 only; Title = issuer, Username = name, URL/Password empty, OTPAuth label-less like the Passwords app writes it).
 Each function reports accounts it cannot represent (HOTP in the Passwords CSV, invalid parameters) as
 `ExportSkippedEntry` with label and reason; parameters are never changed silently. CSV label cells starting with
-`=`, `+`, `-`, `@`, tab or CR get a leading apostrophe against spreadsheet formula injection; the OTPAuth cell is
-left untouched. All three outputs contain every secret in plain text and need a fresh authentication in the UI.
+CSV cells are only quoted per RFC 4180 and otherwise written unchanged: the consumer is the Passwords app, not a
+spreadsheet, so no formula-injection prefix (a leading apostrophe would corrupt usernames such as `+49…` or `-name`).
+All three outputs contain every secret in plain text and need a fresh authentication in the UI. `PrivateFile.write`
+creates the file with mode 0600 (set on the open descriptor) and removes a half-written file.
 
 ### Model
 `Account`: id (UUID), issuer, name, secret (bytes), algorithm, digits, period, kind (totp/hotp), counter,
@@ -160,7 +162,12 @@ wiederherstellen**, **Manuell hinzufügen**. Import sources:
 - a single `otpauth://` link or setup key typed in,
 - an export file of another app (see "Other import formats").
 The camera is the recommended way. After an import from a screenshot or a plain-text export the app
-reminds the user to delete that file, because it contains every secret.
+reminds the user to delete that file, because it contains every secret. The import dialog also offers
+"Aus Apple Passwörter" (how-to: Passwörter app, Ablage > Alle Passwörter in eine Datei exportieren) and
+"Aus anderer App (Datei)" (list of supported apps). The review sheet names the detected format and shows
+"N Einträge ohne Code übersprungen"; for password-manager files (Apple Passwords, generic CSV, Bitwarden) it states
+that only the codes are imported and passwords are ignored and not stored, and the reminder after the import says the
+file holds all passwords.
 QR decoding with Vision (`VNDetectBarcodesRequest`). Every import ends in a **review sheet**: found
 accounts with checkboxes, target group (Firma/Privat/…) for all or per row, duplicates marked and
 unchecked. Nothing is stored before the user confirms. Imported images are never copied or kept.
@@ -168,7 +175,16 @@ unchecked. Nothing is stored before the user confirms. Imported images are never
 ### Export
 - Encrypted backup file (see above).
 - "Auf Handy übertragen": QR codes in Google's migration format, or one `otpauth://` QR per account.
-Both need a fresh authentication. So does every setting that lowers protection (unlock prompt off, longer
+- "Für andere App exportieren (unverschlüsselt)" (File menu; the encrypted backup stays the recommended way): link
+  list (`.txt`), Aegis (`.json`), Apple Passwords (`.csv`). Flow (`BackupFlow.startPlainExport`, `PlainExportSheet`):
+  fresh authentication, then the sheet with target choice, then a warning stage (every secret in plain text, anyone
+  with the file can generate the codes, import and delete right away, never in cloud folders; "Abbrechen" is the
+  default button), then the save panel, then the write with permissions 0600, then a confirmation with the number of
+  accounts written, the accounts that could not be exported (label and reason) and the reminder to delete the file.
+  The file content is built only after the warning was confirmed and is never kept in view state; every step checks
+  the lock generation, so a late dialog never appears over the lock screen and nothing is written after locking.
+  Nothing goes to the clipboard, logs or preferences.
+All three need a fresh authentication. So does every setting that lowers protection (unlock prompt off, longer
 or no auto-lock, screen protection off, hidden codes off); while the vault is locked the security
 settings cannot be changed at all. Preferences are read from the app's persistent domain only, so launch
 arguments cannot override them.

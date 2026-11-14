@@ -98,14 +98,4 @@ enum CSV {
         guard needsQuotes else { return cell }
         return "\"" + cell.replacingOccurrences(of: "\"", with: "\"\"") + "\""
     }
-
-    /// Neutralises spreadsheet formula injection: a cell that starts with `=`, `+`, `-`, `@`, tab or CR gets a
-    /// leading apostrophe (OWASP recommendation). Use for label cells only, never for the OTP cell.
-    static func neutralised(_ cell: String) -> String {
-        guard let first = cell.unicodeScalars.first else { return cell }
-        switch first {
-        case "=", "+", "-", "@", "\t", "\r": return "'" + cell
-        default: return cell
-        }
-    }
 }

@@ -221,6 +221,8 @@ struct AppCommands: Commands {
             Button("Backup exportieren …") { Task { await BackupFlow.startExport(model) } }
                 .keyboardShortcut("e", modifiers: [.command, .shift]).disabled(!unlocked || model.accounts.isEmpty)
             Button("Auf Handy übertragen …") { Task { await BackupFlow.startTransfer(model) } }.disabled(!unlocked || model.accounts.isEmpty)
+            Button("Für andere App exportieren (unverschlüsselt) …") { Task { await BackupFlow.startPlainExport(model) } }
+                .disabled(!unlocked || model.accounts.isEmpty)
             Divider()
             Button("Sperren") { model.lock() }.keyboardShortcut("l").disabled(!unlocked || model.isDemo)
         }

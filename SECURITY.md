@@ -78,6 +78,13 @@ withstand and where it stops.
   the codes are gone. This is intended; the app reminds you to export a backup.
 - **Import leftovers.** A screenshot of an export QR code or a plain-text export from another app contains
   every secret. MacAuth never copies such files, but it cannot delete them for you; it reminds you to.
+  A password-manager export (Apple Passwords, Bitwarden, CSV) also holds every password; MacAuth reads only the
+  OTP and label columns and never keeps the rest, but the file stays on disk until you delete it.
+- **Plain-text exports.** "Export for Another App" (otpauth list, Aegis JSON, Apple Passwords CSV) writes every
+  secret unencrypted and takes the data out of the app's protection: anyone who gets the file can generate
+  the codes. It therefore needs a fresh authentication each time, shows a warning first, writes the file
+  readable by the owner only (0600) and puts nothing on the clipboard, in logs or in preferences. Where the
+  file goes and when it is deleted is up to you; never leave it in a cloud folder.
 
 ### Protection levels
 

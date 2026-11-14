@@ -18,6 +18,7 @@ enum ActiveSheet: Identifiable {
     case review(ImportSession)
     case restoreBackup(preset: BackupPreset?, replace: Bool)
     case exportBackup
+    case exportPlain
     case transfer(Set<UUID>?)
     case newGroup
     case editGroup(UUID)
@@ -32,6 +33,7 @@ enum ActiveSheet: Identifiable {
         case .review(let s): "review-\(s.id)"
         case .restoreBackup(let p, let replace): "restore-\(p?.id.uuidString ?? "none")-\(replace)"
         case .exportBackup: "export"
+        case .exportPlain: "exportPlain"
         case .transfer: "transfer"
         case .newGroup: "newGroup"
         case .editGroup(let id): "editGroup-\(id)"
@@ -47,7 +49,7 @@ enum ActiveSheet: Identifiable {
         case .review(let session):
             return session.intent == .replaceVault ? phase == .locked : (phase == .firstRun || phase == .unlocked)
         case .add, .importer: return phase == .firstRun || phase == .unlocked
-        case .exportBackup, .transfer, .edit, .newGroup, .editGroup, .confirmDelete: return phase == .unlocked
+        case .exportBackup, .exportPlain, .transfer, .edit, .newGroup, .editGroup, .confirmDelete: return phase == .unlocked
         }
     }
 }
@@ -826,7 +828,8 @@ final class AppModel {
     // MARK: Import
 
     func makeSession(source: ImportSession.Source, delivery: ImportSession.Delivery, accounts found: [Account],
-                     skipped: [String] = [], groups incoming: [AccountGroup] = [], intent: ImportIntent? = nil) -> ImportSession {
+                     skipped: [String] = [], groups incoming: [AccountGroup] = [], intent: ImportIntent? = nil,
+                     format: ImportFormat? = nil, rowsWithoutCode: Int = 0) -> ImportSession {
         let defaultGroup = UUID(uuidString: settings.defaultGroupID).flatMap { id in groups.contains { $0.id == id } ? id : nil }
         let resolved: ImportIntent
         if let intent {
@@ -840,7 +843,8 @@ final class AppModel {
         }
         return ImportSession(source: source, delivery: delivery, intent: resolved, accounts: found, skipped: skipped,
                              existing: phase == .unlocked ? accounts : [],
-                             existingGroups: phase == .locked ? [] : groups, incomingGroups: incoming, defaultGroupID: defaultGroup)
+                             existingGroups: phase == .locked ? [] : groups, incomingGroups: incoming, defaultGroupID: defaultGroup,
+                             format: format, rowsWithoutCode: rowsWithoutCode)
     }
 
     /// Stores the confirmed rows according to the session's intent.
@@ -884,6 +888,9 @@ final class AppModel {
         case .file:
             alert = AppAlert(title: String(localized: "Exportdatei jetzt löschen"),
                              message: String(localized: "Lösche die Exportdatei jetzt, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle Schlüssel im Klartext."))
+        case .passwordFile:
+            alert = AppAlert(title: String(localized: "Exportdatei jetzt löschen"),
+                             message: String(localized: "Lösche die Datei jetzt, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle deine Passwörter und alle Schlüssel im Klartext."))
         case .camera, .text, .backup:
             break
         }

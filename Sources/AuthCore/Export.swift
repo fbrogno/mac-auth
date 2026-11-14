@@ -19,6 +19,11 @@ public enum ExportSkipReason: Sendable, Equatable {
 public struct ExportSkippedEntry: Sendable, Equatable {
     public var label: String
     public var reason: ExportSkipReason
+
+    public init(label: String, reason: ExportSkipReason) {
+        self.label = label
+        self.reason = reason
+    }
 }
 
 /// Result of an export. `data` contains every secret of `exportedCount` accounts: treat it as sensitive.
@@ -89,8 +94,8 @@ public enum AccountExporter {
 
     /// CSV for the macOS Passwords app (File > Import Passwords). TOTP only; HOTP accounts are returned as skipped.
     /// Title = issuer (or the name if there is no issuer), Username = account name, Notes = note; URL and
-    /// Password stay empty. Label cells are protected against spreadsheet formula injection; the OTPAuth cell is
-    /// written unchanged.
+    /// Password stay empty. Cells are only quoted per RFC 4180 and otherwise written unchanged: the consumer is the
+    /// Passwords app, not a spreadsheet, so no formula-injection prefix (it would corrupt names like `+49…`).
     public static func applePasswordsCSV(_ accounts: [Account]) -> ExportResult {
         var rows = ["Title,URL,Username,Password,Notes,OTPAuth"]
         var skipped: [ExportSkippedEntry] = []
@@ -101,7 +106,7 @@ public enum AccountExporter {
             let uri = "otpauth://totp?secret=\(Base32.encode(a.secret))&algorithm=\(a.algorithm.rawValue.uppercased())&digits=\(a.digits)&period=\(a.period)"
             let title = a.issuer.isEmpty ? a.name : a.issuer
             let username = a.issuer.isEmpty ? "" : a.name
-            let cells = [title, "", username, "", a.note].map { CSV.escape(CSV.neutralised($0)) } + [CSV.escape(uri)]
+            let cells = [title, "", username, "", a.note].map { CSV.escape($0) } + [CSV.escape(uri)]
             rows.append(cells.joined(separator: ","))
             count += 1
         }
@@ -112,5 +117,32 @@ public enum AccountExporter {
         accounts.enumerated().sorted { a, b in
             a.element.sortIndex != b.element.sortIndex ? a.element.sortIndex < b.element.sortIndex : a.offset < b.offset
         }.map(\.element)
+    }
+}
+
+/// Writes sensitive files readable by the owner only.
+public enum PrivateFile {
+    /// Creates or truncates `url` with mode 0600 (the mode is set on the open descriptor, so the content is never
+    /// readable by others, not even for a moment), writes `data` and flushes it. A half-written file is removed.
+    public static func write(_ data: Data, to url: URL) throws {
+        let fd = open(url.path, O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW, 0o600)
+        guard fd >= 0 else { throw BackupError.ioFailure("") }
+        var ok = fchmod(fd, 0o600) == 0
+        if ok {
+            ok = data.withUnsafeBytes { raw -> Bool in
+                var offset = 0
+                while offset < raw.count {
+                    let n = Foundation.write(fd, raw.baseAddress!.advanced(by: offset), raw.count - offset)
+                    if n < 0 { if errno == EINTR { continue }; return false }
+                    offset += n
+                }
+                return true
+            }
+        }
+        ok = ok && fsync(fd) == 0
+        guard close(fd) == 0, ok else {
+            try? FileManager.default.removeItem(at: url)
+            throw BackupError.ioFailure("")
+        }
     }
 }

@@ -7,7 +7,8 @@ import Observation
 final class ImportSession: Identifiable {
     enum Source { case google, link, backup, file }
     /// How the data arrived; decides the clean-up hint after a successful import.
-    enum Delivery { case camera, image, file, text, backup }
+    /// `passwordFile` is an export of a password manager (Apple Passwords, Bitwarden, CSV): it holds every password.
+    enum Delivery { case camera, image, file, passwordFile, text, backup }
 
     struct Row: Identifiable {
         let id = UUID()
@@ -24,14 +25,23 @@ final class ImportSession: Identifiable {
     let intent: ImportIntent
     /// Rescue path: set once the user confirmed that the old vault file is kept and a new vault replaces it.
     var replaceConfirmed = false
+    /// Detected file format (file imports only); shown in the review sheet.
+    let format: ImportFormat?
+    /// Rows of a password-manager file that carry no code and were skipped. Their content is never kept.
+    let rowsWithoutCode: Int
     var rows: [Row]
     var skipped: [String]
     /// Existing groups first, then groups of a backup that do not exist yet (matched by name).
     var availableGroups: [AccountGroup]
     var replacesVault: Bool { intent == .replaceVault }
+    /// The file came from a password manager: only the codes are read, the passwords in it are ignored.
+    var fileHasPasswords: Bool { delivery == .passwordFile }
 
     init(source: Source, delivery: Delivery, intent: ImportIntent, accounts: [Account], skipped: [String] = [], existing: [Account],
-         existingGroups: [AccountGroup], incomingGroups backupGroups: [AccountGroup] = [], defaultGroupID: UUID? = nil) {
+         existingGroups: [AccountGroup], incomingGroups backupGroups: [AccountGroup] = [], defaultGroupID: UUID? = nil,
+         format: ImportFormat? = nil, rowsWithoutCode: Int = 0) {
+        self.format = format
+        self.rowsWithoutCode = rowsWithoutCode
         self.source = source
         self.delivery = delivery
         self.intent = intent

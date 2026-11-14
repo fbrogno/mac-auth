@@ -73,6 +73,7 @@ struct SheetRouter: View {
         case .restoreBackup(let preset, let replace): RestoreSheet(model: model, preset: preset, replace: replace)
         case .rescue: RescueSheet(model: model)
         case .exportBackup: ExportBackupSheet(model: model)
+        case .exportPlain: PlainExportSheet(model: model)
         case .transfer(let ids): TransferSheet(model: model, preselected: ids)
         case .newGroup: GroupSheet(model: model, existing: nil)
         case .editGroup(let id): GroupSheet(model: model, existing: model.group(id))
@@ -141,10 +142,24 @@ enum FilePanels {
     static func openImportFile() async -> URL? {
         await withCheckedContinuation { continuation in
             let panel = NSOpenPanel()
-            panel.allowedContentTypes = [UTType(filenameExtension: BackupFile.fileExtension) ?? .data, .json, .plainText, .text, .data]
+            // Detection is by content, so any file may be chosen; the listed types only make the common ones easy to find.
+            panel.allowedContentTypes = [UTType(filenameExtension: BackupFile.fileExtension) ?? .data, .json, .commaSeparatedText, .plainText, .text,
+                                         UTType(filenameExtension: "2fas") ?? .data, .data]
             panel.allowsMultipleSelection = false
             panel.canChooseDirectories = false
-            panel.message = String(localized: "Wähle eine Exportdatei aus Aegis, 2FAS oder Ente Auth (unverschlüsselt) oder eine MacAuth-Sicherung.")
+            panel.message = String(localized: "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV) oder eine MacAuth-Sicherung.")
+            panel.begin { response in continuation.resume(returning: response == .OK ? panel.url : nil) }
+        }
+    }
+
+    /// Plain-text export for another app. The panel only opens after the warning was confirmed.
+    static func savePlainExport(suggestedName: String, type: UTType) async -> URL? {
+        await withCheckedContinuation { continuation in
+            let panel = NSSavePanel()
+            panel.allowedContentTypes = [type]
+            panel.nameFieldStringValue = suggestedName
+            panel.canCreateDirectories = true
+            panel.message = String(localized: "Achtung: Diese Datei enthält alle Schlüssel im Klartext. Speichere sie nicht in einem Cloud-Ordner und lösche sie nach dem Import.")
             panel.begin { response in continuation.resume(returning: response == .OK ? panel.url : nil) }
         }
     }
@@ -225,7 +240,14 @@ enum ImportFlow {
             switch detection {
             case .accounts(let result):
                 let skipped = result.skipped.map { "\($0.label) – \($0.reason.localizedText)" }
-                let session = model.makeSession(source: .file, delivery: .file, accounts: result.accounts, skipped: skipped, groups: result.groups)
+                if result.accounts.isEmpty, skipped.isEmpty, result.rowsWithoutCode > 0 {
+                    model.alert = AppAlert(title: String(localized: "Keine Codes gefunden"),
+                                           message: String(localized: "In dieser Datei steht bei keinem der \(result.rowsWithoutCode) Einträge ein Code für die Zwei-Faktor-Anmeldung. Es wurde nichts importiert."))
+                    return
+                }
+                let delivery: ImportSession.Delivery = [.applePasswordsCSV, .genericCSV, .bitwarden].contains(result.format) ? .passwordFile : .file
+                let session = model.makeSession(source: .file, delivery: delivery, accounts: result.accounts, skipped: skipped, groups: result.groups,
+                                                format: result.format, rowsWithoutCode: result.rowsWithoutCode)
                 model.sheet = .review(session)
             case .googleMigration(let links):
                 present(model.importer.ingest(links, delivery: .file, model: model), model: model, ticket: ticket)

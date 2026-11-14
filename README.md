@@ -21,7 +21,7 @@ MacAuth is a native macOS app for two-factor codes (TOTP/HOTP). It keeps your se
 ## Features
 
 - Import from Google Authenticator via the Mac camera (recommended), an image file or screenshot (open, drag, paste), or a single `otpauth://` link or setup key.
-- Import from files: Aegis, 2FAS, Ente Auth (`otpauth://` list) and MacAuth backups. Only unencrypted exports work; delete the export file afterwards, it holds all your keys in plain text.
+- Import from files: Aegis, 2FAS, Ente Auth (`otpauth://` list), Bitwarden (JSON), andOTP, password-manager CSV files (Apple Passwords, 1Password, Proton Pass and others) and MacAuth backups. The format is recognised from the file content. Only unencrypted exports work; delete the export file afterwards, it holds all your keys in plain text. From password managers only the codes are read: passwords in the file are ignored and never stored.
 - Every import ends in a review step; nothing is stored until you confirm, duplicates are marked, entries that cannot be imported are listed with the reason.
 - Copy a code by clicking its card, with `↵` or with `⌘1`–`⌘9`. The next code is copied with `⌥⌘C`.
 - Search by just typing; groups and favorites; grid or list view.
@@ -33,6 +33,7 @@ MacAuth is a native macOS app for two-factor codes (TOTP/HOTP). It keeps your se
 - Window excluded from screen sharing and screenshots (a request to macOS, no guarantee; can be switched off); optional: codes shown only on hover or selection.
 - Encrypted backup file with an open, documented format ([docs/backup-format.md](docs/backup-format.md)).
 - Transfer accounts to a phone as QR codes (Google's migration format, or one `otpauth://` QR per account).
+- Export for another app, unencrypted and only after a fresh authentication and a warning: link list (`otpauth://`, `.txt`), Aegis (`.json`) or Apple Passwords (`.csv`). The file is written readable by you only; accounts a format cannot hold (for example HOTP in the Passwords CSV) are listed, never changed silently.
 - German and English interface.
 
 <table>
@@ -62,7 +63,9 @@ Releases can be verified: each has a SHA-256 file (`shasum -a 256 -c MacAuth-<ve
 
 Do not delete the accounts from Google Authenticator before you have checked that the codes in MacAuth work.
 
-Coming from Aegis, 2FAS or Ente Auth? Export unencrypted there, then choose **Import from File …** (also in the **+** menu and the File menu, or drop the file on the window). An encrypted export has to be exported unencrypted first. Delete the export file afterwards, also from the Trash and from iCloud Drive. The same goes for a screenshot of a QR code, including iCloud Photos.
+Coming from Aegis, 2FAS, Ente Auth, Bitwarden or andOTP? Export unencrypted there, then choose **Import from File …** (also in the **+** menu and the File menu, or drop the file on the window). An encrypted export has to be exported unencrypted first. Delete the export file afterwards, also from the Trash and from iCloud Drive. The same goes for a screenshot of a QR code, including iCloud Photos.
+
+Coming from Apple Passwords? In the Passwords app choose **File** > **Export All Passwords to File**, then in MacAuth **From Apple Passwords** (in the import dialog) and pick the CSV. MacAuth reads only the codes; the passwords in the file are ignored and not stored. The file itself holds all your passwords: delete it right after the import. Going the other way, **File** > **Export for Another App (Unencrypted) …** writes a CSV for the Passwords app, a link list or an Aegis file.
 
 <p align="center">
   <picture>

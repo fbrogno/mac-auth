@@ -1,5 +1,6 @@
 import AuthCore
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Sensitive actions start with a fresh Touch ID / password check, then open their sheet.
 @MainActor
@@ -10,11 +11,232 @@ enum BackupFlow {
         if await model.authenticate(reason: String(localized: "Backup exportieren")), model.isCurrent(ticket) { model.sheet = .exportBackup }
     }
 
+    /// Export in a foreign format (plain text). Order: fresh authentication here, then the sheet (target, warning), then
+    /// the save panel and the write inside the sheet. A dialog that answers after the app was locked is dropped.
+    static func startPlainExport(_ model: AppModel) async {
+        guard model.phase == .unlocked, !model.accounts.isEmpty else { return }
+        let ticket = model.ticket
+        if await model.authenticate(reason: String(localized: "Konten unverschlüsselt exportieren")), model.isCurrent(ticket) {
+            model.sheet = .exportPlain
+        }
+    }
+
     static func startTransfer(_ model: AppModel, ids: Set<UUID>? = nil) async {
         guard model.phase == .unlocked, !model.accounts.isEmpty else { return }
         let ticket = model.ticket
         if await model.authenticate(reason: String(localized: "QR-Codes für die Übertragung anzeigen")), model.isCurrent(ticket) {
             model.sheet = .transfer(ids)
+        }
+    }
+}
+
+/// Export for another app: three plain-text targets. Stages: choose the target, confirm the warning, (save panel, write),
+/// confirmation. The file content is built only after the warning was confirmed and is never kept in the view state.
+struct PlainExportSheet: View {
+    enum Target: String, CaseIterable, Identifiable {
+        case links, aegis, apple
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .links: String(localized: "Link-Liste (otpauth)")
+            case .aegis: String(localized: "Aegis (JSON)")
+            case .apple: String(localized: "Apple Passwörter (CSV)")
+            }
+        }
+        var detail: String {
+            switch self {
+            case .links: String(localized: "Eine Textdatei mit einem otpauth-Link je Zeile. Viele Apps lesen sie, zum Beispiel Ente Auth.")
+            case .aegis: String(localized: "Ein unverschlüsselter Aegis-Tresor mit Gruppen, Favoriten und Notizen.")
+            case .apple: String(localized: "Eine CSV-Datei für die App „Passwörter“. Nur zeitbasierte Codes (TOTP), Zähler-Codes (HOTP) bleiben zurück.")
+            }
+        }
+        var symbol: String {
+            switch self {
+            case .links: "link"
+            case .aegis: "shield.lefthalf.filled"
+            case .apple: "key"
+            }
+        }
+        var type: UTType {
+            switch self {
+            case .links: .plainText
+            case .aegis: .json
+            case .apple: .commaSeparatedText
+            }
+        }
+        var fileName: String {
+            let stamp = Date().formatted(.iso8601.year().month().day())
+            switch self {
+            case .links: return "MacAuth-Konten-\(stamp).txt"
+            case .aegis: return "MacAuth-Aegis-\(stamp).json"
+            case .apple: return "MacAuth-Passwoerter-\(stamp).csv"
+            }
+        }
+    }
+
+    enum Stage { case choose, warning, done }
+
+    struct Outcome {
+        var count: Int
+        var skipped: [ExportSkippedEntry]
+        var fileName: String
+    }
+
+    @Bindable var model: AppModel
+    @State private var stage: Stage
+    @State private var target: Target
+    @State private var busy = false
+    @State private var outcome: Outcome?
+    @State private var errorText: String?
+    @State private var ticket: Ticket
+    @Environment(\.dismiss) private var dismiss
+
+    init(model: AppModel, stage: Stage = .choose, target: Target = .links, previewOutcome: Outcome? = nil) {
+        self.model = model
+        _stage = State(initialValue: stage)
+        _target = State(initialValue: target)
+        _outcome = State(initialValue: previewOutcome)
+        _ticket = State(initialValue: model.ticket)
+    }
+
+    var body: some View {
+        SheetScaffold(title: title, subtitle: subtitle, width: 520) {
+            switch stage {
+            case .choose: choosePage
+            case .warning: warningPage
+            case .done: donePage
+            }
+        } footer: {
+            switch stage {
+            case .choose:
+                Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
+                Button("Weiter") { stage = .warning }.keyboardShortcut(.defaultAction).primaryButtonStyle()
+            case .warning:
+                if busy { ProgressView().controlSize(.small) }
+                Button("Zurück") { stage = .choose }.disabled(busy)
+                Spacer()
+                // Return = cancel; the export button has no shortcut. Esc closes the sheet as well.
+                Button("Abbrechen") { dismiss() }.keyboardShortcut(.defaultAction).primaryButtonStyle()
+                Button("Trotzdem exportieren …") { Task { await export() } }.tint(.red).disabled(busy)
+            case .done:
+                Button("Fertig") { dismiss() }.keyboardShortcut(.defaultAction).primaryButtonStyle()
+            }
+        }
+    }
+
+    private var title: String {
+        switch stage {
+        case .choose: String(localized: "Für andere App exportieren")
+        case .warning: String(localized: "Diese Datei ist nicht geschützt")
+        case .done: String(localized: "Datei gespeichert")
+        }
+    }
+
+    private var subtitle: String? {
+        switch stage {
+        case .choose: String(localized: "Unverschlüsselt. Wähle das Ziel.")
+        case .warning: String(localized: "Ziel: \(target.title)")
+        case .done: nil
+        }
+    }
+
+    private var choosePage: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Target.allCases) { option in
+                Button { target = option } label: {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: target == option ? "largecircle.fill.circle" : "circle")
+                            .foregroundStyle(target == option ? Color.accentColor : .secondary).font(.system(size: 16)).padding(.top, 1)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Label(option.title, systemImage: option.symbol).font(.system(size: 13, weight: .semibold))
+                            Text(option.detail).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(target == option ? Color.accentColor.opacity(0.10) : Color.primary.opacity(0.05),
+                                in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(target == option ? .isSelected : [])
+            }
+            Label("Für die Sicherung deiner Konten ist das verschlüsselte Backup der bessere Weg. Diese Dateien sind nur zum Umziehen in eine andere App gedacht.", systemImage: "lock")
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var warningPage: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Die Datei enthält die Schlüssel aller deiner Konten im Klartext.").font(.system(size: 13, weight: .semibold))
+                    Text("Wer die Datei hat, kann alle Codes selbst erzeugen, ohne dein Handy und ohne MacAuth.")
+                    Text("Importiere sie sofort in die andere App und lösche sie danach, auch aus dem Papierkorb. Lege sie nie in einem Cloud-Ordner ab (iCloud Drive, Dropbox, OneDrive u. a.).")
+                }
+                .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange).font(.system(size: 20))
+            }
+            .font(.callout)
+            .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            Text("Die Datei wird nur für dich lesbar angelegt (Zugriffsrechte 600). In die Zwischenablage oder ein Protokoll wird nichts geschrieben.")
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            if let errorText { Text(errorText).font(.callout).foregroundStyle(.red) }
+        }
+    }
+
+    private var donePage: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if let outcome {
+                Label("\(outcome.count) Konten wurden in „\(outcome.fileName)“ geschrieben.", systemImage: "checkmark.circle.fill")
+                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(.green).fixedSize(horizontal: false, vertical: true)
+                if !outcome.skipped.isEmpty {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Label("\(outcome.skipped.count) Konten konnten nicht exportiert werden:", systemImage: "exclamationmark.triangle")
+                            .font(.callout.weight(.medium)).foregroundStyle(.orange)
+                        ForEach(Array(outcome.skipped.enumerated()), id: \.offset) { _, entry in
+                            Text("\(entry.label): \(entry.reason.localizedText)").font(.callout).foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+            Label("Importiere die Datei jetzt und lösche sie danach, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle Schlüssel im Klartext.", systemImage: "trash")
+                .font(.callout).fixedSize(horizontal: false, vertical: true)
+                .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+    }
+
+    private func export() async {
+        // The data is built only now, from the state at this moment, and only while the app is still in the state
+        // the authentication was done in. It lives in local variables only.
+        guard model.isCurrent(ticket), !busy else { return }
+        let vault = model.currentVault
+        guard !vault.accounts.isEmpty else { return }
+        busy = true
+        errorText = nil
+        defer { busy = false }
+        let chosen = target
+        do {
+            let result: ExportResult
+            switch chosen {
+            case .links: result = AccountExporter.otpauthList(vault.accounts)
+            case .aegis: result = try AccountExporter.aegisJSON(vault.accounts, groups: vault.groups)
+            case .apple: result = AccountExporter.applePasswordsCSV(vault.accounts)
+            }
+            guard result.exportedCount > 0 else {
+                errorText = String(localized: "Kein Konto lässt sich in diesem Format ablegen. Wähle ein anderes Ziel.")
+                return
+            }
+            guard let url = await FilePanels.savePlainExport(suggestedName: chosen.fileName, type: chosen.type), model.isCurrent(ticket) else { return }
+            try PrivateFile.write(result.data, to: url)
+            outcome = Outcome(count: result.exportedCount, skipped: result.skipped, fileName: url.lastPathComponent)
+            stage = .done
+        } catch {
+            errorText = ErrorText.message(for: error)
         }
     }
 }

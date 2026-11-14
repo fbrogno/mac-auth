@@ -85,22 +85,30 @@ struct ExportTests {
         #expect(sameParameters(src.filter { $0.kind == .totp }, r.accounts))
     }
 
-    @Test func appleCSVQuotesAndNeutralisesFormulas() throws {
+    @Test func appleCSVQuotesAndKeepsUsernamesUnchanged() throws {
+        // No formula-injection prefix: the consumer is the Passwords app, so `+49…`, `-name`, `=x`, `@bob` must survive.
         var a = makeAccount("=HYPERLINK(\"http://x\")", issuer: "+Evil, \"Inc\"")
         a.note = "line1\nline2"
         let b = makeAccount("@bob", issuer: "")
         let c = makeAccount("-x", issuer: "Tab\tFirst")
-        let out = AccountExporter.applePasswordsCSV([a, b, c])
+        let d = makeAccount("+491701234567", issuer: "Phone")
+        let src = [a, b, c, d]
+        let out = AccountExporter.applePasswordsCSV(src)
         let rows = try CSV.parse(String(decoding: out.data, as: UTF8.self))
-        #expect(rows.count == 4 && rows[0].count == 6)
-        #expect(rows[1][0] == "'+Evil, \"Inc\"" && rows[1][2] == "'=HYPERLINK(\"http://x\")" && rows[1][4] == "line1\nline2")
-        #expect(rows[2][0] == "'@bob" && rows[2][2] == "")
-        #expect(rows[3][0] == "Tab\tFirst" && rows[3][2] == "'-x")
-        // The OTPAuth cell is untouched and URL/Password are empty.
+        #expect(rows.count == 5 && rows[0].count == 6)
+        #expect(rows[1][0] == "+Evil, \"Inc\"" && rows[1][2] == "=HYPERLINK(\"http://x\")" && rows[1][4] == "line1\nline2")
+        #expect(rows[2][0] == "@bob" && rows[2][2] == "")
+        #expect(rows[3][0] == "Tab\tFirst" && rows[3][2] == "-x")
+        #expect(rows[4][0] == "Phone" && rows[4][2] == "+491701234567")
+        // URL/Password are empty and the OTPAuth cell is a link.
         for row in rows.dropFirst() {
             #expect(row[1].isEmpty && row[3].isEmpty && row[5].hasPrefix("otpauth://totp?secret="))
         }
-        #expect(CSV.neutralised("\rx") == "'\rx" && CSV.neutralised("safe") == "safe" && CSV.neutralised("") == "")
+        // Round trip through the importer: issuer and name come back unchanged.
+        let r = try imported(out.data)
+        #expect(r.accounts[0].issuer == "+Evil, \"Inc\"" && r.accounts[0].name == "=HYPERLINK(\"http://x\")")
+        #expect(r.accounts[2].issuer == "Tab\tFirst" && r.accounts[2].name == "-x")
+        #expect(r.accounts[3].issuer == "Phone" && r.accounts[3].name == "+491701234567")
     }
 
     @Test func invalidAccountsAreReportedNotChanged() throws {
@@ -120,5 +128,20 @@ struct ExportTests {
         #expect(AccountExporter.otpauthList([]).data.isEmpty)
         #expect(String(decoding: AccountExporter.applePasswordsCSV([]).data, as: UTF8.self) == "Title,URL,Username,Password,Notes,OTPAuth\n")
         #expect(try AccountExporter.aegisJSON([], groups: []).exportedCount == 0)
+    }
+
+    @Test func privateFileIsOwnerOnlyEvenWhenOverwriting() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("macauth-test-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let url = dir.appendingPathComponent("export.txt")
+        func mode() throws -> Int { (try FileManager.default.attributesOfItem(atPath: url.path)[.posixPermissions] as? Int) ?? -1 }
+        try PrivateFile.write(Data("first".utf8), to: url)
+        #expect(try mode() == 0o600)
+        // An existing, more open file is narrowed and truncated.
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: url.path)
+        try PrivateFile.write(Data("2".utf8), to: url)
+        #expect(try mode() == 0o600 && Data(contentsOf: url) == Data("2".utf8))
+        #expect(throws: BackupError.self) { try PrivateFile.write(Data(), to: dir.appendingPathComponent("missing/x.txt")) }
     }
 }

@@ -79,10 +79,11 @@ enum ErrorText {
             case .emptyFile: return String(localized: "Die Datei ist leer.")
             case .tooLarge: return String(localized: "Die Datei ist zu groß.")
             case .tooManyEntries: return String(localized: "Die Datei enthält zu viele Einträge.")
-            case .unrecognizedFormat: return String(localized: "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste) und MacAuth-Sicherungen.")
+            case .unrecognizedFormat: return String(localized: "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste), Bitwarden, andOTP, CSV-Dateien mit einer Code-Spalte (Apple Passwörter, 1Password, Proton Pass u. a.) und MacAuth-Sicherungen.")
             case .encryptedFile(let format):
                 return String(localized: "Die \(format.displayName)-Datei ist verschlüsselt. Exportiere sie in \(format.displayName) unverschlüsselt, importiere sie hier und lösche die Exportdatei danach.")
             case .unsupportedVersion: return String(localized: "Die Version dieser Datei wird nicht unterstützt.")
+            case .malformedCSV: return String(localized: "Die CSV-Datei ist fehlerhaft und lässt sich nicht lesen. Exportiere sie noch einmal aus der App.")
             }
         default:
             return String(localized: "Es ist ein unerwarteter Fehler aufgetreten.")
@@ -99,6 +100,27 @@ extension SkipReason {
         case .invalidParameter(let p): String(localized: "Ungültiger Wert für „\(p)“")
         case .notAnOTPAuthLine: String(localized: "Keine otpauth-Zeile")
         case .malformed: String(localized: "Eintrag fehlerhaft")
+        }
+    }
+}
+
+extension ExportSkipReason {
+    var localizedText: String {
+        switch self {
+        case .hotpNotSupported: String(localized: "Zähler-basierte Codes (HOTP) lassen sich in diesem Format nicht ablegen")
+        case .invalidAccount: String(localized: "Die Kontodaten sind ungültig")
+        }
+    }
+}
+
+extension ImportFormat {
+    /// Name for the review sheet; the German core names of apps stay as they are.
+    var localizedName: String {
+        switch self {
+        case .applePasswordsCSV: String(localized: "Apple Passwörter (CSV)")
+        case .genericCSV: String(localized: "CSV-Datei")
+        case .otpauthLines: String(localized: "otpauth-Liste")
+        default: displayName
         }
     }
 }
