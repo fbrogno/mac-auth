@@ -20,25 +20,29 @@ MacAuth is a native macOS app for two-factor codes (TOTP/HOTP). It keeps your se
 
 ## Features
 
-- Import from Google Authenticator via the Mac camera, an image file or screenshot (open, drag, paste), or a single `otpauth://` link or setup key. Every import ends in a review step; nothing is stored until you confirm, duplicates are marked.
+- Import from Google Authenticator via the Mac camera (recommended), an image file or screenshot (open, drag, paste), or a single `otpauth://` link or setup key.
+- Import from files: Aegis, 2FAS, Ente Auth (`otpauth://` list) and MacAuth backups. Only unencrypted exports work; delete the export file afterwards, it holds all your keys in plain text.
+- Every import ends in a review step; nothing is stored until you confirm, duplicates are marked, entries that cannot be imported are listed with the reason.
 - Copy a code by clicking its card, with `↵` or with `⌘1`–`⌘9`. The next code is copied with `⌥⌘C`.
 - Search by just typing; groups and favorites; grid or list view.
 - Vault with Secure Enclave key protection and Touch ID (or login password).
+- Optional global shortcut (off by default, needs at least one of ⌘ ⌥ ⌃) that shows MacAuth and hides it again.
+- If the vault cannot be opened, nothing is deleted: try again, restore a backup or bring back an earlier version (**Restore Earlier Version**). A replaced vault file is always kept.
 - Auto-lock after inactivity (1, 5, 15, 60 minutes or never), and always on sleep, screen lock and user switching.
 - Copied codes are marked as concealed and cleared from the clipboard after 10, 30 or 60 seconds (or never).
-- Window hidden from screen sharing and screenshots (can be switched off); optional: codes shown only on hover or selection.
+- Window excluded from screen sharing and screenshots (a request to macOS, no guarantee; can be switched off); optional: codes shown only on hover or selection.
 - Encrypted backup file with an open, documented format ([docs/backup-format.md](docs/backup-format.md)).
 - Transfer accounts to a phone as QR codes (Google's migration format, or one `otpauth://` QR per account).
 - German and English interface.
 
 <table>
   <tr>
-    <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/first-run-dark.png"><img src="docs/images/first-run-light.png" alt="First start: import from Google Authenticator, restore a backup or add manually"></picture></td>
-    <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/import-review-dark.png"><img src="docs/images/import-review-light.png" alt="Review step before importing: found accounts, target group, duplicates unchecked"></picture></td>
+    <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/first-run-dark-en.png"><img src="docs/images/first-run-light-en.png" alt="First start: import from Google Authenticator, restore a backup or add manually"></picture></td>
+    <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/import-review-dark-en.png"><img src="docs/images/import-review-light-en.png" alt="Review step before importing: found accounts, target group, duplicates unchecked"></picture></td>
   </tr>
 </table>
 
-The screenshots show demo data. Apart from the main window, they show the German interface.
+The screenshots show demo data.
 
 ## Install
 
@@ -46,6 +50,8 @@ The screenshots show demo data. Apart from the main window, they show the German
 2. Open it and drag MacAuth to Applications.
 
 Requires macOS 15 or newer. The app is signed with a Developer ID and notarized by Apple. It updates itself (Sparkle, signed updates); you can switch automatic checks off.
+
+Releases can be verified: each has a SHA-256 file (`shasum -a 256 -c MacAuth-<version>.dmg.sha256`) and a build provenance attestation from GitHub Actions (`gh attestation verify MacAuth-<version>.dmg --repo fbrogno/mac-auth`).
 
 ## Getting started
 
@@ -56,10 +62,12 @@ Requires macOS 15 or newer. The app is signed with a Developer ID and notarized 
 
 Do not delete the accounts from Google Authenticator before you have checked that the codes in MacAuth work.
 
+Coming from Aegis, 2FAS or Ente Auth? Export unencrypted there, then choose **Import from File …** (also in the **+** menu and the File menu, or drop the file on the window). An encrypted export has to be exported unencrypted first. Delete the export file afterwards, also from the Trash and from iCloud Drive. The same goes for a screenshot of a QR code, including iCloud Photos.
+
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/settings-dark.png">
-    <img src="docs/images/settings-light.png" alt="Settings, Security tab: unlock requirement, auto-lock, screen protection" width="420">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/settings-dark-en.png">
+    <img src="docs/images/settings-light-en.png" alt="Settings, Security tab: unlock requirement, auto-lock, screen protection" width="420">
   </picture>
 </p>
 
@@ -78,12 +86,13 @@ Do not delete the accounts from Google Authenticator before you have checked tha
 | `⌘V` | paste an image or link to import |
 | `⇧⌘E` | export backup |
 | `⌘L` | lock |
-| `⌘⌫` | delete selected account (with confirmation) |
+| `⌘⌫` | delete the selected account (with confirmation; only when a card is selected and no text field has focus, not in the search field) |
+| optional | global shortcut to show or hide MacAuth (Settings, General) |
 | `⌘,` | settings |
 
 ## Security
 
-- The vault is one file, sealed with ChaCha20-Poly1305. On a Mac with a Secure Enclave the vault key is wrapped by a key that never leaves it; opening needs Touch ID or the login password, enforced by the enclave. Without it (or if you switch the prompt off) the key sits in the login keychain, which is weaker.
+- The vault is one file, sealed with ChaCha20-Poly1305. On a Mac with a Secure Enclave the vault key is wrapped by a key that never leaves it; opening needs Touch ID or the login password, enforced by the enclave. Without it (or if you switch the prompt off) the key sits in the login keychain, which is weaker, and with Time Machine or Migration Assistant the key can travel to another Mac together with the vault file.
 - Secrets are never put on the clipboard, only the current code.
 - The backup is AES-256-GCM with a key from your password (PBKDF2-HMAC-SHA256, 600,000 rounds). Its strength is the strength of your password.
 - **Without a backup file, the codes are gone if you lose the Mac** or erase it. The Secure Enclave key cannot be exported. That is intended.
@@ -100,6 +109,8 @@ You need macOS 15+, Xcode and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 swift test                               # tests for AuthCore
 SIGN_IDENTITY=- ./scripts/build-app.sh   # build/MacAuth.app, ad-hoc signed
 ```
+
+Try it without touching a vault: `build/MacAuth.app/Contents/MacOS/MacAuth --demo` opens the real window with invented accounts, entirely in memory (no vault, keychain or Secure Enclave, nothing is stored). `--render-docs <folder>` draws the documentation images from the same views.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the layout, style and how to send a pull request.
 

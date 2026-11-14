@@ -167,6 +167,8 @@ public struct KeychainProtector: KeyProtector {
 public struct SecureEnclaveProtector: KeyProtector, @unchecked Sendable {
     public let identifier = "secure-enclave"
     public static let defaultAccessControlFlags: SecAccessControlCreateFlags = [.privateKeyUsage, .userPresence]
+    /// `TKErrorDomain` of CryptoTokenKit (the framework itself is not imported).
+    static let tokenKitDomain = "CryptoTokenKit"
     private static let info = Data("MacAuth vault key wrap v1".utf8)
 
     private let context: LAContext?
@@ -241,6 +243,9 @@ public struct SecureEnclaveProtector: KeyProtector, @unchecked Sendable {
     /// - `LAError.authenticationFailed`, `errSecAuthFailed` (-25293): `authenticationFailed` (wrong finger/password).
     /// - `errSecInteractionNotAllowed` (-25308), `LAError.notInteractive`: `interactionNotAllowed`, temporary
     ///   (no GUI session, locked keychain); retry later.
+    /// - CryptoTokenKit `corruptedData` (-3) / `objectNotFound` (-6), `errSecItemNotFound`: `keyUnavailable(code)`,
+    ///   the blob is unknown on this device (other Mac, enclave reset). Says nothing about the vault file or backups.
+    /// - CryptoTokenKit `canceledByUser` (-4) / `authenticationFailed` (-5): as the LocalAuthentication cases.
     /// - Everything else (lockout, no passcode, missing key, other OSStatus): `secureEnclaveFailure(code)`,
     ///   reported as-is without a verdict.
     static func map(_ error: Error) -> ProtectorError {
@@ -253,7 +258,16 @@ public struct SecureEnclaveProtector: KeyProtector, @unchecked Sendable {
             default: return .secureEnclaveFailure(ns.code)
             }
         }
+        if ns.domain == Self.tokenKitDomain {
+            switch ns.code {
+            case -3, -6: return .keyUnavailable(ns.code)
+            case -4: return .userCancelled
+            case -5: return .authenticationFailed
+            default: return .secureEnclaveFailure(ns.code)
+            }
+        }
         switch ns.code {
+        case Int(errSecItemNotFound): return .keyUnavailable(ns.code)
         case Int(errSecUserCanceled): return .userCancelled
         case Int(errSecAuthFailed): return .authenticationFailed
         case Int(errSecInteractionNotAllowed): return .interactionNotAllowed

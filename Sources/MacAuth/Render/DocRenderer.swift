@@ -67,6 +67,10 @@ enum DocRenderer {
                 let model = demoModel(.locked, notice: .cannotOpen)
                 window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("locked-cannot-open-\(tag)\(suffix).png"))
             }
+            if want("locked-retry") {
+                let model = demoModel(.locked, notice: .retryLater)
+                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("locked-retry-\(tag)\(suffix).png"))
+            }
             if want("rescue") {
                 let model = demoModel(.locked, notice: .cannotOpen)
                 sheet(RescueSheet(model: model), scheme: scheme, to: url.appendingPathComponent("rescue-\(tag)\(suffix).png"))
@@ -108,7 +112,7 @@ enum DocRenderer {
         let suite = "com.fbrogno.macauth.render.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite) ?? .standard
         defer { defaults.removePersistentDomain(forName: suite) }
-        let settings = AppSettings(defaults: defaults)
+        let settings = AppSettings(defaults: defaults, domain: suite)
         settings.lastAccountChange = 2
         settings.lastBackupExport = 1
         switch phase {

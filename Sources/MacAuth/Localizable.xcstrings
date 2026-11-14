@@ -929,6 +929,22 @@
         }
       }
     },
+    "Bild wird gelesen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bild wird gelesen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading image…"
+          }
+        }
+      }
+    },
     "Code kopieren": {
       "localizations": {
         "de": {
@@ -1201,6 +1217,22 @@
         }
       }
     },
+    "Datei wird gelesen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datei wird gelesen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading file…"
+          }
+        }
+      }
+    },
     "Datei wählen …": {
       "localizations": {
         "de": {
@@ -1313,6 +1345,22 @@
         }
       }
     },
+    "Der Schlüssel dieses Tresors ist auf diesem Mac nicht verfügbar, zum Beispiel weil der Tresor auf einem anderen Mac oder vor einem Zurücksetzen angelegt wurde. Die Datei selbst ist nicht verloren.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel dieses Tresors ist auf diesem Mac nicht verfügbar, zum Beispiel weil der Tresor auf einem anderen Mac oder vor einem Zurücksetzen angelegt wurde. Die Datei selbst ist nicht verloren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key of this vault is not available on this Mac, for example because the vault was created on another Mac or before a reset. The file itself is not lost."
+          }
+        }
+      }
+    },
     "Der Schlüssel enthält ungültige Zeichen.": {
       "localizations": {
         "de": {
@@ -1389,6 +1437,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "The key is too long."
+          }
+        }
+      }
+    },
+    "Der Schlüssel liegt im Schlüsselbund, nicht in der Secure Enclave. MacAuth fragt beim Öffnen nach Touch ID oder Passwort, der Schutz ist aber schwächer.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel liegt im Schlüsselbund, nicht in der Secure Enclave. MacAuth fragt beim Öffnen nach Touch ID oder Passwort, der Schutz ist aber schwächer."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key is in the keychain, not in the Secure Enclave. MacAuth asks for Touch ID or your password when opening, but protection is weaker."
           }
         }
       }
@@ -1533,22 +1597,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "The vault is protected in a different way."
-          }
-        }
-      }
-    },
-    "Der Tresor liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Der Tresor liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The vault is still on this Mac and nothing was deleted. Try again first, for example after a restart. If that does not help, restore your backup or bring back an earlier version."
           }
         }
       }
@@ -1981,6 +2029,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "The access rule for the key could not be created."
+          }
+        }
+      }
+    },
+    "Die letzte Änderung konnte nicht gespeichert werden: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die letzte Änderung konnte nicht gespeichert werden: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The last change could not be saved: %@"
+          }
+        }
+      }
+    },
+    "Diese Fassung ist nur durch den Schlüsselbund geschützt. Dein Mac kann sie mit der Secure Enclave schützen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Fassung ist nur durch den Schlüsselbund geschützt. Dein Mac kann sie mit der Secure Enclave schützen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This version is protected by the keychain only. Your Mac can protect it with the Secure Enclave."
           }
         }
       }
@@ -4449,6 +4529,22 @@
         }
       }
     },
+    "Schutz mit Secure Enclave wiederherstellen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schutz mit Secure Enclave wiederherstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Secure Enclave Protection"
+          }
+        }
+      }
+    },
     "Schutz von MacAuth ändern": {
       "localizations": {
         "de": {
@@ -4621,6 +4717,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lock"
+          }
+        }
+      }
+    },
+    "Später": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Später"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
           }
         }
       }
@@ -4945,6 +5057,22 @@
         }
       }
     },
+    "Weitere Möglichkeiten …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weitere Möglichkeiten …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More Options…"
+          }
+        }
+      }
+    },
     "Wiederherstellen": {
       "localizations": {
         "de": {
@@ -4989,6 +5117,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Welcome to MacAuth"
+          }
+        }
+      }
+    },
+    "Wurde dieser Tresor auf einem anderen Mac oder vor dem Zurücksetzen angelegt? Er liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wurde dieser Tresor auf einem anderen Mac oder vor dem Zurücksetzen angelegt? Er liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Was this vault created on another Mac or before a reset? It is still on this Mac and nothing was deleted. Try again first, for example after a restart. If that does not help, restore your backup or bring back an earlier version."
           }
         }
       }

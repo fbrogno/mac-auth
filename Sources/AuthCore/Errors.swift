@@ -86,6 +86,10 @@ public enum ProtectorError: Error, Equatable, LocalizedError {
     /// GUI session; `errSecInteractionNotAllowed`, -25308). Retrying later can succeed. Never a verdict on the key.
     case interactionNotAllowed
     case keyNotFound
+    /// The system reports that the key (blob) is unknown or unusable on THIS device, e.g. CryptoTokenKit
+    /// `corruptedData` (-3) or `objectNotFound` (-6): the vault was made on another Mac or before a reset.
+    /// It is a statement about this device, not about the data: the vault file and backups are untouched.
+    case keyUnavailable(Int)
     case keychainFailure(Int32)
     case secureEnclaveFailure(Int)
     case dataCorrupted
@@ -98,6 +102,7 @@ public enum ProtectorError: Error, Equatable, LocalizedError {
         case .authenticationFailed: "Die Authentifizierung ist fehlgeschlagen."
         case .interactionNotAllowed: "Die Abfrage ist gerade nicht möglich. Bitte später erneut versuchen."
         case .keyNotFound: "Der Schlüssel dieses Tresors ist auf diesem Mac nicht vorhanden."
+        case .keyUnavailable(let c): "Der Schlüssel dieses Tresors ist auf diesem Mac nicht verfügbar (\(c))."
         case .keychainFailure(let s): "Der Schlüsselbund meldet einen Fehler (\(s))."
         case .secureEnclaveFailure(let c): "Die Secure Enclave meldet einen Fehler (\(c))."
         case .dataCorrupted: "Die Schutzdaten des Tresors sind beschädigt."

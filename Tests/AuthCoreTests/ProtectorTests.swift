@@ -84,7 +84,12 @@ struct ProtectorTests {
         #expect(mapped(NSOSStatusErrorDomain, -25308) == .interactionNotAllowed)    // errSecInteractionNotAllowed
         #expect(mapped(NSOSStatusErrorDomain, -128) == .userCancelled)              // errSecUserCanceled
         #expect(mapped(NSOSStatusErrorDomain, -25293) == .authenticationFailed)     // errSecAuthFailed
-        #expect(mapped(NSOSStatusErrorDomain, -25300) == .secureEnclaveFailure(-25300))
+        #expect(mapped(NSOSStatusErrorDomain, -25300) == .keyUnavailable(-25300))   // item not found: unknown on this device
+        #expect(mapped("CryptoTokenKit", -3) == .keyUnavailable(-3))                // corruptedData: blob unknown here
+        #expect(mapped("CryptoTokenKit", -6) == .keyUnavailable(-6))                // objectNotFound
+        #expect(mapped("CryptoTokenKit", -4) == .userCancelled)
+        #expect(mapped("CryptoTokenKit", -5) == .authenticationFailed)
+        #expect(mapped("CryptoTokenKit", -2) == .secureEnclaveFailure(-2))          // communication: no verdict
         #expect(mapped("com.apple.LocalAuthentication", -2) == .userCancelled)
         #expect(mapped("com.apple.LocalAuthentication", -1) == .authenticationFailed)
         #expect(mapped("com.apple.LocalAuthentication", -1004) == .interactionNotAllowed)

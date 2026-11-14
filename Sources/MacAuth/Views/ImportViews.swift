@@ -31,7 +31,11 @@ struct ImportSheet: View {
                     .keyboardShortcut(.defaultAction).primaryButtonStyle()
             }
         }
-        .onDisappear { importer.reset() }
+        .onChange(of: scanning) { _, now in model.cameraScanning = now }
+        .onDisappear {
+            importer.reset()
+            model.cameraScanning = false
+        }
         .confirmationDialog("Ein Screenshot enthält alle Schlüssel", isPresented: $confirmScreenshot, titleVisibility: .visible) {
             Button("Screenshot wählen") { Task { await ImportFlow.chooseImages(model: model) } }
             Button("Abbrechen", role: .cancel) {}

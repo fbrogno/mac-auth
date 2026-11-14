@@ -38,14 +38,15 @@ struct SettingsView: View {
     private var locked: Bool { model.phase != .unlocked }
 
     private var protectionText: (text: LocalizedStringKey, warn: Bool) {
-        let settings = model.settings
         switch model.protection {
         case .secureEnclave:
             return ("Der Schlüssel liegt in der Secure Enclave deines Macs. Ohne Touch ID oder Passwort lässt sich der Tresor nicht öffnen.", false)
         case .keychain where model.secureEnclaveAvailable:
-            return ("Der Schlüssel liegt im Schlüsselbund. Wer an deinem entsperrten Mac sitzt, kann MacAuth ohne Abfrage öffnen.", true)
+            return model.appLockRequired
+                ? ("Der Schlüssel liegt im Schlüsselbund, nicht in der Secure Enclave. MacAuth fragt beim Öffnen nach Touch ID oder Passwort, der Schutz ist aber schwächer.", true)
+                : ("Der Schlüssel liegt im Schlüsselbund. Wer an deinem entsperrten Mac sitzt, kann MacAuth ohne Abfrage öffnen.", true)
         case .keychain:
-            return settings.requireAuth
+            return model.appLockRequired
                 ? ("Dieser Mac hat keine Secure Enclave. Der Schlüssel liegt im Schlüsselbund, MacAuth fragt beim Öffnen aber nach Touch ID oder Passwort.", false)
                 : ("Dieser Mac hat keine Secure Enclave. Der Schlüssel liegt im Schlüsselbund, MacAuth öffnet ohne Abfrage.", true)
         case .unknown:

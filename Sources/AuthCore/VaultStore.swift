@@ -14,18 +14,24 @@ struct VaultEnvelope: Codable, Equatable {
     var version: Int
     var protector: String
     var protectorFields: ProtectorFields
+    /// Whether opening the vault needs a fresh device-owner authentication in the app (matters for protectors that
+    /// do not ask by themselves, i.e. the keychain). Part of the authenticated header; absent in older files, where
+    /// it counts as "required". Flipping, adding or removing it makes the vault fail to open.
+    var appLock: Bool?
     var nonce: String
     var ciphertext: String
     var tag: String
 
     /// The authenticated header: everything except nonce, ciphertext and tag, as one canonical text.
-    static func authenticatedHeader(version: Int, protector: String, fields: ProtectorFields) -> Data {
+    /// `appLock` adds a line only when present, so files without it keep their original header.
+    static func authenticatedHeader(version: Int, protector: String, fields: ProtectorFields, appLock: Bool? = nil) -> Data {
         var text = "macauth-vault\n\(version)\n\(protector)\n"
         for key in fields.keys.sorted() { text += "\(key)=\(fields[key]!)\n" }
+        if let appLock { text += "applock=\(appLock ? 1 : 0)\n" }
         return Data(text.utf8)
     }
 
-    var aad: Data { Self.authenticatedHeader(version: version, protector: protector, fields: protectorFields) }
+    var aad: Data { Self.authenticatedHeader(version: version, protector: protector, fields: protectorFields, appLock: appLock) }
 }
 
 /// Holds key bytes in memory that is overwritten on `wipe()` (best effort: copies made by CryptoKit stay).
@@ -82,6 +88,10 @@ public actor VaultStore {
     public private(set) var state: VaultState = .unloaded
     /// Identifier of the protector the vault file asks for (`secure-enclave`, `keychain`, `memory`).
     public var protectorIdentifier: String? { envelope?.protector }
+    /// True if the app must ask for Touch ID / password before using the vault key. Read from the file header
+    /// before unlocking (a manipulated value cannot open the vault: the header is authenticated). Files
+    /// without the field, and no file at all, count as "required".
+    public var requiresAppAuthentication: Bool { envelope?.appLock ?? true }
     /// The decrypted data while unlocked.
     public private(set) var contents: VaultData?
     /// True if `load()` found no current file and fell back to the previous generation.
@@ -155,7 +165,8 @@ public actor VaultStore {
     /// Creates a new vault with a fresh vault key. The vault is unlocked afterwards.
     /// With `replacingExisting`, the existing file (and previous generation) is first copied unchanged to
     /// `vault.replaced-<UTC>.json`; its key material is not touched.
-    public func create(contents: VaultData = VaultData(), protector: any KeyProtector, replacingExisting: Bool = false) async throws {
+    public func create(contents: VaultData = VaultData(), protector: any KeyProtector, replacingExisting: Bool = false,
+                       requireAppAuthentication: Bool = true) async throws {
         let exists = FileManager.default.fileExists(atPath: url.path)
         if exists, !replacingExisting { throw VaultError.alreadyExists }
         let generation = lockGeneration
@@ -164,7 +175,7 @@ public actor VaultStore {
         // Order: new material exists -> file written atomically -> only then anything old may go. Here nothing old goes.
         do {
             guard generation == lockGeneration else { throw VaultError.locked }
-            let sealed = try Self.seal(contents, key: key, protector: protector.identifier, fields: fields)
+            let sealed = try Self.seal(contents, key: key, protector: protector.identifier, fields: fields, appLock: requireAppAuthentication)
             if exists { try setAsideExisting(includePrevious: true) }
             let written = try writeCurrent(sealed, mode: .none)
             if exists { try? FileManager.default.removeItem(at: previousURL) }   // copied above; belongs to the old vault
@@ -215,18 +226,28 @@ public actor VaultStore {
     /// Runs without suspension points, so `lock()` cannot interleave.
     public func save(_ newContents: VaultData) throws {
         guard state == .unlocked, let keyBuffer, let envelope else { throw VaultError.locked }
-        let sealed = try Self.seal(newContents, key: keyBuffer.key, protector: envelope.protector, fields: envelope.protectorFields)
+        let sealed = try Self.seal(newContents, key: keyBuffer.key, protector: envelope.protector, fields: envelope.protectorFields, appLock: envelope.appLock)
         let written = try writeCurrent(sealed, mode: .rotate)
         self.envelope = sealed
         lastKnownBytes = written
         contents = newContents
     }
 
+    /// Changes whether the app asks for authentication before using the vault key. Only while unlocked; the app
+    /// must have authenticated freshly before lowering it. The value is sealed into the authenticated header.
+    public func setRequiresAppAuthentication(_ on: Bool) throws {
+        guard state == .unlocked, let keyBuffer, let envelope, let contents else { throw VaultError.locked }
+        let sealed = try Self.seal(contents, key: keyBuffer.key, protector: envelope.protector, fields: envelope.protectorFields, appLock: on)
+        let written = try writeCurrent(sealed, mode: .rotate)
+        self.envelope = sealed
+        lastKnownBytes = written
+    }
+
     /// Switches to another protector with a NEW vault key: new material is created, the contents are sealed
     /// again and written atomically, and only after that succeeded the old material is destroyed and
     /// `vault.previous.json` (still on the old key) is removed. On any failure only the new material is removed
     /// and the vault stays as it was.
-    public func changeProtector(to newProtector: any KeyProtector) async throws {
+    public func changeProtector(to newProtector: any KeyProtector, requireAppAuthentication: Bool? = nil) async throws {
         guard state == .unlocked, let envelope, let contents else { throw VaultError.locked }
         let generation = lockGeneration
         let oldProtector = protector
@@ -236,14 +257,24 @@ public actor VaultStore {
         let written: Data
         do {
             guard generation == lockGeneration, state == .unlocked else { throw VaultError.locked }
-            sealed = try Self.seal(contents, key: newKey, protector: newProtector.identifier, fields: newFields)
+            sealed = try Self.seal(contents, key: newKey, protector: newProtector.identifier, fields: newFields,
+                                   appLock: requireAppAuthentication ?? envelope.appLock)
             written = try writeCurrent(sealed, mode: .discardPrevious)
         } catch {
             try? newProtector.destroy(fields: newFields)
             throw error
         }
         try? FileManager.default.removeItem(at: previousURL)
-        try? oldProtector?.destroy(fields: envelope.protectorFields)
+        // The old key goes only if no remaining file (set-aside copies of this very vault) still points at it.
+        if let oldProtector {
+            if let id = oldProtector.referencedItemID(in: envelope.protectorFields) {
+                if let refs = try? collectReferences(for: oldProtector), !refs.references(id) {
+                    try? oldProtector.destroy(fields: envelope.protectorFields)
+                }
+            } else {
+                try? oldProtector.destroy(fields: envelope.protectorFields)
+            }
+        }
         keyBuffer?.wipe()
         keyBuffer = SecretBuffer(newKey)
         self.envelope = sealed
@@ -251,27 +282,52 @@ public actor VaultStore {
         protector = newProtector
     }
 
-    /// Deletes key-chain items of the current protector's service that neither the current file, the previous
-    /// generation nor any `vault.replaced-*` file refers to (e.g. after a crash between writing and deleting).
-    /// Only callable while unlocked, and only if the current file on disk decrypts with the unlocked key.
-    /// If any candidate file cannot be read, nothing is deleted. Returns the number of items removed.
-    @discardableResult
-    public func removeOrphanedKeyMaterial() async throws -> Int {
-        guard state == .unlocked, let envelope, let keyBuffer, let protector else { throw VaultError.locked }
-        let disk = try Self.readEnvelope(at: url).0
-        _ = try Self.open(disk, key: keyBuffer.key)
-        var referenced = Set<String>()
-        if let id = protector.referencedItemID(in: envelope.protectorFields) { referenced.insert(id) }
-        var texts: [String] = []
+    /// What the files in the vault folder (current, previous generation, every `vault.replaced-*`) refer to.
+    /// Files that parse as an envelope (any version) contribute their field values and, for the protector's own
+    /// kind, its item name (the legacy plain account name if the `item` field is missing). Anything else
+    /// counts as opaque text and protects every id it mentions. An unreadable file throws.
+    private struct KeyReferences {
+        var ids = Set<String>()
+        var opaqueTexts: [String] = []
+        func references(_ id: String) -> Bool { ids.contains(id) || opaqueTexts.contains { $0.contains(id) } }
+    }
+
+    private func collectReferences(for protector: any KeyProtector) throws -> KeyReferences {
+        var refs = KeyReferences()
         let files = [url, previousURL] + replacedFiles().map(\.url)
         for file in files where FileManager.default.fileExists(atPath: file.path) {
             guard let data = try? Data(contentsOf: file) else { throw VaultError.unreadableKeyFiles }
-            texts.append(String(decoding: data, as: UTF8.self))   // raw text: also covers unknown versions
+            if let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+               let fields = json["protectorFields"] as? [String: String] {
+                refs.ids.formUnion(fields.values)
+                if json["protector"] as? String == protector.identifier, let id = protector.referencedItemID(in: fields) {
+                    refs.ids.insert(id)
+                }
+            } else {
+                refs.opaqueTexts.append(String(decoding: data, as: UTF8.self))   // also covers unknown shapes
+            }
         }
+        return refs
+    }
+
+    /// Deletes external key items (key-chain) that no file refers to (e.g. after a crash between writing and
+    /// deleting). `alsoCheck` names further protectors whose services are cleaned too, independent of the
+    /// current one (the app passes the keychain protector, so items left over from a keychain vault are found
+    /// while the vault now uses the Secure Enclave).
+    /// Only callable while unlocked, and only if the current file on disk decrypts with the unlocked key.
+    /// If any candidate file cannot be read, nothing is deleted. Returns the number of items removed.
+    @discardableResult
+    public func removeOrphanedKeyMaterial(alsoCheck extra: [any KeyProtector] = []) async throws -> Int {
+        guard state == .unlocked, let keyBuffer, let protector else { throw VaultError.locked }
+        let disk = try Self.readEnvelope(at: url).0
+        _ = try Self.open(disk, key: keyBuffer.key)
         var removed = 0
-        for id in try protector.ownedItemIDs() where !referenced.contains(id) && !texts.contains(where: { $0.contains(id) }) {
-            try protector.destroyItem(id: id)
-            removed += 1
+        for candidate in [protector] + extra {
+            let refs = try collectReferences(for: candidate)
+            for id in try candidate.ownedItemIDs() where !refs.references(id) {
+                try candidate.destroyItem(id: id)
+                removed += 1
+            }
         }
         return removed
     }
@@ -415,10 +471,10 @@ public actor VaultStore {
         return data
     }
 
-    static func seal(_ contents: VaultData, key: SymmetricKey, protector: String, fields: ProtectorFields) throws -> VaultEnvelope {
-        let aad = VaultEnvelope.authenticatedHeader(version: currentVersion, protector: protector, fields: fields)
+    static func seal(_ contents: VaultData, key: SymmetricKey, protector: String, fields: ProtectorFields, appLock: Bool? = true) throws -> VaultEnvelope {
+        let aad = VaultEnvelope.authenticatedHeader(version: currentVersion, protector: protector, fields: fields, appLock: appLock)
         let box = try ChaChaPoly.seal(try contents.encoded(), using: key, nonce: ChaChaPoly.Nonce(), authenticating: aad)
-        return VaultEnvelope(version: currentVersion, protector: protector, protectorFields: fields,
+        return VaultEnvelope(version: currentVersion, protector: protector, protectorFields: fields, appLock: appLock,
                              nonce: Data(box.nonce).base64EncodedString(),
                              ciphertext: box.ciphertext.base64EncodedString(), tag: box.tag.base64EncodedString())
     }

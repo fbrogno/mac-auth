@@ -76,9 +76,12 @@ Duplicate = same secret bytes + same kind/algorithm/digits/period.
     own item; an item is only removed after the file that replaces it has been written. Note: the
     file-based login keychain ignores `ThisDeviceOnly`, so this item travels with Time Machine and
     Migration Assistant, protected by the login password. The app lock is then a
-    `LAContext.deviceOwnerAuthentication` gate (or none, if switched off).
+    `LAContext.deviceOwnerAuthentication` gate. Whether that gate is required is stored as `appLock` in
+    the authenticated header of the vault file, not in the preferences: it can only be lowered through
+    the unlocked store after a fresh authentication, and a file without the field counts as "required".
   - Changing the protector always creates a **new vault key** and re-seals the contents, then destroys the
-    old key material and the previous generation that depended on it. A key that once lived in the
+    old key material and the previous generation that depended on it. Key material that a set-aside file
+    (`vault.replaced-*`) still refers to is kept. A key that once lived in the
     keychain therefore never protects a later Secure Enclave vault.
   - **InMemoryProtector** for tests.
 - Unlocking always goes through the protector; there is no shortcut for an already unlocked store.
@@ -89,8 +92,11 @@ Duplicate = same secret bytes + same kind/algorithm/digits/period.
   lock and fast user switching.
 - A lost Secure Enclave key (new Mac, erased Mac) is recovered from a backup file – by design. The core
   never declares a key permanently unusable on its own: temporary conditions (for example a locked
-  screen, error -25308) are reported as "try again later"; replacing a vault is always the user's
-  explicit decision and keeps the old file.
+  screen, error -25308) are reported as "try again later"; `keyUnavailable` says that this device cannot
+  use the stored key (vault from another or an erased Mac), which is a statement about the device, not
+  about the file or a backup. After any failed unlock the lock screen offers "restore from backup" and
+  "restore an earlier version"; replacing a vault is always the user's explicit decision and keeps the
+  old file.
 
 ### Backup file (`.macauth`)
 - JSON: `format: "macauth-backup"`, `version: 1`, `kdf: {name: "pbkdf2-hmac-sha256", iterations: 600000,
@@ -142,7 +148,8 @@ unchecked. Nothing is stored before the user confirms. Imported images are never
 - "Auf Handy übertragen": QR codes in Google's migration format, or one `otpauth://` QR per account.
 Both need a fresh authentication. So does every setting that lowers protection (unlock prompt off, longer
 or no auto-lock, screen protection off, hidden codes off); while the vault is locked the security
-settings cannot be changed at all.
+settings cannot be changed at all. Preferences are read from the app's persistent domain only, so launch
+arguments cannot override them.
 
 ### Clipboard
 Copied codes carry `org.nspasteboard.ConcealedType` (clipboard managers skip them), stay on this Mac

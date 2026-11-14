@@ -123,6 +123,18 @@ final class AppModel {
     /// Bumped to ask the search field for focus.
     private(set) var focusSearchTick = 0
     var hotKeyError: String?
+    /// Set when the last change could not be saved while locking; stays on the lock screen until the next unlock.
+    private(set) var lockWarning: String?
+    /// After restoring a version with weaker protection than this Mac can do: offer the Secure Enclave, never switch silently.
+    private(set) var offerEnclaveUpgrade = false
+    /// Whether the vault asks for Touch ID / password in the app (header of the vault file, not a preference).
+    private(set) var appLockRequired = true
+    /// A camera scan is running (counts as activity for up to 15 minutes).
+    var cameraScanning = false
+    /// Shown as a progress overlay while a file is read and recognised.
+    private(set) var busyText: String?
+
+    func setBusy(_ text: String?) { busyText = text }
 
     let settings: AppSettings
     let input = InputState()
@@ -221,7 +233,7 @@ final class AppModel {
             case "secure-enclave":
                 protector = SecureEnclaveProtector(context: Self.makeContext())
             case "keychain":
-                if settings.requireAuth, !(await authenticate(reason: String(localized: "MacAuth entsperren"))) {
+                if await store.requiresAppAuthentication, !(await authenticate(reason: String(localized: "MacAuth entsperren"))) {
                     if epoch.isCurrent(generation) { lockNotice = .cancelled }
                     return
                 }
@@ -236,8 +248,8 @@ final class AppModel {
                 return
             }
             show(data)
+            lockWarning = nil
             await refreshProtection()
-            syncRequireAuthWithVault()
             startOrphanCleanup(generation: generation)
         } catch {
             guard epoch.isCurrent(generation) else { return }
@@ -282,8 +294,13 @@ final class AppModel {
             lockNotice = nil
         }
         savedSeq = saveSeq
-        Task { [store] in
-            if let unsaved { try? await store?.save(unsaved) }
+        Task { [weak self, store] in
+            if let unsaved {
+                do { try await store?.save(unsaved) } catch {
+                    // Locking still happens; the lock screen says plainly that the last change was not written.
+                    self?.lockWarning = String(localized: "Die letzte Änderung konnte nicht gespeichert werden: \(ErrorText.message(for: error))")
+                }
+            }
             await store?.lock()
         }
     }
@@ -306,6 +323,15 @@ final class AppModel {
 
     var autoPromptAllowed: Bool { prompt.autoAllowed }
 
+    /// After any failed unlock except the user's own cancel the vault can be replaced from a backup (the old file is kept).
+    var canReplaceVault: Bool {
+        guard phase == .locked else { return false }
+        switch lockNotice {
+        case .failed, .retryLater, .cannotOpen: return true
+        case .cancelled, .none: return false
+        }
+    }
+
     private func startAutoLock() {
         autoLockTimer?.invalidate()
         input.lastActivity = Date()
@@ -318,17 +344,20 @@ final class AppModel {
         }
     }
 
-    /// An open import (camera, multi-QR collection, review) counts as activity, for at most 15 minutes.
+    /// A running camera scan counts as activity for up to 15 minutes. An open import or review sheet extends the
+    /// auto-lock by at most one more interval, never more.
     private var importInProgress: Bool {
-        var open = importer.progress != nil
+        var sheetOpen = importer.progress != nil
         switch sheet {
-        case .importer, .review: open = true
+        case .importer, .review: sheetOpen = true
         default: break
         }
-        guard open else { keepAliveSince = nil; return false }
+        guard sheetOpen || cameraScanning else { keepAliveSince = nil; return false }
         let since = keepAliveSince ?? Date()
         keepAliveSince = since
-        return Date().timeIntervalSince(since) < 15 * 60
+        let elapsed = Date().timeIntervalSince(since)
+        if cameraScanning, elapsed < 15 * 60 { return true }
+        return sheetOpen && elapsed < Double(settings.autoLockMinutes * 60)
     }
 
     private static func makeContext() -> LAContext {
@@ -337,13 +366,15 @@ final class AppModel {
         return context
     }
 
-    private static func classify(_ error: Error) -> LockNotice {
+    /// Maps a failed unlock to what the lock screen shows. Only the user's own cancel offers nothing more; every
+    /// other failure leaves the recovery paths available (hidden behind "Weitere Möglichkeiten" for temporary ones).
+    static func classify(_ error: Error) -> LockNotice {
         switch error {
         case ProtectorError.userCancelled: .cancelled
         case VaultError.locked: .cancelled
         case ProtectorError.authenticationFailed: .failed(ErrorText.message(for: error))
         case ProtectorError.interactionNotAllowed, ProtectorError.secureEnclaveFailure, ProtectorError.keychainFailure: .retryLater
-        case ProtectorError.keyNotFound, ProtectorError.dataCorrupted, ProtectorError.secureEnclaveUnavailable,
+        case ProtectorError.keyNotFound, ProtectorError.keyUnavailable, ProtectorError.dataCorrupted, ProtectorError.secureEnclaveUnavailable,
              VaultError.corrupted, VaultError.unsupportedVersion, VaultError.protectorMismatch: .cannotOpen
         default: .failed(ErrorText.message(for: error))
         }
@@ -370,7 +401,7 @@ final class AppModel {
         guard let store else { return }
         Task.detached(priority: .background) {
             // Silent on purpose: never a dialog, never blocks.
-            _ = try? await store.removeOrphanedKeyMaterial()
+            _ = try? await store.removeOrphanedKeyMaterial(alsoCheck: [KeychainProtector()])
         }
     }
 
@@ -378,18 +409,12 @@ final class AppModel {
 
     private func refreshProtection() async {
         guard let store else { return }
+        appLockRequired = await store.requiresAppAuthentication
         switch await store.protectorIdentifier {
         case "secure-enclave": protection = .secureEnclave
         case "keychain": protection = .keychain
         default: protection = .unknown
         }
-    }
-
-    /// If setting and vault disagree, the vault is right.
-    private func syncRequireAuthWithVault() {
-        guard secureEnclaveAvailable else { return }
-        if protection == .secureEnclave, !settings.requireAuth { settings.requireAuth = true }
-        if protection == .keychain, settings.requireAuth { settings.requireAuth = false }
     }
 
     var secureEnclaveAvailable: Bool { SecureEnclaveProtector.isAvailable }
@@ -398,36 +423,46 @@ final class AppModel {
     var effectiveRequireAuth: Bool {
         switch protection {
         case .secureEnclave: true
-        case .keychain, .unknown: settings.requireAuth
+        case .keychain, .unknown: appLockRequired
         }
     }
 
+    /// Turns "ask for Touch ID / password" on or off. It lives in the vault, not in the preferences: on a Mac with
+    /// Secure Enclave it decides the protector (Enclave = asks, keychain = does not), without one it is the sealed
+    /// app-lock flag in the vault header. Lowering needs a fresh authentication first.
     func setRequireAuth(_ on: Bool) async {
         guard let store, phase == .unlocked else { return }
         let t = ticket
         if !on, AppPolicy.requiresFreshAuthentication(.requireAuthentication(from: effectiveRequireAuth, to: false)) {
             guard await authenticate(reason: String(localized: "Schutz des Tresors ändern")), isCurrent(t) else { return }
         }
-        guard secureEnclaveAvailable else {
-            settings.requireAuth = on   // keychain only: this is the app-level prompt
-            return
-        }
-        let wanted: Protection = on ? .secureEnclave : .keychain
-        if protection != wanted {
-            do {
-                let protector: any KeyProtector = on ? SecureEnclaveProtector(context: Self.makeContext()) : KeychainProtector()
-                try await store.changeProtector(to: protector)
-            } catch {
-                if isCurrent(t) {
-                    alert = AppAlert(title: String(localized: "Einstellung nicht geändert"), message: ErrorText.message(for: error))
+        do {
+            if secureEnclaveAvailable {
+                let wanted: Protection = on ? .secureEnclave : .keychain
+                if protection != wanted {
+                    let protector: any KeyProtector = on ? SecureEnclaveProtector(context: Self.makeContext()) : KeychainProtector()
+                    try await store.changeProtector(to: protector, requireAppAuthentication: on)
+                } else if protection == .keychain {
+                    try await store.setRequiresAppAuthentication(on)
                 }
-                await refreshProtection()
-                return
+            } else {
+                try await store.setRequiresAppAuthentication(on)
+            }
+        } catch {
+            if isCurrent(t) {
+                alert = AppAlert(title: String(localized: "Einstellung nicht geändert"), message: ErrorText.message(for: error))
             }
         }
         await refreshProtection()
-        settings.requireAuth = protection == .secureEnclave
+        if protection == .secureEnclave { offerEnclaveUpgrade = false }
     }
+
+    /// The offered upgrade after a restore: Secure Enclave protection, after the usual authentication.
+    func upgradeToEnclave() async {
+        await setRequireAuth(true)
+    }
+
+    func dismissEnclaveOffer() { offerEnclaveUpgrade = false }
 
     /// Applies a security setting; lowering protection first needs a fresh authentication.
     func applySecuritySetting(_ change: SecuritySettingChange, apply: @escaping () -> Void) async {
@@ -538,6 +573,7 @@ final class AppModel {
         lockNotice = nil
         sheet = nil
         await unlock()
+        if phase == .unlocked, protection == .keychain, secureEnclaveAvailable { offerEnclaveUpgrade = true }
         return true
     }
 
@@ -580,9 +616,9 @@ final class AppModel {
         guard let store else { return false }
         let generation = epoch.generation
         do {
-            let protector: any KeyProtector = settings.requireAuth && SecureEnclaveProtector.isAvailable
+            let protector: any KeyProtector = SecureEnclaveProtector.isAvailable
                 ? SecureEnclaveProtector(context: Self.makeContext()) : KeychainProtector()
-            try await store.create(contents: data, protector: protector, replacingExisting: replacing)
+            try await store.create(contents: data, protector: protector, replacingExisting: replacing, requireAppAuthentication: true)
             await refreshProtection()
             guard epoch.isCurrent(generation) else {
                 await store.lock()   // locked while creating: the vault exists, but nothing is shown

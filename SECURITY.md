@@ -48,7 +48,8 @@ withstand and where it stops.
   managers that follow the convention skip, are not sent to other devices through Universal Clipboard,
   and are removed after a short time.
 - **Someone weakening the app at your unlocked Mac:** switching off the unlock prompt, the auto-lock or
-  the screen protection needs a fresh authentication.
+  the screen protection needs a fresh authentication, and launch arguments cannot override these
+  settings.
 - **Screen sharing and screenshots:** the window content is excluded by default. This is a request to
   macOS that ordinary screen sharing and screenshots honour; it is not a guarantee against every
   capture method.
@@ -83,7 +84,7 @@ withstand and where it stops.
 | Setting | Vault key | Unlock |
 |---|---|---|
 | Default (Mac with Secure Enclave) | wrapped by a Secure Enclave key, bound to this Mac | Touch ID or login password, enforced by the enclave |
-| Unlock prompt switched off, or no Secure Enclave | stored in the login keychain, not synchronised through iCloud | optional app lock; protection is that of the login keychain and the app's code signature |
+| Unlock prompt switched off, or no Secure Enclave | stored in the login keychain, not synchronised through iCloud | app lock (system authentication) unless switched off; the switch is stored in the authenticated header of the vault file and can only be changed while unlocked, after a fresh authentication |
 
 The second level is weaker: the keychain item is guarded by macOS for this app's signature, but the lock
 shown by the app is then a check in the app's own code, and the login keychain is part of Time Machine

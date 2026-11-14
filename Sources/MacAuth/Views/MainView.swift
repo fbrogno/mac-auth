@@ -58,6 +58,9 @@ struct MainView: View {
                 .help(Text("Konto hinzufügen (⌘N)"))
             }
         }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if model.offerEnclaveUpgrade { EnclaveOfferBanner(model: model) }
+        }
         .onChange(of: model.focusSearchTick) { focus = .search }
         .onChange(of: model.sheet == nil) { _, closed in if closed { focus = .search } }
         .onAppear { DispatchQueue.main.async { focus = .search } }
@@ -256,6 +259,26 @@ struct MainView: View {
             }
         }
         .frame(width: 0, height: 0).opacity(0).allowsHitTesting(false).accessibilityHidden(true)
+    }
+}
+
+/// Shown after restoring a version that is protected more weakly than this Mac can do. Nothing changes by itself.
+struct EnclaveOfferBanner: View {
+    let model: AppModel
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.shield").font(.system(size: 18)).foregroundStyle(.orange)
+            Text("Diese Fassung ist nur durch den Schlüsselbund geschützt. Dein Mac kann sie mit der Secure Enclave schützen.")
+                .font(.callout).fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            Button("Später") { model.dismissEnclaveOffer() }
+            Button("Schutz mit Secure Enclave wiederherstellen") { Task { await model.upgradeToEnclave() } }
+                .primaryButtonStyle()
+        }
+        .padding(.horizontal, 16).padding(.vertical, 10)
+        .background(Color.orange.opacity(0.12))
+        .overlay(alignment: .bottom) { Divider() }
     }
 }
 

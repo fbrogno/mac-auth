@@ -99,6 +99,20 @@ private struct ChoiceCard: View {
 
 struct LockedView: View {
     @Bindable var model: AppModel
+    @State private var showMore: Bool
+
+    init(model: AppModel, showMore: Bool = false) {
+        self.model = model
+        _showMore = State(initialValue: showMore)
+    }
+
+    private var recoveryButtons: some View {
+        HStack(spacing: 10) {
+            Button("Aus Backup wiederherstellen …") { model.sheet = .restoreBackup(preset: nil, replace: true) }
+            Button("Frühere Fassung wiederherstellen …") { model.sheet = .rescue }
+        }
+        .padding(.top, 4)
+    }
 
     private var needsRetry: Bool {
         switch model.lockNotice {
@@ -128,6 +142,16 @@ struct LockedView: View {
         // No prompt here on purpose: the model asks at app start, when the app comes back to the front, or on the button.
     }
 
+    /// For temporary or unclear failures the recovery paths stay out of the way until asked for.
+    @ViewBuilder
+    private var moreOptions: some View {
+        if showMore {
+            recoveryButtons
+        } else {
+            Button("Weitere Möglichkeiten …") { showMore = true }.buttonStyle(.link)
+        }
+    }
+
     @ViewBuilder
     private var notice: some View {
         VStack(spacing: 10) {
@@ -139,17 +163,18 @@ struct LockedView: View {
                     .foregroundStyle(.secondary)
             case .failed(let message):
                 Text(message).foregroundStyle(.red)
+                moreOptions
             case .retryLater:
                 Text("Der Schlüssel ließ sich gerade nicht lesen. Das ist meist vorübergehend, zum Beispiel bei gesperrtem Bildschirm. Versuche es gleich noch einmal. Deine Daten sind nicht verloren.")
                     .foregroundStyle(.secondary)
+                moreOptions
             case .cannotOpen:
-                Text("Der Tresor liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen.")
+                Text("Wurde dieser Tresor auf einem anderen Mac oder vor dem Zurücksetzen angelegt? Er liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen.")
                     .foregroundStyle(.secondary)
-                HStack(spacing: 10) {
-                    Button("Aus Backup wiederherstellen …") { model.sheet = .restoreBackup(preset: nil, replace: true) }
-                    Button("Frühere Fassung wiederherstellen …") { model.sheet = .rescue }
-                }
-                .padding(.top, 4)
+                recoveryButtons
+            }
+            if let warning = model.lockWarning {
+                Label(warning, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange).padding(.top, 6)
             }
         }
         .font(.callout)

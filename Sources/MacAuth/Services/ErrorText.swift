@@ -45,6 +45,8 @@ enum ErrorText {
             case .authenticationFailed: return String(localized: "Die Authentifizierung ist fehlgeschlagen.")
             case .interactionNotAllowed:
                 return String(localized: "Gerade ist keine Abfrage möglich, zum Beispiel weil der Bildschirm gesperrt ist. Versuche es gleich noch einmal.")
+            case .keyUnavailable:
+                return String(localized: "Der Schlüssel dieses Tresors ist auf diesem Mac nicht verfügbar, zum Beispiel weil der Tresor auf einem anderen Mac oder vor einem Zurücksetzen angelegt wurde. Die Datei selbst ist nicht verloren.")
             case .keyNotFound, .secureEnclaveFailure, .dataCorrupted:
                 return String(localized: "Der Schlüssel des Tresors ließ sich gerade nicht lesen. Versuche es noch einmal, deine Daten sind damit nicht verloren.")
             case .keychainFailure: return String(localized: "Der Schlüsselbund meldet einen Fehler.")

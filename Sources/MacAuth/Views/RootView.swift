@@ -40,6 +40,13 @@ struct RootView: View {
             ImportFlow.handle(urls: urls, model: model)
             return true
         }
+        .overlay {
+            if let busy = model.busyText ?? (model.importer.isReading ? String(localized: "Bild wird gelesen …") : nil) {
+                ProgressView(busy)
+                    .padding(20)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+        }
         .task {
             if model.isDemo {
                 model.input.start()
@@ -192,22 +199,27 @@ enum ImportFlow {
 
     /// Reads the file off the main thread, recognises its format and opens the matching next step.
     static func importFile(_ url: URL, model: AppModel, ticket: Ticket) async {
-        let loaded: Result<Data, Error> = await Task.detached(priority: .userInitiated) {
+        // Reading and recognising the file (possibly large) happens off the main actor, with a progress indicator.
+        model.setBusy(String(localized: "Datei wird gelesen …"))
+        let loaded: Result<(Data, ImportDetection), Error> = await Task.detached(priority: .userInitiated) {
             let didStart = url.startAccessingSecurityScopedResource()
             defer { if didStart { url.stopAccessingSecurityScopedResource() } }
             do {
                 let handle = try FileHandle(forReadingFrom: url)
                 defer { try? handle.close() }
                 let data = try handle.read(upToCount: 32 * 1024 * 1024 + 1) ?? Data()
-                return .success(data)
+                return .success((data, try ImportDetector.detect(data)))
+            } catch let error as ImportError {
+                return .failure(error)
             } catch {
                 return .failure(BackupError.ioFailure(error.localizedDescription))
             }
         }.value
+        model.setBusy(nil)
         guard model.isCurrent(ticket) else { return }
         do {
-            let data = try loaded.get()
-            switch try ImportDetector.detect(data) {
+            let (data, detection) = try loaded.get()
+            switch detection {
             case .accounts(let result):
                 let skipped = result.skipped.map { "\($0.label) – \($0.reason.localizedText)" }
                 let session = model.makeSession(source: .file, delivery: .file, accounts: result.accounts, skipped: skipped, groups: result.groups)

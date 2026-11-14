@@ -6,8 +6,6 @@ import Observation
 final class AppSettings {
     @ObservationIgnored private let defaults: UserDefaults
 
-    /// Touch ID / password needed to unlock (Secure Enclave). Off: the vault key sits in the login keychain.
-    var requireAuth: Bool { didSet { defaults.set(requireAuth, forKey: "requireAuth") } }
     /// Minutes of inactivity before locking; 0 = never.
     var autoLockMinutes: Int { didSet { defaults.set(autoLockMinutes, forKey: "autoLockMinutes") } }
     /// Seconds until the clipboard is cleared; 0 = never.
@@ -30,29 +28,56 @@ final class AppSettings {
     var lastBackupExport: Double { didSet { defaults.set(lastBackupExport, forKey: "lastBackupExport") } }
     var lastAccountChange: Double { didSet { defaults.set(lastAccountChange, forKey: "lastAccountChange") } }
 
-    init(defaults: UserDefaults = .standard) {
+    /// Preferences are read ONLY from the app's persistent domain. `UserDefaults.object(forKey:)` would also
+    /// return values from the command line (`-autoLockMinutes 0`, `-protectScreen NO`) and from the global
+    /// domain; the persistent domain contains only what the app itself saved.
+    /// Whether the vault asks for Touch ID / password is not a preference: it lives in the authenticated vault
+    /// header (`VaultStore.requiresAppAuthentication`).
+    init(defaults: UserDefaults = .standard, domain: String = Bundle.main.bundleIdentifier ?? "com.fbrogno.macauth") {
         self.defaults = defaults
-        func bool(_ key: String, _ fallback: Bool) -> Bool { defaults.object(forKey: key) as? Bool ?? fallback }
-        func int(_ key: String, _ fallback: Int) -> Int { defaults.object(forKey: key) as? Int ?? fallback }
-        requireAuth = bool("requireAuth", true)
+        let stored = defaults.persistentDomain(forName: domain) ?? [:]
+        func bool(_ key: String, _ fallback: Bool) -> Bool { stored[key] as? Bool ?? fallback }
+        func int(_ key: String, _ fallback: Int) -> Int { stored[key] as? Int ?? fallback }
         autoLockMinutes = int("autoLockMinutes", 5)
         clipboardClearSeconds = int("clipboardClearSeconds", 30)
         hideAfterCopy = bool("hideAfterCopy", false)
         protectScreen = bool("protectScreen", true)
         hideCodes = bool("hideCodes", false)
-        defaultGroupID = defaults.string(forKey: "defaultGroupID") ?? ""
+        defaultGroupID = stored["defaultGroupID"] as? String ?? ""
         backupReminder = bool("backupReminder", true)
         listMode = bool("listMode", false)
         hotKeyEnabled = bool("hotKeyEnabled", false)
         hotKeyCode = int("hotKeyCode", -1)
         hotKeyModifiers = int("hotKeyModifiers", 0)
-        hotKeyLabel = defaults.string(forKey: "hotKeyLabel") ?? ""
-        lastBackupExport = defaults.double(forKey: "lastBackupExport")
-        lastAccountChange = defaults.double(forKey: "lastAccountChange")
+        hotKeyLabel = stored["hotKeyLabel"] as? String ?? ""
+        lastBackupExport = stored["lastBackupExport"] as? Double ?? 0
+        lastAccountChange = stored["lastAccountChange"] as? Double ?? 0
     }
 
     /// True if accounts changed after the last exported backup.
     func needsBackup(hasAccounts: Bool) -> Bool {
         backupReminder && hasAccounts && lastAccountChange > lastBackupExport
+    }
+}
+
+/// `MacAuth --print-settings [-key value ...]`: prints what a naive `UserDefaults` read and `AppSettings` return,
+/// to show that command-line values never reach the settings. Starts no window and touches no vault.
+@MainActor
+enum SettingsProbe {
+    static func run() {
+        let defaults = UserDefaults.standard
+        let settings = AppSettings()
+        func say(_ text: String) { FileHandle.standardOutput.write(Data((text + "\n").utf8)) }
+        let rows: [(String, Any?, Any)] = [
+            ("autoLockMinutes", defaults.object(forKey: "autoLockMinutes"), settings.autoLockMinutes),
+            ("protectScreen", defaults.object(forKey: "protectScreen"), settings.protectScreen),
+            ("hideCodes", defaults.object(forKey: "hideCodes"), settings.hideCodes),
+            ("clipboardClearSeconds", defaults.object(forKey: "clipboardClearSeconds"), settings.clipboardClearSeconds),
+            ("hotKeyEnabled", defaults.object(forKey: "hotKeyEnabled"), settings.hotKeyEnabled),
+            ("requireAuth", defaults.object(forKey: "requireAuth"), "(keine Einstellung mehr, steht im Tresor-Kopf)"),
+        ]
+        for (key, naive, actual) in rows {
+            say("\(key): UserDefaults liefert \(naive.map { "\($0)" } ?? "nichts"), AppSettings nutzt \(actual)")
+        }
     }
 }
