@@ -6,6 +6,8 @@ struct MainView: View {
     enum Focus { case search, content }
     @FocusState var focus: Focus?
     @State private var columns = 2
+    @State private var copiedName: String?
+    @State private var toastTask: Task<Void, Never>?
     @Environment(\.fixedNow) private var fixedNow
 
     private var listMode: Bool { model.settings.listMode }
@@ -32,6 +34,9 @@ struct MainView: View {
                 SearchField(text: $model.search, focus: $focus, onKey: { handle($0, inSearch: true) }, onSubmit: { model.copy(model.selection) })
                     .frame(minWidth: 200, idealWidth: 320, maxWidth: 380)
             }
+            if #available(macOS 26, *) {
+                ToolbarSpacer(.fixed, placement: .primaryAction)
+            }
             ToolbarItemGroup(placement: .primaryAction) {
                 Picker("Darstellung", selection: Binding(get: { model.settings.listMode }, set: { model.settings.listMode = $0 })) {
                     Label("Raster", systemImage: "square.grid.2x2").tag(false)
@@ -43,7 +48,8 @@ struct MainView: View {
                     Button("Neues Konto …") { model.sheet = .add }
                     Divider()
                     Button("Aus Google Authenticator importieren …") { model.sheet = .importer }
-                    Button("Backup wiederherstellen …") { model.sheet = .restoreBackup }
+                    Button("Aus Datei importieren …") { Task { await ImportFlow.chooseFile(model: model) } }
+                    Button("Backup wiederherstellen …") { model.sheet = .restoreBackup(preset: nil, replace: false) }
                 } label: {
                     Label("Hinzufügen", systemImage: "plus")
                 } primaryAction: {
@@ -61,12 +67,22 @@ struct MainView: View {
                 model.search = ""
                 ImportFlow.handle(text: text, model: model)
             } else {
-                model.selection = model.visibleAccounts.first?.id
+                model.autoSelectFirst()
             }
         }
         .onChange(of: model.sidebar) { model.normalizeSelection() }
         .onChange(of: model.accounts.count) { model.normalizeSelection() }
         .background(shortcutButtons)
+        .overlay(alignment: .bottom) { CopiedToast(name: copiedName).padding(.bottom, 20) }
+        .onChange(of: model.copiedID) { _, id in
+            guard let id, let account = model.account(id) else { return }
+            copiedName = account.issuer.isEmpty ? account.name : account.issuer
+            toastTask?.cancel()
+            toastTask = Task {
+                try? await Task.sleep(for: .milliseconds(1500))
+                if !Task.isCancelled { copiedName = nil }
+            }
+        }
     }
 
     var title: String {
@@ -79,7 +95,8 @@ struct MainView: View {
 
     var subtitle: String {
         let n = model.visibleAccounts.count
-        return String(localized: "\(n) Konten")
+        let count = String(localized: "\(n) Konten")
+        return model.isDemo ? String(localized: "Demo-Daten") + " · " + count : count
     }
 
     // MARK: Content
@@ -97,6 +114,7 @@ struct MainView: View {
                             if listMode { list(visible, now: now) } else { grid(visible, now: now) }
                         }
                         .scrollContentBackground(.hidden)
+                        .softTopEdge()
                         .onChange(of: model.selection) { _, id in
                             if let id { withAnimation(.smooth(duration: 0.2)) { proxy.scrollTo(id) } }
                         }
@@ -105,29 +123,28 @@ struct MainView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .windowBackgroundColor))
         .focusable()
         .focused($focus, equals: .content)
         .focusEffectDisabled()
         .onKeyPress(phases: [.down, .repeat]) { handle($0, inSearch: false) }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width in
-            columns = listMode ? 1 : max(1, Int((width - 40 + 12) / (260 + 12)))
+            columns = listMode ? 1 : max(1, Int((width - 48 + Metrics.gridSpacing) / (264 + Metrics.gridSpacing)))
         }
         .onChange(of: listMode) { columns = listMode ? 1 : max(1, columns) }
     }
 
     private func grid(_ visible: [Account], now: Date) -> some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12, alignment: .top), count: max(columns, 1)), spacing: 12) {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Metrics.gridSpacing, alignment: .top), count: max(columns, 1)), spacing: Metrics.gridSpacing) {
             ForEach(Array(visible.enumerated()), id: \.element.id) { index, account in
                 AccountCard(display: display(account, now), groupColor: groupColor(account), badge: badge(index),
                             isSelected: model.selection == account.id, isCopied: model.copiedID == account.id,
-                            revealCode: !model.settings.hideCodes,
+                            revealCode: !model.settings.hideCodes, selectionReveals: model.selectionExplicit,
                             onCopy: { model.copy(account.id) }, onNextHOTP: { model.advanceHOTP(account.id) })
                     .id(account.id)
                     .modifier(AccountInteractions(model: model, account: account))
             }
         }
-        .padding(20)
+        .padding(24)
     }
 
     private func list(_ visible: [Account], now: Date) -> some View {
@@ -135,7 +152,7 @@ struct MainView: View {
             ForEach(Array(visible.enumerated()), id: \.element.id) { index, account in
                 AccountRow(display: display(account, now), groupColor: groupColor(account), badge: badge(index),
                            isSelected: model.selection == account.id, isCopied: model.copiedID == account.id,
-                           revealCode: !model.settings.hideCodes,
+                           revealCode: !model.settings.hideCodes, selectionReveals: model.selectionExplicit,
                            onCopy: { model.copy(account.id) }, onNextHOTP: { model.advanceHOTP(account.id) })
                     .id(account.id)
                     .modifier(AccountInteractions(model: model, account: account))
@@ -213,6 +230,13 @@ struct MainView: View {
             if inSearch { focus = .content; return .handled }
             return .ignored
         case .delete:
+            // ⌘⌫ deletes an account only when no text field has focus and the user chose a card; in the search
+            // field it keeps its normal job (delete text).
+            if press.modifiers.contains(.command) {
+                guard !inSearch, model.selectionExplicit, let id = model.selection, model.sheet == nil else { return .ignored }
+                model.sheet = .confirmDelete(id)
+                return .handled
+            }
             if !inSearch, !model.search.isEmpty { model.search.removeLast(); return .handled }
             return .ignored
         default: break
@@ -278,9 +302,7 @@ struct AccountMenu: View {
             }
         }
         Button("QR-Code anzeigen …") {
-            Task {
-                if await model.authenticate(reason: String(localized: "QR-Code des Kontos anzeigen")) { model.sheet = .transfer([account.id]) }
-            }
+            Task { await BackupFlow.startTransfer(model, ids: [account.id]) }
         }
         Divider()
         Button("Löschen …", role: .destructive) { model.sheet = .confirmDelete(account.id) }
@@ -308,6 +330,44 @@ struct SearchField: View {
             }
         }
         .padding(.horizontal, 9).padding(.vertical, 5)
-        .background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .modifier(SearchFieldBackground())
+    }
+}
+
+
+/// The toolbar draws glass behind its items on macOS 26; before that the field gets its own fill.
+private struct SearchFieldBackground: ViewModifier {
+    @Environment(\.fixedNow) private var fixedNow
+
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *), fixedNow == nil {
+            content
+        } else {
+            content.background(Color.primary.opacity(0.07), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        }
+    }
+}
+
+/// "GitHub kopiert" as a small glass capsule at the bottom of the window.
+struct CopiedToast: View {
+    let name: String?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ZStack {
+            if let name {
+                Label {
+                    Text("„\(name)“ kopiert").font(.system(size: 13, weight: .medium))
+                } icon: {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                }
+                .padding(.horizontal, 16).padding(.vertical, 10)
+                .floatingGlass(Capsule())
+                .transition(reduceMotion ? .opacity : .scale(scale: 0.9).combined(with: .opacity))
+                .accessibilityAddTraits(.updatesFrequently)
+            }
+        }
+        .animation(reduceMotion ? nil : .spring(duration: 0.35, bounce: 0.25), value: name)
+        .allowsHitTesting(false)
     }
 }

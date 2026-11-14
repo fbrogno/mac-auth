@@ -5,7 +5,8 @@ import AppKit
 final class SystemLockObserver {
     private var tokens: [(center: NotificationCenter, token: NSObjectProtocol)] = []
 
-    init(onLock: @escaping @MainActor () -> Void, onReturn: @escaping @MainActor () -> Void) {
+    init(onLock: @escaping @MainActor () -> Void, onReturn: @escaping @MainActor () -> Void,
+         onResign: @escaping @MainActor () -> Void = {}) {
         func add(_ center: NotificationCenter, _ name: Notification.Name, _ action: @escaping @MainActor () -> Void) {
             let token = center.addObserver(forName: name, object: nil, queue: .main) { _ in
                 MainActor.assumeIsolated { action() }
@@ -20,6 +21,7 @@ final class SystemLockObserver {
         add(DistributedNotificationCenter.default(), Notification.Name("com.apple.screenIsUnlocked"), onReturn)
         add(workspace, NSWorkspace.sessionDidBecomeActiveNotification, onReturn)
         add(NotificationCenter.default, NSApplication.didBecomeActiveNotification, onReturn)
+        add(NotificationCenter.default, NSApplication.didResignActiveNotification, onResign)
     }
 
     deinit {

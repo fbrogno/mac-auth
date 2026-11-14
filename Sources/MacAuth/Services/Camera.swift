@@ -82,7 +82,8 @@ struct CameraPreview: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
         let view = NSView()
         view.wantsLayer = true
-        let controller = CameraController(handler: onPayloads)
+        let callback = onPayloads
+        let controller = CameraController(handler: { callback($0) })
         context.coordinator.controller = controller
         let layer = AVCaptureVideoPreviewLayer(session: controller.session)
         layer.videoGravity = .resizeAspectFill

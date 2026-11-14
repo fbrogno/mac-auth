@@ -45,10 +45,16 @@ withstand and where it stops.
   This is enforced by the Secure Enclave, not by a check in the app's own code. The vault locks itself
   after inactivity and on sleep, screen lock and user switching.
 - **Other apps reading the clipboard history:** copied codes are marked as concealed, which clipboard
-  managers that follow the convention skip, and are removed after a short time.
-- **Screen sharing and screenshots:** the window content is excluded by default.
-- **Hostile input:** QR codes and backup files are parsed by small hand-written parsers with size limits
-  and tests against malformed data. The app runs in the App Sandbox with the Hardened Runtime.
+  managers that follow the convention skip, are not sent to other devices through Universal Clipboard,
+  and are removed after a short time.
+- **Someone weakening the app at your unlocked Mac:** switching off the unlock prompt, the auto-lock or
+  the screen protection needs a fresh authentication.
+- **Screen sharing and screenshots:** the window content is excluded by default. This is a request to
+  macOS that ordinary screen sharing and screenshots honour; it is not a guarantee against every
+  capture method.
+- **Hostile input:** QR payloads, links and import files are checked against size and count limits and
+  tested with malformed data; the binary formats are read by small parsers of our own, JSON by
+  Foundation, images by the system frameworks (ImageIO, Vision). The app runs in the App Sandbox with the Hardened Runtime.
 - **A tampered update:** updates must carry a valid EdDSA signature and come as a notarized,
   Developer-ID-signed app.
 - **A lost backup file:** it is encrypted with AES-256-GCM under a key derived from your password
@@ -69,16 +75,21 @@ withstand and where it stops.
 - **Weak backup passwords.** A backup file can be attacked offline. Use a long passphrase.
 - **Loss of the Mac without a backup.** The Secure Enclave key cannot be exported. Without a backup file
   the codes are gone. This is intended; the app reminds you to export a backup.
+- **Import leftovers.** A screenshot of an export QR code or a plain-text export from another app contains
+  every secret. MacAuth never copies such files, but it cannot delete them for you; it reminds you to.
 
 ### Protection levels
 
 | Setting | Vault key | Unlock |
 |---|---|---|
 | Default (Mac with Secure Enclave) | wrapped by a Secure Enclave key, bound to this Mac | Touch ID or login password, enforced by the enclave |
-| Unlock prompt switched off, or no Secure Enclave | stored in the login keychain, never synchronised | optional app lock; protection is that of the login keychain and the app's code signature |
+| Unlock prompt switched off, or no Secure Enclave | stored in the login keychain, not synchronised through iCloud | optional app lock; protection is that of the login keychain and the app's code signature |
 
 The second level is weaker: the keychain item is guarded by macOS for this app's signature, but the lock
-shown by the app is then a check in the app's own code. The settings say so where the option is offered.
+shown by the app is then a check in the app's own code, and the login keychain is part of Time Machine
+backups and Migration Assistant transfers, protected by the login password. The settings show which
+level is actually in use. Switching between the levels always creates a new vault key, so a key that
+was once in the keychain does not protect a later Secure Enclave vault.
 
 ### Network
 

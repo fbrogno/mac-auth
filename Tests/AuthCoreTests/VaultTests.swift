@@ -90,7 +90,11 @@ struct VaultTests {
         try await store.recoverPreviousGeneration()
         #expect(await store.state == .locked)
         #expect(try await store.unlock(using: protector) == first)
-        #expect(FileManager.default.fileExists(atPath: url.deletingLastPathComponent().appendingPathComponent("vault.corrupt.json").path))
+        // The unreadable file is kept unchanged as vault.replaced-*.json.
+        let replaced = await store.replacedFiles()
+        #expect(replaced.count == 1)
+        #expect(try Data(contentsOf: replaced[0].url) == Data("garbage".utf8))
+        #expect(replaced[0].protectorIdentifier == nil)
 
         let (empty, _) = try makeStore()
         await #expect(throws: VaultError.noPreviousGeneration) { try await empty.recoverPreviousGeneration() }
@@ -207,7 +211,7 @@ struct VaultTests {
         // Changing to another kind removes the old external secret.
         let service = "com.fbrogno.macauth.tests.\(UUID().uuidString)"
         let keychain = KeychainProtector(service: service, account: "vault-key")
-        defer { try? keychain.destroy(fields: [:]) }
+        defer { for id in (try? keychain.ownedItemIDs()) ?? [] { try? keychain.destroyItem(id: id) } }
         try await reopened.changeProtector(to: keychain)
         #expect(await reopened.protectorIdentifier == "keychain")
         await reopened.lock()

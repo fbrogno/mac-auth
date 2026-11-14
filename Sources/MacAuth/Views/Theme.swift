@@ -57,7 +57,7 @@ struct MonogramTile: View {
             .font(.system(size: size * 0.38, weight: .semibold, design: .rounded))
             .foregroundStyle(.white)
             .frame(width: size, height: size)
-            .background(MonogramPalette.color(for: MonogramPalette.key(for: account)), in: RoundedRectangle(cornerRadius: size * 0.24, style: .continuous))
+            .background(MonogramPalette.color(for: MonogramPalette.key(for: account)), in: RoundedRectangle(cornerRadius: size * Metrics.tileRadiusFactor, style: .continuous))
             .accessibilityHidden(true)
     }
 }
@@ -152,7 +152,92 @@ struct SheetScaffold<Content: View, Footer: View>: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .frame(width: width)
-        .background(.background)
         .background(WindowConfigurator(isMainWindow: false))
+    }
+}
+
+
+// MARK: - Liquid Glass helpers (macOS 26 with fallbacks for macOS 15)
+
+enum Metrics {
+    /// Card corner radius; the monogram tile (inset by the card padding) is concentric to it.
+    static let cardRadius: CGFloat = 20
+    static let tileRadiusFactor: CGFloat = 0.28
+    static let cardPadding: CGFloat = 20
+    static let gridSpacing: CGFloat = 16
+}
+
+extension View {
+    /// Primary action: glass-prominent on macOS 26, bordered-prominent before.
+    func primaryButtonStyle() -> some View { modifier(PrimaryButtonModifier()) }
+
+    /// A small floating control on the navigation layer: Liquid Glass on macOS 26, a material before.
+    func floatingGlass<S: InsettableShape>(_ shape: S, tint: Color? = nil) -> some View {
+        modifier(FloatingGlass(shape: shape, tint: tint))
+    }
+
+    /// Soft fade where content scrolls under the toolbar (macOS 26).
+    @ViewBuilder
+    func softTopEdge() -> some View {
+        if #available(macOS 26, *) {
+            self.scrollEdgeEffectStyle(.soft, for: .top)
+        } else {
+            self
+        }
+    }
+}
+
+private struct FloatingGlass<S: InsettableShape>: ViewModifier {
+    let shape: S
+    let tint: Color?
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    /// Documentation renders are captured off screen, where glass is not drawn: they use the material look.
+    @Environment(\.fixedNow) private var fixedNow
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *), !reduceTransparency, fixedNow == nil {
+            if let tint {
+                content.glassEffect(.regular.tint(tint), in: shape)
+            } else {
+                content.glassEffect(.regular, in: shape)
+            }
+        } else {
+            content
+                .background(reduceTransparency ? AnyShapeStyle(Color(nsColor: .windowBackgroundColor)) : AnyShapeStyle(.regularMaterial), in: shape)
+                .overlay(shape.strokeBorder(Color.primary.opacity(0.12)))
+        }
+    }
+}
+
+/// Soft colour glow behind the app icon on the start and lock screens.
+struct IconGlow: View {
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(RadialGradient(colors: [Color(hex: "6366F1").opacity(0.38), Color(hex: "6366F1").opacity(0)],
+                                     center: .center, startRadius: 0, endRadius: size * 1.4))
+                .frame(width: size * 3, height: size * 3)
+                .accessibilityHidden(true)
+            AppIconImage(size: size)
+                .shadow(color: Color(hex: "4F46E5").opacity(0.35), radius: 18, y: 8)
+        }
+        .frame(height: size * 1.4)
+    }
+}
+
+private struct PrimaryButtonModifier: ViewModifier {
+    /// Off-screen documentation captures do not draw glass, so they use the bordered style.
+    @Environment(\.fixedNow) private var fixedNow
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *), fixedNow == nil {
+            content.buttonStyle(.glassProminent)
+        } else {
+            content.buttonStyle(.borderedProminent)
+        }
     }
 }

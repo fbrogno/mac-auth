@@ -43,8 +43,10 @@ enum ErrorText {
             case .secureEnclaveUnavailable: return String(localized: "Dieser Mac hat keine Secure Enclave.")
             case .userCancelled: return String(localized: "Die Entsperrung wurde abgebrochen.")
             case .authenticationFailed: return String(localized: "Die Authentifizierung ist fehlgeschlagen.")
+            case .interactionNotAllowed:
+                return String(localized: "Gerade ist keine Abfrage möglich, zum Beispiel weil der Bildschirm gesperrt ist. Versuche es gleich noch einmal.")
             case .keyNotFound, .secureEnclaveFailure, .dataCorrupted:
-                return String(localized: "Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar.")
+                return String(localized: "Der Schlüssel des Tresors ließ sich gerade nicht lesen. Versuche es noch einmal, deine Daten sind damit nicht verloren.")
             case .keychainFailure: return String(localized: "Der Schlüsselbund meldet einen Fehler.")
             case .invalidAccessControl: return String(localized: "Die Zugriffsregel für den Schlüssel konnte nicht erstellt werden.")
             }
@@ -57,6 +59,8 @@ enum ErrorText {
             case .unsupportedVersion: return String(localized: "Der Tresor hat ein unbekanntes Format. Bitte aktualisiere MacAuth.")
             case .protectorMismatch: return String(localized: "Der Tresor ist mit einer anderen Schutzart gesichert.")
             case .noPreviousGeneration: return String(localized: "Es gibt keine ältere Fassung des Tresors.")
+            case .replacedFileNotFound: return String(localized: "Diese Tresordatei gibt es nicht mehr.")
+            case .unreadableKeyFiles: return String(localized: "Die Schlüsseldateien des Tresors lassen sich nicht lesen.")
             case .ioFailure: return String(localized: "Die Tresordatei konnte nicht gelesen oder geschrieben werden.")
             }
         case let e as BackupError:
@@ -68,8 +72,31 @@ enum ErrorText {
             case .wrongPasswordOrCorrupt: return String(localized: "Passwort falsch oder Datei beschädigt.")
             case .ioFailure: return String(localized: "Die Datei konnte nicht gelesen oder geschrieben werden.")
             }
+        case let e as ImportError:
+            switch e {
+            case .emptyFile: return String(localized: "Die Datei ist leer.")
+            case .tooLarge: return String(localized: "Die Datei ist zu groß.")
+            case .tooManyEntries: return String(localized: "Die Datei enthält zu viele Einträge.")
+            case .unrecognizedFormat: return String(localized: "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste) und MacAuth-Sicherungen.")
+            case .encryptedFile(let format):
+                return String(localized: "Die \(format.displayName)-Datei ist verschlüsselt. Exportiere sie in \(format.displayName) unverschlüsselt, importiere sie hier und lösche die Exportdatei danach.")
+            case .unsupportedVersion: return String(localized: "Die Version dieser Datei wird nicht unterstützt.")
+            }
         default:
             return String(localized: "Es ist ein unerwarteter Fehler aufgetreten.")
+        }
+    }
+}
+
+extension SkipReason {
+    var localizedText: String {
+        switch self {
+        case .unsupportedType(let t): String(localized: "Codetyp „\(t)“ wird nicht unterstützt")
+        case .unsupportedAlgorithm(let a): String(localized: "Algorithmus „\(a)“ wird nicht unterstützt")
+        case .invalidSecret: String(localized: "Schlüssel ungültig")
+        case .invalidParameter(let p): String(localized: "Ungültiger Wert für „\(p)“")
+        case .notAnOTPAuthLine: String(localized: "Keine otpauth-Zeile")
+        case .malformed: String(localized: "Eintrag fehlerhaft")
         }
     }
 }

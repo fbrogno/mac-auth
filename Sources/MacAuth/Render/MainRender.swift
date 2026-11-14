@@ -28,9 +28,10 @@ extension MainView {
                     .frame(width: 215)
                     .background(Color(nsColor: .controlBackgroundColor).opacity(0.6))
                 Divider()
-                content
+                content.background(Color(nsColor: .windowBackgroundColor))
             }
         }
+        .background(Color(nsColor: .windowBackgroundColor))
     }
 }
 

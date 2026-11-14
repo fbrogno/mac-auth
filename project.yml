@@ -13,7 +13,8 @@ packages:
     path: .
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle
-    exactVersion: 2.10.1 # a release never pulls a newer Sparkle
+    # Pinned to the commit of tag 2.10.1 (git ls-remote), so a moved tag cannot change what a release builds.
+    revision: ab7d71291238df6e0492143b120c9b696a35f603 # Sparkle 2.10.1
 settings:
   base:
     SWIFT_VERSION: "5.0"

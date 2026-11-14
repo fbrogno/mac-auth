@@ -27,15 +27,31 @@ jobs:
         run: |
           xcodebuild -version
           swift --version
-          brew install xcodegen
+
+      - name: Install XcodeGen (pinned version, SHA-256 checked)
+        env:
+          XCODEGEN_VERSION: "2.46.0"
+          XCODEGEN_SHA256: 4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" \
+            "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          echo "${XCODEGEN_SHA256}  $RUNNER_TEMP/xcodegen.zip" | shasum -a 256 -c -
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP/xcodegen-dist"
+          echo "$RUNNER_TEMP/xcodegen-dist/xcodegen/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/xcodegen-dist/xcodegen/bin/xcodegen" --version
 
       - name: Texts (string catalogs complete)
         run: scripts/check-l10n.sh
 
+      # Tests that need a Secure Enclave skip themselves on runners without one. The step limit makes sure a
+      # keychain or Touch ID prompt can never hang the job.
       - name: Tests
+        timeout-minutes: 15
         run: swift test
 
       - name: App build (ad-hoc, unsigned)
+        timeout-minutes: 15
         run: SIGN_IDENTITY=- scripts/build-app.sh
 
       - name: Check bundle

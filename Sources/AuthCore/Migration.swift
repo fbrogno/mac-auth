@@ -164,7 +164,13 @@ public enum MigrationCodec {
     static func payload(for accounts: [Account], batchSize: Int, batchIndex: Int, batchID: Int32) throws -> Data {
         var w = ProtoWriter()
         for account in accounts {
-            guard account.digits == 6 || account.digits == 8, !account.secret.isEmpty else {
+            // Google's format has no period, no 7 digits and a signed 64-bit counter: refuse instead of losing data.
+            guard account.digits == 6 || account.digits == 8, !account.secret.isEmpty,
+                  account.secret.count <= Limits.maxSecretBytes,
+                  account.kind == .hotp || account.period == OTP.defaultPeriod,
+                  account.counter <= UInt64(Int64.max),
+                  account.name.utf8.count <= Limits.maxTextBytes, account.issuer.utf8.count <= Limits.maxTextBytes
+            else {
                 throw MigrationError.unsupportedForExport(account.displayLabel)
             }
             var p = ProtoWriter()

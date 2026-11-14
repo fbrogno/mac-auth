@@ -10,7 +10,7 @@
 #   ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_PATH (key file) or ASC_KEY_P8_BASE64 (key, base64; CI)
 # Appcast signing:
 #   SPARKLE_PRIVATE_KEY                         EdDSA private key, piped via stdin, never written to disk
-#   SPARKLE_USE_KEYCHAIN=1                      alternatively use the key in the local keychain
+#   SPARKLE_USE_KEYCHAIN=1                      alternatively use MacAuth's key in the local keychain (account "macauth")
 # The secrets (ASC_*, SPARKLE_PRIVATE_KEY) are taken out of the environment before xcodebuild and package
 # resolution run; the App Store Connect key reaches disk only for notarytool, the Sparkle key is only
 # piped into sign_update / generate_appcast.
@@ -36,6 +36,19 @@ if [[ -n $tag && $tag != "v$version" ]]; then
 fi
 
 # --- preflight: fail before the slow steps -------------------------------------------------
+# Keychain account of MacAuth's own Sparkle key pair (never the default account of MacMonitor).
+sparkle_account=macauth
+# Public key of MacMonitor. MacAuth must never ship it: a compromised sibling repo could otherwise sign MacAuth updates.
+macmonitor_public_key='ihHEnImv672xRJULVBJj6J+d8Pd8poRoVLoxUdKEx+0='
+xcconfig_key=$(sed -n 's/^SPARKLE_PUBLIC_ED_KEY *= *//p' Config/Sparkle.xcconfig | tr -d '[:space:]')
+if [[ -z $xcconfig_key ]]; then
+  echo "Abbruch: Config/Sparkle.xcconfig hat keinen öffentlichen Sparkle-Schlüssel (scripts/setup-release-secrets.sh legt das Paar \"$sparkle_account\" an und trägt ihn ein)." >&2
+  exit 1
+fi
+if [[ $xcconfig_key == "$macmonitor_public_key" ]]; then
+  echo "Abbruch: Config/Sparkle.xcconfig enthält den öffentlichen Schlüssel von MacMonitor. MacAuth braucht ein eigenes Schlüsselpaar." >&2
+  exit 1
+fi
 if (( ! skip_notarize )); then
   if [[ -z ${NOTARY_PROFILE:-} && ( -z ${ASC_KEY_ID:-} || -z ${ASC_ISSUER_ID:-} || ( -z ${ASC_KEY_PATH:-} && -z ${ASC_KEY_P8_BASE64:-} ) ) ]]; then
     echo "Abbruch: Für die Notarisierung fehlt NOTARY_PROFILE oder ASC_KEY_ID/ASC_ISSUER_ID/ASC_KEY_PATH (oder ASC_KEY_P8_BASE64)." >&2
@@ -43,10 +56,6 @@ if (( ! skip_notarize )); then
   fi
   if [[ -z ${SPARKLE_PRIVATE_KEY:-} && ${SPARKLE_USE_KEYCHAIN:-} != 1 ]]; then
     echo "Abbruch: Für den Appcast fehlt SPARKLE_PRIVATE_KEY (oder SPARKLE_USE_KEYCHAIN=1)." >&2
-    exit 1
-  fi
-  if ! grep -Eq '^SPARKLE_PUBLIC_ED_KEY *= *[^ ]+' Config/Sparkle.xcconfig; then
-    echo "Abbruch: Config/Sparkle.xcconfig hat keinen öffentlichen Sparkle-Schlüssel (scripts/setup-release-secrets.sh)." >&2
     exit 1
   fi
 fi
@@ -132,12 +141,13 @@ if [[ -n $_sparkle_key || ${SPARKLE_USE_KEYCHAIN:-} == 1 ]]; then
   have_sparkle_key=1
   [[ -x $sparkle_bin/sign_update ]] || { echo "sign_update fehlt in $sparkle_bin (SPARKLE_BIN setzen)." >&2; exit 1; }
   app_public_key=$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$app/Contents/Info.plist")
+  [[ $app_public_key != "$macmonitor_public_key" ]] || { echo "Abbruch: Die App trägt den öffentlichen Schlüssel von MacMonitor." >&2; exit 1; }
   probe_dir=$(mktemp -d)
   print -r -- "MacAuth Schlüsselprobe $version" > "$probe_dir/probe.txt"
   if [[ -n $_sparkle_key ]]; then
     probe_sig=$(print -rn -- "$_sparkle_key" | "$sparkle_bin/sign_update" --ed-key-file - -p "$probe_dir/probe.txt")
   else
-    probe_sig=$("$sparkle_bin/sign_update" -p "$probe_dir/probe.txt")
+    probe_sig=$("$sparkle_bin/sign_update" --account "$sparkle_account" -p "$probe_dir/probe.txt")
   fi
   swift scripts/verify-sparkle-key.swift "$app_public_key" "$probe_dir/probe.txt" "$probe_sig" || {
     rm -rf "$probe_dir"
@@ -224,7 +234,7 @@ appcast_args=(--download-url-prefix "$base/download/v$version/" --full-release-n
 if [[ -n $_sparkle_key ]]; then
   print -rn -- "$_sparkle_key" | "$sparkle_bin/generate_appcast" --ed-key-file - "${appcast_args[@]}" "$feed" 2>&1 | tail -n 5
 else
-  "$sparkle_bin/generate_appcast" "${appcast_args[@]}" "$feed" 2>&1 | tail -n 5
+  "$sparkle_bin/generate_appcast" --account "$sparkle_account" "${appcast_args[@]}" "$feed" 2>&1 | tail -n 5
 fi
 cp "$feed/appcast.xml" build/appcast.xml
 grep -q "sparkle:edSignature" build/appcast.xml || { echo "Appcast ohne Signatur." >&2; exit 1; }

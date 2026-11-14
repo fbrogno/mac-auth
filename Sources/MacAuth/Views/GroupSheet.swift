@@ -71,7 +71,7 @@ struct GroupSheet: View {
             } label: {
                 if existing == nil { Text("Anlegen") } else { Text("Sichern") }
             }
-            .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent).disabled(trimmed.isEmpty)
+            .keyboardShortcut(.defaultAction).primaryButtonStyle().disabled(trimmed.isEmpty)
         }
     }
 }
@@ -90,9 +90,9 @@ struct DeleteAccountSheet: View {
                 .font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 10) {
-                Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
-                Button("Löschen", role: .destructive) { model.delete(id); dismiss() }
-                    .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent).tint(.red)
+                // Return = cancel; "Löschen" has no shortcut. Esc still closes the sheet.
+                Button("Abbrechen") { dismiss() }.keyboardShortcut(.defaultAction).primaryButtonStyle()
+                Button("Löschen", role: .destructive) { model.delete(id); dismiss() }.tint(.red)
             }
             .padding(.top, 4)
         }

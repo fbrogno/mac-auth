@@ -13,12 +13,21 @@ public protocol KeyProtector: Sendable {
     var identifier: String { get }
     func wrap(vaultKey: SymmetricKey) throws -> ProtectorFields
     func unwrap(fields: ProtectorFields) throws -> SymmetricKey
-    /// Removes secret material held outside the envelope (keychain item). Default: nothing to do.
+    /// Removes the secret material that `fields` refer to and nothing else (keychain item). Default: nothing to do.
+    /// `wrap` itself never deletes anything; callers delete old material only after the new file is safely written.
     func destroy(fields: ProtectorFields) throws
+    /// Identifier of the external item `fields` refer to, if the protector keeps one outside the envelope.
+    func referencedItemID(in fields: ProtectorFields) -> String?
+    /// All external items this protector's service holds (for orphan clean-up). Default: none.
+    func ownedItemIDs() throws -> [String]
+    func destroyItem(id: String) throws
 }
 
 extension KeyProtector {
     public func destroy(fields: ProtectorFields) throws {}
+    public func referencedItemID(in fields: ProtectorFields) -> String? { nil }
+    public func ownedItemIDs() throws -> [String] { [] }
+    public func destroyItem(id: String) throws {}
 }
 
 private func field(_ fields: ProtectorFields, _ name: String) throws -> Data {
@@ -56,8 +65,17 @@ public final class InMemoryProtector: KeyProtector, @unchecked Sendable {
 
 // MARK: - Login keychain
 
-/// Vault key as generic password in the login keychain: `ThisDeviceOnly`, never synchronised, no
-/// data-protection keychain (so no provisioning profile is needed).
+/// Vault key as generic password in the login keychain, never synchronised, no data-protection keychain
+/// (so no provisioning profile is needed).
+///
+/// Honest limits: `kSecAttrAccessibleWhenUnlockedThisDeviceOnly` is set, but the file-based login keychain
+/// does not enforce it (it is not even reported back on queries). The item is protected by the login keychain
+/// only, and it can travel with Time Machine restores or Migration Assistant to another Mac, together with
+/// the vault file. This protector is the weaker fallback; the Secure Enclave protector is the strong one.
+///
+/// Every `wrap` creates a NEW item named `<account>-<UUID>` (stored in the fields as `item`) and never deletes
+/// anything; `unwrap` and `destroy(fields:)` touch exactly that item. Vaults written by an older version
+/// have no `item` field and use the plain `account` name.
 public struct KeychainProtector: KeyProtector {
     public let identifier = "keychain"
     public let service: String
@@ -68,44 +86,74 @@ public struct KeychainProtector: KeyProtector {
         self.account = account
     }
 
-    private var baseQuery: [String: Any] {
+    private func query(item: String) -> [String: Any] {
         [kSecClass as String: kSecClassGenericPassword,
          kSecAttrService as String: service,
-         kSecAttrAccount as String: account,
+         kSecAttrAccount as String: item,
          kSecAttrSynchronizable as String: false]
     }
 
+    public func referencedItemID(in fields: ProtectorFields) -> String? { fields["item"] ?? account }
+
+    private func item(in fields: ProtectorFields) throws -> String {
+        let item = fields["item"] ?? account
+        guard item == account || (item.hasPrefix(account + "-") && item.utf8.count <= 128) else {
+            throw ProtectorError.dataCorrupted
+        }
+        return item
+    }
+
     public func wrap(vaultKey: SymmetricKey) throws -> ProtectorFields {
-        _ = SecItemDelete(baseQuery as CFDictionary)
-        var query = baseQuery
-        query[kSecValueData as String] = keyData(vaultKey)
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-        let status = SecItemAdd(query as CFDictionary, nil)
+        let item = "\(account)-\(UUID().uuidString)"
+        var q = query(item: item)
+        q[kSecValueData as String] = keyData(vaultKey)
+        q[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        let status = SecItemAdd(q as CFDictionary, nil)
         guard status == errSecSuccess else { throw Self.map(status) }
-        return [:]
+        return ["item": item]
     }
 
     public func unwrap(fields: ProtectorFields) throws -> SymmetricKey {
-        var query = baseQuery
-        query[kSecReturnData as String] = true
-        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var q = query(item: try item(in: fields))
+        q[kSecReturnData as String] = true
+        q[kSecMatchLimit as String] = kSecMatchLimitOne
         var result: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        let status = SecItemCopyMatching(q as CFDictionary, &result)
         guard status == errSecSuccess else { throw Self.map(status) }
         guard let data = result as? Data, data.count == 32 else { throw ProtectorError.dataCorrupted }
         return SymmetricKey(data: data)
     }
 
     public func destroy(fields: ProtectorFields) throws {
-        let status = SecItemDelete(baseQuery as CFDictionary)
+        try destroyItem(id: try item(in: fields))
+    }
+
+    public func destroyItem(id: String) throws {
+        let status = SecItemDelete(query(item: id) as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else { throw Self.map(status) }
     }
 
-    private static func map(_ status: OSStatus) -> ProtectorError {
+    public func ownedItemIDs() throws -> [String] {
+        let q: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+                                kSecAttrService as String: service,
+                                kSecAttrSynchronizable as String: false,
+                                kSecReturnAttributes as String: true,
+                                kSecMatchLimit as String: kSecMatchLimitAll]
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(q as CFDictionary, &result)
+        if status == errSecItemNotFound { return [] }
+        guard status == errSecSuccess else { throw Self.map(status) }
+        let rows = (result as? [[String: Any]]) ?? []
+        return rows.compactMap { $0[kSecAttrAccount as String] as? String }
+            .filter { $0 == account || $0.hasPrefix(account + "-") }
+    }
+
+    static func map(_ status: OSStatus) -> ProtectorError {
         switch status {
         case errSecItemNotFound: .keyNotFound
         case errSecUserCanceled: .userCancelled
         case errSecAuthFailed: .authenticationFailed
+        case errSecInteractionNotAllowed: .interactionNotAllowed
         default: .keychainFailure(status)
         }
     }
@@ -187,17 +235,29 @@ public struct SecureEnclaveProtector: KeyProtector, @unchecked Sendable {
         }
     }
 
-    private static func map(_ error: Error) -> ProtectorError {
+    /// Classification of Secure Enclave / LocalAuthentication errors. The core never declares a key permanently
+    /// unusable; that decision belongs to the user (restore from backup).
+    /// - `LAError.userCancel/systemCancel/appCancel`, `errSecUserCanceled` (-128): `userCancelled`.
+    /// - `LAError.authenticationFailed`, `errSecAuthFailed` (-25293): `authenticationFailed` (wrong finger/password).
+    /// - `errSecInteractionNotAllowed` (-25308), `LAError.notInteractive`: `interactionNotAllowed`, temporary
+    ///   (no GUI session, locked keychain); retry later.
+    /// - Everything else (lockout, no passcode, missing key, other OSStatus): `secureEnclaveFailure(code)`,
+    ///   reported as-is without a verdict.
+    static func map(_ error: Error) -> ProtectorError {
         let ns = error as NSError
         if ns.domain == LAError.errorDomain {
             switch LAError.Code(rawValue: ns.code) {
             case .userCancel, .systemCancel, .appCancel: return .userCancelled
             case .authenticationFailed: return .authenticationFailed
+            case .notInteractive: return .interactionNotAllowed
             default: return .secureEnclaveFailure(ns.code)
             }
         }
-        if ns.code == Int(errSecUserCanceled) { return .userCancelled }
-        if ns.code == Int(errSecAuthFailed) { return .authenticationFailed }
-        return .secureEnclaveFailure(ns.code)
+        switch ns.code {
+        case Int(errSecUserCanceled): return .userCancelled
+        case Int(errSecAuthFailed): return .authenticationFailed
+        case Int(errSecInteractionNotAllowed): return .interactionNotAllowed
+        default: return .secureEnclaveFailure(ns.code)
+        }
     }
 }

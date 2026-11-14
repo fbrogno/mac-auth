@@ -13,8 +13,14 @@ enum Entry {
             MainActor.assumeIsolated { DocRenderer.render(to: dir) }
             return
         }
+        if let i = args.firstIndex(of: "--appearance"), args.indices.contains(i + 1) {
+            NSApplication.shared.appearance = NSAppearance(named: args[i + 1] == "dark" ? .darkAqua : .aqua)
+        }
         MacAuthApp.main()
     }
+
+    /// `--demo`: the real window with invented accounts, entirely in memory (no vault, keychain or Secure Enclave).
+    static var isDemo: Bool { CommandLine.arguments.contains("--demo") }
 }
 
 /// Sparkle updater. Without a public EdDSA key there is nothing to verify updates against: checking stays off.
@@ -23,12 +29,17 @@ final class UpdaterModel {
     @ObservationIgnored private let controller = SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
     @ObservationIgnored private var observation: NSKeyValueObservation?
     private(set) var canCheck = false
+    var automaticChecks = false {
+        didSet { if automaticChecks != controller.updater.automaticallyChecksForUpdates { controller.updater.automaticallyChecksForUpdates = automaticChecks } }
+    }
 
-    init() {
+    init(enabled: Bool = true) {
+        guard enabled else { return }
         let key = Bundle.main.object(forInfoDictionaryKey: "SUPublicEDKey") as? String
         if !(key ?? "").trimmingCharacters(in: .whitespaces).isEmpty {
             controller.startUpdater()
         }
+        automaticChecks = controller.updater.automaticallyChecksForUpdates
         observation = controller.updater.observe(\.canCheckForUpdates, options: [.initial, .new]) { [weak self] updater, _ in
             let can = updater.canCheckForUpdates
             Task { @MainActor in self?.canCheck = can }
@@ -39,8 +50,22 @@ final class UpdaterModel {
 }
 
 struct MacAuthApp: App {
-    @State private var model = AppModel()
-    @State private var updater = UpdaterModel()
+    @State private var model = MacAuthApp.makeModel()
+    @State private var updater = UpdaterModel(enabled: !Entry.isDemo)
+
+    @MainActor
+    private static func makeModel() -> AppModel {
+        guard Entry.isDemo else { return AppModel() }
+        // Ephemeral preferences: nothing of the demo is stored, screen protection is off so it can be captured.
+        let suite = "com.fbrogno.macauth.demo.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite) ?? .standard
+        defaults.removePersistentDomain(forName: suite)
+        let settings = AppSettings(defaults: defaults)
+        settings.protectScreen = false
+        settings.lastAccountChange = 2
+        settings.lastBackupExport = 1
+        return AppModel(demoPhase: .unlocked, accounts: DemoData.accounts, groups: DemoData.groups, settings: settings)
+    }
 
     var body: some Scene {
         Window("MacAuth", id: "main") {
@@ -72,13 +97,14 @@ struct AppCommands: Commands {
             Button("Neue Gruppe …") { model.sheet = .newGroup }.keyboardShortcut("n", modifiers: [.command, .shift]).disabled(!unlocked)
             Divider()
             Button("Importieren …") { model.sheet = .importer }.keyboardShortcut("i", modifiers: [.command, .shift]).disabled(!canAdd)
-            Button("Backup wiederherstellen …") { model.sheet = .restoreBackup }.disabled(!canAdd)
+            Button("Aus Datei importieren …") { Task { await ImportFlow.chooseFile(model: model) } }.disabled(!canAdd)
+            Button("Backup wiederherstellen …") { model.sheet = .restoreBackup(preset: nil, replace: false) }.disabled(!canAdd)
             Divider()
             Button("Backup exportieren …") { Task { await BackupFlow.startExport(model) } }
                 .keyboardShortcut("e", modifiers: [.command, .shift]).disabled(!unlocked || model.accounts.isEmpty)
             Button("Auf Handy übertragen …") { Task { await BackupFlow.startTransfer(model) } }.disabled(!unlocked || model.accounts.isEmpty)
             Divider()
-            Button("Sperren") { model.lock() }.keyboardShortcut("l").disabled(!unlocked)
+            Button("Sperren") { model.lock() }.keyboardShortcut("l").disabled(!unlocked || model.isDemo)
         }
         CommandGroup(replacing: .pasteboard) {
             Button("Ausschneiden") { NSApp.sendAction(#selector(NSText.cut(_:)), to: nil, from: nil) }.keyboardShortcut("x")
@@ -103,8 +129,9 @@ struct AppCommands: Commands {
             Button("Nächsten Code kopieren") { model.copy(model.selection, next: true) }
                 .keyboardShortcut("c", modifiers: [.command, .option]).disabled(!unlocked)
             Button("Suchen") { model.focusSearch() }.keyboardShortcut("f").disabled(!unlocked)
+            // No ⌘⌫ here: in a text field it deletes text. The card list handles ⌘⌫ itself (MainView), only without text focus.
             Button("Konto löschen …") { if let id = model.selection { model.sheet = .confirmDelete(id) } }
-                .keyboardShortcut(.delete, modifiers: .command).disabled(!unlocked || model.selection == nil)
+                .disabled(!unlocked || model.selection == nil)
         }
         CommandGroup(after: .toolbar) {
             Picker("Darstellung", selection: Binding(get: { model.settings.listMode }, set: { model.settings.listMode = $0 })) {

@@ -18,10 +18,12 @@ struct AccountFormSheet: View {
     @State private var note = ""
     @State private var showAdvanced = false
     @State private var saving = false
+    @State private var ticket: Ticket
     @State private var errorText: String?
     @Environment(\.dismiss) private var dismiss
 
     init(model: AppModel, editing: Account?, prefill: Account? = nil) {
+        _ticket = State(initialValue: model.ticket)
         self.model = model
         self.editing = editing
         if let p = prefill {
@@ -168,7 +170,7 @@ struct AccountFormSheet: View {
         } footer: {
             Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
             Button("Sichern") { Task { await save() } }
-                .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent).disabled(!canSave)
+                .keyboardShortcut(.defaultAction).primaryButtonStyle().disabled(!canSave)
         }
         .onChange(of: secretText) { adoptLinkIfPasted() }
     }
@@ -205,7 +207,7 @@ struct AccountFormSheet: View {
             account.note = note
             model.update(account)
             dismiss()
-        } else if await model.add(account) {
+        } else if await model.add(account, ticket: ticket) {
             dismiss()
         }
     }

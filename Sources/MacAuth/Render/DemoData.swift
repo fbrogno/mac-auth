@@ -33,6 +33,14 @@ enum DemoData {
         account(9, "Zeiterfassung Pro", "m.muster@firma.example", group: firma),
     ]
 
+    /// Accounts for the transfer image: the last two cannot be written in Google's format (45 s interval, 7 digits).
+    static var transferAccounts: [Account] {
+        accounts + [
+            account(10, "Altsystem VPN", "vpn@firma.example", group: firma, period: 45),
+            account(11, "Hausverwaltung", "Mia Muster", group: privat, digits: 7),
+        ]
+    }
+
     /// Same secret as "Nordwind Cloud": shows up as a duplicate in the review sheet.
     static var reviewAccounts: [Account] {
         var duplicate = account(1, "Nordwind Cloud", "admin@nordwind.example", group: firma)

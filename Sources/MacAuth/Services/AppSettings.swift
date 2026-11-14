@@ -19,6 +19,13 @@ final class AppSettings {
     var defaultGroupID: String { didSet { defaults.set(defaultGroupID, forKey: "defaultGroupID") } }
     var backupReminder: Bool { didSet { defaults.set(backupReminder, forKey: "backupReminder") } }
     var listMode: Bool { didSet { defaults.set(listMode, forKey: "listMode") } }
+    /// Optional system-wide shortcut that shows or hides the window. Off by default.
+    var hotKeyEnabled: Bool { didSet { defaults.set(hotKeyEnabled, forKey: "hotKeyEnabled") } }
+    /// Virtual key code, -1 = none recorded.
+    var hotKeyCode: Int { didSet { defaults.set(hotKeyCode, forKey: "hotKeyCode") } }
+    /// `NSEvent.ModifierFlags` raw value (device-independent bits only).
+    var hotKeyModifiers: Int { didSet { defaults.set(hotKeyModifiers, forKey: "hotKeyModifiers") } }
+    var hotKeyLabel: String { didSet { defaults.set(hotKeyLabel, forKey: "hotKeyLabel") } }
     /// Seconds since 1970; 0 = never.
     var lastBackupExport: Double { didSet { defaults.set(lastBackupExport, forKey: "lastBackupExport") } }
     var lastAccountChange: Double { didSet { defaults.set(lastAccountChange, forKey: "lastAccountChange") } }
@@ -36,6 +43,10 @@ final class AppSettings {
         defaultGroupID = defaults.string(forKey: "defaultGroupID") ?? ""
         backupReminder = bool("backupReminder", true)
         listMode = bool("listMode", false)
+        hotKeyEnabled = bool("hotKeyEnabled", false)
+        hotKeyCode = int("hotKeyCode", -1)
+        hotKeyModifiers = int("hotKeyModifiers", 0)
+        hotKeyLabel = defaults.string(forKey: "hotKeyLabel") ?? ""
         lastBackupExport = defaults.double(forKey: "lastBackupExport")
         lastAccountChange = defaults.double(forKey: "lastAccountChange")
     }

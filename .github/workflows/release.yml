@@ -44,10 +44,22 @@ jobs:
             exit 1
           fi
 
+      # All tool installs happen BEFORE the certificate is imported, so nothing downloaded later can see the key.
       - name: Toolchain
+        run: xcodebuild -version
+
+      - name: Install XcodeGen (pinned version, SHA-256 checked)
+        env:
+          XCODEGEN_VERSION: "2.46.0"
+          XCODEGEN_SHA256: 4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806
         run: |
-          xcodebuild -version
-          brew install xcodegen
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" \
+            "https://github.com/yonaskolb/XcodeGen/releases/download/${XCODEGEN_VERSION}/xcodegen.zip"
+          echo "${XCODEGEN_SHA256}  $RUNNER_TEMP/xcodegen.zip" | shasum -a 256 -c -
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP/xcodegen-dist"
+          echo "$RUNNER_TEMP/xcodegen-dist/xcodegen/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/xcodegen-dist/xcodegen/bin/xcodegen" --version
 
       - name: Import Developer ID certificate into a temporary keychain
         env:
@@ -62,7 +74,7 @@ jobs:
           security create-keychain -p "$keychain_password" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 3600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$keychain_password" "$KEYCHAIN_PATH"
-          security import "$RUNNER_TEMP/identity.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security import "$RUNNER_TEMP/identity.p12" -P "$P12_PASSWORD" -T /usr/bin/codesign -f pkcs12 -k "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$KEYCHAIN_PATH" > /dev/null
           security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
           security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -c "Developer ID Application"
@@ -101,12 +113,37 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
-      contents: write # the only job that may create the release
+      contents: write      # create the release
+      id-token: write      # sign the build provenance attestation (Sigstore)
+      attestations: write  # store the attestation
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-files
           path: dist
+
+      - name: Checksum and release notes
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          ls -l dist
+          test -f "dist/MacAuth-$version.dmg"
+          test -f dist/appcast.xml
+          (cd dist && shasum -a 256 "MacAuth-$version.dmg" > "MacAuth-$version.dmg.sha256")
+          {
+            echo "SHA-256 of \`MacAuth-$version.dmg\`:"
+            echo
+            echo '```'
+            cat "dist/MacAuth-$version.dmg.sha256"
+            echo '```'
+            echo
+            echo "Verify: see docs/RELEASING.md, section \"Release prüfen\"."
+          } > release-notes.md
+
+      - name: Attest build provenance of the DMG
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: dist/MacAuth-*.dmg
 
       - name: Publish GitHub release
         env:
@@ -114,10 +151,7 @@ jobs:
         run: |
           set -euo pipefail
           version="${GITHUB_REF_NAME#v}"
-          ls -l dist
-          test -f "dist/MacAuth-$version.dmg"
-          test -f dist/appcast.xml
           gh release create "$GITHUB_REF_NAME" \
-            "dist/MacAuth-$version.dmg" dist/appcast.xml \
+            "dist/MacAuth-$version.dmg" "dist/MacAuth-$version.dmg.sha256" dist/appcast.xml \
             --repo "$GITHUB_REPOSITORY" \
-            --title "MacAuth $version" --generate-notes --verify-tag
+            --title "MacAuth $version" --notes-file release-notes.md --generate-notes --verify-tag

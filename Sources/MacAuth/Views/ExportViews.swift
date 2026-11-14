@@ -6,12 +6,16 @@ import SwiftUI
 enum BackupFlow {
     static func startExport(_ model: AppModel) async {
         guard model.phase == .unlocked, !model.accounts.isEmpty else { return }
-        if await model.authenticate(reason: String(localized: "Backup exportieren")) { model.sheet = .exportBackup }
+        let ticket = model.ticket
+        if await model.authenticate(reason: String(localized: "Backup exportieren")), model.isCurrent(ticket) { model.sheet = .exportBackup }
     }
 
-    static func startTransfer(_ model: AppModel) async {
+    static func startTransfer(_ model: AppModel, ids: Set<UUID>? = nil) async {
         guard model.phase == .unlocked, !model.accounts.isEmpty else { return }
-        if await model.authenticate(reason: String(localized: "QR-Codes für die Übertragung anzeigen")) { model.sheet = .transfer(nil) }
+        let ticket = model.ticket
+        if await model.authenticate(reason: String(localized: "QR-Codes für die Übertragung anzeigen")), model.isCurrent(ticket) {
+            model.sheet = .transfer(ids)
+        }
     }
 }
 
@@ -32,11 +36,14 @@ struct ExportBackupSheet: View {
     @State private var repeated = ""
     @State private var busy = false
     @State private var done = false
+    @State private var incomplete = false
     @State private var errorText: String?
+    @State private var ticket: Ticket
     @Environment(\.dismiss) private var dismiss
 
     init(model: AppModel, previewPassword: String? = nil) {
         self.model = model
+        _ticket = State(initialValue: model.ticket)
         _password = State(initialValue: previewPassword ?? "")
         _repeated = State(initialValue: previewPassword ?? "")
     }
@@ -49,8 +56,15 @@ struct ExportBackupSheet: View {
         SheetScaffold(title: String(localized: "Backup exportieren"),
                       subtitle: String(localized: "Alle Konten und Gruppen, verschlüsselt mit einem Passwort deiner Wahl.")) {
             if done {
-                Label("Das Backup wurde gespeichert.", systemImage: "checkmark.circle.fill")
-                    .font(.title3).foregroundStyle(.green).padding(.vertical, 12)
+                VStack(spacing: 8) {
+                    Label("Das Backup wurde gespeichert.", systemImage: "checkmark.circle.fill")
+                        .font(.title3).foregroundStyle(.green)
+                    if incomplete {
+                        Text("Während des Speicherns haben sich Konten geändert. Das Backup enthält den Stand vom Start des Exports. Exportiere noch einmal, damit die Erinnerung zurückgesetzt wird.")
+                            .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.vertical, 12)
             } else {
                 VStack(alignment: .leading, spacing: 12) {
                     SecureField("Passwort", text: $password).textFieldStyle(.roundedBorder)
@@ -72,12 +86,12 @@ struct ExportBackupSheet: View {
             }
         } footer: {
             if done {
-                Button("Fertig") { dismiss() }.keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                Button("Fertig") { dismiss() }.keyboardShortcut(.defaultAction).primaryButtonStyle()
             } else {
                 if busy { ProgressView().controlSize(.small) }
                 Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
                 Button("Exportieren …") { Task { await export() } }
-                    .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent).disabled(!canExport)
+                    .keyboardShortcut(.defaultAction).primaryButtonStyle().disabled(!canExport)
             }
         }
     }
@@ -98,17 +112,21 @@ struct ExportBackupSheet: View {
     }
 
     private func export() async {
+        // The exported state is fixed here; an empty vault never produces a backup.
+        let data = model.currentVault
+        guard model.isCurrent(ticket), !data.accounts.isEmpty else { return }
         busy = true
         errorText = nil
         defer { busy = false }
-        let data = VaultData(accounts: model.accounts, groups: model.groups)
         let secret = password
         do {
             let file = try await Task.detached(priority: .userInitiated) { try BackupFile.encrypt(data, password: secret) }.value
+            guard model.isCurrent(ticket) else { return }
             let stamp = Date().formatted(.iso8601.year().month().day())
-            guard let url = await FilePanels.saveBackup(suggestedName: "MacAuth-Backup-\(stamp).\(BackupFile.fileExtension)") else { return }
+            guard let url = await FilePanels.saveBackup(suggestedName: "MacAuth-Backup-\(stamp).\(BackupFile.fileExtension)"),
+                  model.isCurrent(ticket) else { return }
             try file.write(to: url, options: .atomic)
-            model.settings.lastBackupExport = Date().timeIntervalSince1970
+            incomplete = !model.backupWritten(data)
             password = ""
             repeated = ""
             done = true
@@ -136,11 +154,22 @@ struct StrengthBar: View {
 
 struct RestoreSheet: View {
     @Bindable var model: AppModel
-    @State private var fileURL: URL?
+    let replace: Bool
+    @State private var fileName: String?
+    @State private var fileData: Data?
     @State private var password = ""
     @State private var busy = false
     @State private var errorText: String?
+    @State private var ticket: Ticket
     @Environment(\.dismiss) private var dismiss
+
+    init(model: AppModel, preset: BackupPreset?, replace: Bool) {
+        self.model = model
+        self.replace = replace
+        _fileName = State(initialValue: preset?.name)
+        _fileData = State(initialValue: preset?.data)
+        _ticket = State(initialValue: model.ticket)
+    }
 
     var body: some View {
         SheetScaffold(title: String(localized: "Backup wiederherstellen"),
@@ -148,17 +177,17 @@ struct RestoreSheet: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Image(systemName: "doc.badge.gearshape").foregroundStyle(.secondary)
-                    Text(fileURL?.lastPathComponent ?? String(localized: "Keine Datei gewählt"))
-                        .foregroundStyle(fileURL == nil ? .secondary : .primary).lineLimit(1).truncationMode(.middle)
+                    Text(fileName ?? String(localized: "Keine Datei gewählt"))
+                        .foregroundStyle(fileName == nil ? .secondary : .primary).lineLimit(1).truncationMode(.middle)
                     Spacer()
-                    Button("Datei wählen …") { Task { fileURL = await FilePanels.openBackup() ?? fileURL; errorText = nil } }
+                    Button("Datei wählen …") { Task { await choose() } }
                 }
                 .padding(10).background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 SecureField("Passwort", text: $password).textFieldStyle(.roundedBorder)
                     .onSubmit { Task { await restore() } }
-                if model.phase == .locked {
-                    Label("Der vorhandene, nicht mehr nutzbare Tresor wird ersetzt.", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.callout).foregroundStyle(.secondary)
+                if replace {
+                    Label("Es entsteht ein neuer Tresor aus dem Backup. Die bisherige Tresordatei bleibt erhalten.", systemImage: "arrow.triangle.2.circlepath")
+                        .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 } else {
                     Label("Du siehst die Konten vorher durch. Es wird nichts überschrieben.", systemImage: "eye")
                         .font(.callout).foregroundStyle(.secondary)
@@ -169,26 +198,39 @@ struct RestoreSheet: View {
             if busy { ProgressView().controlSize(.small) }
             Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
             Button("Weiter") { Task { await restore() } }
-                .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent).disabled(fileURL == nil || password.isEmpty || busy)
+                .keyboardShortcut(.defaultAction).primaryButtonStyle().disabled(fileData == nil || password.isEmpty || busy)
+        }
+    }
+
+    private func choose() async {
+        guard let url = await FilePanels.openBackup(), model.isCurrent(ticket) else { return }
+        let loaded: Data? = await Task.detached(priority: .userInitiated) {
+            let didStart = url.startAccessingSecurityScopedResource()
+            defer { if didStart { url.stopAccessingSecurityScopedResource() } }
+            return try? Data(contentsOf: url)
+        }.value
+        guard model.isCurrent(ticket) else { return }
+        if let loaded {
+            fileData = loaded
+            fileName = url.lastPathComponent
+            errorText = nil
+        } else {
+            errorText = ErrorText.message(for: BackupError.ioFailure(""))
         }
     }
 
     private func restore() async {
-        guard let url = fileURL, !password.isEmpty, !busy else { return }
+        guard let file = fileData, !password.isEmpty, !busy, model.isCurrent(ticket) else { return }
         busy = true
         errorText = nil
         defer { busy = false }
         let secret = password
         do {
-            let data = try await Task.detached(priority: .userInitiated) { () -> VaultData in
-                let didStart = url.startAccessingSecurityScopedResource()
-                defer { if didStart { url.stopAccessingSecurityScopedResource() } }
-                let file: Data
-                do { file = try Data(contentsOf: url) } catch { throw BackupError.ioFailure("") }
-                return try BackupFile.decrypt(file, password: secret)
-            }.value
+            let data = try await Task.detached(priority: .userInitiated) { try BackupFile.decrypt(file, password: secret) }.value
+            guard model.isCurrent(ticket) else { return }
             password = ""
-            let session = model.makeSession(source: .backup, accounts: data.accounts, backup: data)
+            let session = model.makeSession(source: .backup, delivery: .backup, accounts: data.accounts, groups: data.groups,
+                                            intent: replace ? .replaceVault : nil)
             model.sheet = .review(session)
         } catch {
             errorText = ErrorText.message(for: error)
@@ -212,6 +254,7 @@ struct TransferSheet: View {
     @State private var pages: [Page] = []
     @State private var index = 0
     @State private var problem: String?
+    @State private var unsupported: [String] = []
     @State private var image: NSImage?
     @Environment(\.dismiss) private var dismiss
 
@@ -248,6 +291,16 @@ struct TransferSheet: View {
                         }
                     }
                 }
+                if !unsupported.isEmpty {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Label("Nicht im Google-Format übertragbar:", systemImage: "exclamationmark.triangle")
+                            .font(.callout.weight(.medium)).foregroundStyle(.orange)
+                        Text(unsupported.joined(separator: ", ")).font(.callout).foregroundStyle(.secondary)
+                        Text("Für diese Konten folgt je ein eigener QR-Code am Ende. Er enthält die genauen Einstellungen, ob deine Handy-App ihn liest, hängt von der App ab.")
+                            .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
                 if let problem {
                     Label(problem, systemImage: "exclamationmark.triangle").foregroundStyle(.orange).font(.callout)
                         .frame(maxWidth: .infinity, minHeight: 200)
@@ -276,7 +329,7 @@ struct TransferSheet: View {
                     .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         } footer: {
-            Button("Schließen") { dismiss() }.keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+            Button("Schließen") { dismiss() }.keyboardShortcut(.defaultAction).primaryButtonStyle()
         }
         .onAppear(perform: rebuild)
         .onChange(of: format) { rebuild() }
@@ -292,6 +345,7 @@ struct TransferSheet: View {
     private func rebuild() {
         index = 0
         problem = nil
+        unsupported = []
         let accounts = selectedAccounts
         guard !accounts.isEmpty else {
             pages = []
@@ -301,13 +355,27 @@ struct TransferSheet: View {
         }
         switch format {
         case .google:
-            do {
-                let uris = try MigrationCodec.uris(for: accounts)
-                pages = uris.enumerated().map { Page(uri: $0.element, caption: String(localized: "bis zu \(MigrationCodec.maxAccountsPerCode) Konten je Code")) }
-            } catch {
-                pages = []
-                problem = ErrorText.message(for: error)
+            // Accounts the Google format cannot hold (other period, 7 digits, ...) are split off up front and get a
+            // single otpauth code each, so nothing is exported with wrong settings.
+            var fitting: [Account] = []
+            var rest: [Account] = []
+            for account in accounts {
+                if (try? MigrationCodec.uris(for: [account])) != nil { fitting.append(account) } else { rest.append(account) }
             }
+            unsupported = rest.map(\.displayLabel)
+            var built: [Page] = []
+            if !fitting.isEmpty {
+                do {
+                    let uris = try MigrationCodec.uris(for: fitting)
+                    built = uris.map { Page(uri: $0, caption: String(localized: "bis zu \(MigrationCodec.maxAccountsPerCode) Konten je Code")) }
+                } catch {
+                    pages = []
+                    problem = ErrorText.message(for: error)
+                    return
+                }
+            }
+            built += rest.map { Page(uri: OTPAuthURI.string(for: $0), caption: String(localized: "Einzel-QR-Code: \($0.displayLabel)")) }
+            pages = built
         case .single:
             pages = accounts.map { Page(uri: OTPAuthURI.string(for: $0), caption: $0.displayLabel) }
         }
@@ -317,5 +385,68 @@ struct TransferSheet: View {
     private func renderImage() {
         guard pages.indices.contains(index) else { image = nil; return }
         image = QRGenerator.image(for: pages[index].uri, size: 520)
+    }
+}
+
+/// Lists vault files that can be brought back when the current vault cannot be opened. Nothing here deletes anything.
+struct RescueSheet: View {
+    @Bindable var model: AppModel
+    @State private var entries: [RescueEntry] = []
+    @State private var loaded = false
+    @State private var busy = false
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        SheetScaffold(title: String(localized: "Frühere Fassung wiederherstellen"),
+                      subtitle: String(localized: "Diese Tresordateien liegen noch auf diesem Mac. Nichts davon wurde gelöscht."), width: 540) {
+            VStack(alignment: .leading, spacing: 10) {
+                if !loaded {
+                    ProgressView().frame(maxWidth: .infinity, minHeight: 80)
+                } else if entries.isEmpty {
+                    Label("Es gibt keine ältere Fassung. Du kannst es erneut versuchen oder ein Backup einspielen.", systemImage: "tray")
+                        .font(.callout).foregroundStyle(.secondary)
+                } else {
+                    ForEach(entries) { entry in
+                        HStack(spacing: 12) {
+                            Image(systemName: entry.isPrevious ? "clock.arrow.circlepath" : "archivebox").foregroundStyle(.secondary).frame(width: 22)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(entry.isPrevious ? String(localized: "Vorherige Fassung") : String(localized: "Ersetzter Tresor"))
+                                    .font(.system(size: 13, weight: .semibold))
+                                Text(detail(entry)).font(.callout).foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Button("Wiederherstellen") { Task { await restore(entry) } }.disabled(busy)
+                        }
+                        .padding(10).background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    }
+                    Text("Danach wirst du wie gewohnt zum Entsperren gefragt. Der Tresor, der sich nicht öffnen ließ, wird dabei zur Seite gelegt, nicht gelöscht.")
+                        .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        } footer: {
+            if busy { ProgressView().controlSize(.small) }
+            Button("Schließen") { dismiss() }.keyboardShortcut(.defaultAction).primaryButtonStyle()
+        }
+        .task {
+            entries = await model.rescueEntries()
+            loaded = true
+        }
+    }
+
+    private func detail(_ entry: RescueEntry) -> String {
+        var parts: [String] = []
+        if entry.date != .distantPast { parts.append(entry.date.formatted(date: .abbreviated, time: .shortened)) }
+        switch entry.protector {
+        case "secure-enclave": parts.append(String(localized: "Secure Enclave"))
+        case "keychain": parts.append(String(localized: "Schlüsselbund"))
+        default: break
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    private func restore(_ entry: RescueEntry) async {
+        busy = true
+        defer { busy = false }
+        if await model.restore(entry) { dismiss() }
     }
 }

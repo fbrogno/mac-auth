@@ -82,6 +82,9 @@ public enum ProtectorError: Error, Equatable, LocalizedError {
     case secureEnclaveUnavailable
     case userCancelled
     case authenticationFailed
+    /// Temporary: the system could not show an authentication prompt right now (e.g. locked keychain, no
+    /// GUI session; `errSecInteractionNotAllowed`, -25308). Retrying later can succeed. Never a verdict on the key.
+    case interactionNotAllowed
     case keyNotFound
     case keychainFailure(Int32)
     case secureEnclaveFailure(Int)
@@ -93,6 +96,7 @@ public enum ProtectorError: Error, Equatable, LocalizedError {
         case .secureEnclaveUnavailable: "Dieser Mac hat keine Secure Enclave."
         case .userCancelled: "Die Entsperrung wurde abgebrochen."
         case .authenticationFailed: "Die Authentifizierung ist fehlgeschlagen."
+        case .interactionNotAllowed: "Die Abfrage ist gerade nicht möglich. Bitte später erneut versuchen."
         case .keyNotFound: "Der Schlüssel dieses Tresors ist auf diesem Mac nicht vorhanden."
         case .keychainFailure(let s): "Der Schlüsselbund meldet einen Fehler (\(s))."
         case .secureEnclaveFailure(let c): "Die Secure Enclave meldet einen Fehler (\(c))."
@@ -111,6 +115,9 @@ public enum VaultError: Error, Equatable, LocalizedError {
     case unsupportedVersion(Int)
     case protectorMismatch(stored: String)
     case noPreviousGeneration
+    case replacedFileNotFound
+    /// A file that may reference key material could not be read, so nothing was deleted.
+    case unreadableKeyFiles
     case ioFailure(String)
 
     public var errorDescription: String? {
@@ -122,6 +129,8 @@ public enum VaultError: Error, Equatable, LocalizedError {
         case .unsupportedVersion(let v): "Der Tresor hat ein unbekanntes Format (Version \(v))."
         case .protectorMismatch(let s): "Der Tresor ist mit „\(s)“ geschützt."
         case .noPreviousGeneration: "Es gibt keine ältere Fassung des Tresors."
+        case .replacedFileNotFound: "Diese beiseitegelegte Tresordatei gibt es nicht mehr."
+        case .unreadableKeyFiles: "Eine Tresordatei war nicht lesbar; es wurde nichts gelöscht."
         case .ioFailure(let m): "Dateifehler: \(m)"
         }
     }
@@ -144,6 +153,27 @@ public enum BackupError: Error, Equatable, LocalizedError {
         case .unsupportedParameters: "Die Sicherung verwendet nicht unterstützte oder unsichere Parameter."
         case .wrongPasswordOrCorrupt: "Passwort falsch oder Datei beschädigt."
         case .ioFailure(let m): "Dateifehler: \(m)"
+        }
+    }
+}
+
+public enum ImportError: Error, Equatable, LocalizedError {
+    case emptyFile
+    case tooLarge
+    case tooManyEntries
+    case unrecognizedFormat
+    /// An encrypted Aegis or 2FAS file. Not decrypted; the user should export unencrypted.
+    case encryptedFile(ImportFormat)
+    case unsupportedVersion(String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .emptyFile: "Die Datei ist leer."
+        case .tooLarge: "Die Datei ist zu groß."
+        case .tooManyEntries: "Die Datei enthält zu viele Einträge."
+        case .unrecognizedFormat: "Das Dateiformat wird nicht erkannt."
+        case .encryptedFile(let f): "Die \(f.displayName)-Datei ist verschlüsselt. Bitte unverschlüsselt exportieren."
+        case .unsupportedVersion(let v): "Die Dateiversion (\(v)) wird nicht unterstützt."
         }
     }
 }

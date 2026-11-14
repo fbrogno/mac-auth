@@ -3,7 +3,7 @@
 //   swift scripts/verify-sparkle-key.swift <public key, base64> <file> <signature, base64>
 //
 // Exit status 0: the signature is valid for that public key; 1: it is not; 2: wrong arguments.
-// Used by scripts/release.sh: it signs a probe file with the release signing key and verifies the
+// Used by scripts/release.sh: it signs a probe file with MacAuth's release signing key (keychain account "macauth" or SPARKLE_PRIVATE_KEY) and verifies the
 // result against the SUPublicEDKey of the built app, so a swapped or mistyped key stops the release
 // before anything is published.
 import CryptoKit

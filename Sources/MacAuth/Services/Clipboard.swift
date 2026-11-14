@@ -20,7 +20,8 @@ final class ClipboardService {
     /// Puts `code` on the general pasteboard. `clearAfter` in seconds; 0 or less keeps it.
     func copy(_ code: String, clearAfter seconds: Int) {
         let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
+        // Keep the code off Universal Clipboard / Handoff: it stays on this Mac.
+        pasteboard.prepareForNewContents(with: .currentHostOnly)
         pasteboard.declareTypes([.string, Self.concealedType], owner: nil)
         pasteboard.setString(code, forType: .string)
         pasteboard.setString("", forType: Self.concealedType)

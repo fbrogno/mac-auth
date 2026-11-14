@@ -2,15 +2,21 @@
 # One-time setup for the release pipeline, run by the repo owner on the Mac that holds the
 # Developer ID certificate. Never prints a secret value.
 #
-#   1. Sparkle key pair (generate_keys, kept in the login keychain). Only the PUBLIC key goes
-#      into Config/Sparkle.xcconfig.
+#   1. MacAuth's OWN Sparkle key pair (generate_keys --account macauth, kept in the login keychain; the
+#      MacMonitor key is never reused). Only the PUBLIC key goes into Config/Sparkle.xcconfig.
 #   2. ONLY the Developer ID Application identity exported as .p12 (via a temp keychain).
-#   3. The six GitHub Actions secrets, set from stdin/files via `gh secret set`.
+#   3. The six secrets as secrets of the GitHub environment `release` (created first if missing, limited
+#      to tags `v*`), set from stdin/files via `gh secret set --env release`.
 # Temp files are removed on exit.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 repo=fbrogno/mac-auth
+env_name=release
+# Keychain account of MacAuth's Sparkle key (separate from MacMonitor's default account).
+sparkle_account=macauth
+# Public key of MacMonitor. MacAuth must never ship it: a compromised sibling repo could then sign MacAuth updates.
+macmonitor_public_key='ihHEnImv672xRJULVBJj6J+d8Pd8poRoVLoxUdKEx+0='
 sparkle_bin=build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin
 
 command -v gh >/dev/null || { echo "gh fehlt." >&2; exit 1; }
@@ -20,9 +26,22 @@ tmp=$(mktemp -d)
 chmod 700 "$tmp"
 trap 'rm -rf "$tmp"' EXIT INT TERM
 
-print "Setzt sechs Secrets in $repo und trägt den öffentlichen Sparkle-Schlüssel ein."
+print "Legt (falls nötig) das Environment $env_name in $repo an (nur Tags v*), setzt dort sechs Secrets und trägt den öffentlichen Sparkle-Schlüssel ein."
 read -r "go?Fortfahren? [j/N] "
 [[ $go == [jJ] ]] || { echo "Abgebrochen."; exit 1; }
+
+# --- 0. Environment `release`, limited to tags v* ------------------------------------------
+# https://docs.github.com/en/rest/deployments/environments and .../deployment-branch-policies
+gh api -X PUT "repos/$repo/environments/$env_name" \
+  -F 'deployment_branch_policy[protected_branches]=false' \
+  -F 'deployment_branch_policy[custom_branch_policies]=true' >/dev/null
+policies=$(gh api "repos/$repo/environments/$env_name/deployment-branch-policies" --jq '.branch_policies[] | "\(.type):\(.name)"')
+if ! print -r -- "$policies" | grep -qx 'tag:v\*'; then
+  gh api -X POST "repos/$repo/environments/$env_name/deployment-branch-policies" -f name='v*' -f type=tag >/dev/null
+fi
+policies=$(gh api "repos/$repo/environments/$env_name/deployment-branch-policies" --jq '.branch_policies[] | "\(.type):\(.name)"')
+[[ $policies == 'tag:v*' ]] || { echo "ABBRUCH: Environment $env_name hat unerwartete Regeln für Branches/Tags: $policies" >&2; exit 1; }
+echo "Environment $env_name: nur Tags v* dürfen deployen."
 
 # --- 1. Sparkle -------------------------------------------------------------------------
 if [[ ! -x $sparkle_bin/generate_keys ]]; then
@@ -33,23 +52,28 @@ fi
 [[ -x $sparkle_bin/generate_keys ]] || { echo "Sparkle-Werkzeuge nicht gefunden in $sparkle_bin." >&2; exit 1; }
 
 # Creates the key pair only if none exists; macOS may ask to allow keychain access.
-"$sparkle_bin/generate_keys" >/dev/null
-public_key=$("$sparkle_bin/generate_keys" -p)
+"$sparkle_bin/generate_keys" --account "$sparkle_account" >/dev/null
+public_key=$("$sparkle_bin/generate_keys" --account "$sparkle_account" -p)
 [[ -n $public_key ]] || { echo "Öffentlicher Sparkle-Schlüssel nicht lesbar." >&2; exit 1; }
+if [[ $public_key == "$macmonitor_public_key" ]]; then
+  echo "ABBRUCH: Das Schlüsselpaar \"$sparkle_account\" hat denselben öffentlichen Schlüssel wie MacMonitor. MacAuth braucht ein eigenes Paar." >&2
+  exit 1
+fi
 # A different key than the one already shipped would lock every installed copy out of updates.
 existing_key=$(sed -n 's/^SPARKLE_PUBLIC_ED_KEY *= *//p' Config/Sparkle.xcconfig | tr -d '[:space:]')
 if [[ -n $existing_key && $existing_key != "$public_key" ]]; then
   echo "ABBRUCH: Config/Sparkle.xcconfig enthält bereits einen anderen öffentlichen Sparkle-Schlüssel." >&2
   echo "Ein neuer Schlüssel würde Updates für alle installierten Versionen unmöglich machen." >&2
-  echo "Den ursprünglichen privaten Schlüssel auf diesem Mac importieren: generate_keys -f <Datei>." >&2
+  echo "Den ursprünglichen privaten Schlüssel auf diesem Mac importieren: generate_keys --account $sparkle_account -f <Datei>." >&2
   exit 1
 fi
 print -r -- "// Public EdDSA key for Sparkle update verification. Written by scripts/setup-release-secrets.sh.
+// Key pair: keychain account \"$sparkle_account\" (generate_keys --account $sparkle_account). Never the MacMonitor key.
 SPARKLE_PUBLIC_ED_KEY = $public_key" > Config/Sparkle.xcconfig
 echo "Öffentlicher Sparkle-Schlüssel in Config/Sparkle.xcconfig eingetragen."
 
-"$sparkle_bin/generate_keys" -x "$tmp/sparkle.key" >/dev/null
-gh secret set SPARKLE_PRIVATE_KEY --repo "$repo" < "$tmp/sparkle.key"
+"$sparkle_bin/generate_keys" --account "$sparkle_account" -x "$tmp/sparkle.key" >/dev/null
+gh secret set SPARKLE_PRIVATE_KEY --env "$env_name" --repo "$repo" < "$tmp/sparkle.key"
 rm -f "$tmp/sparkle.key"
 
 # --- 2. Developer ID --------------------------------------------------------------------
@@ -104,8 +128,8 @@ if [[ $count != 1 || $only == 0 ]]; then
 fi
 echo "Geprüft: Die .p12 enthält genau eine Identität (Developer ID Application)."
 
-base64 -i "$tmp/identity.p12" | tr -d '\n' | gh secret set DEVELOPER_ID_P12_BASE64 --repo "$repo"
-print -rn -- "$p12_password" | gh secret set DEVELOPER_ID_P12_PASSWORD --repo "$repo"
+base64 -i "$tmp/identity.p12" | tr -d '\n' | gh secret set DEVELOPER_ID_P12_BASE64 --env "$env_name" --repo "$repo"
+print -rn -- "$p12_password" | gh secret set DEVELOPER_ID_P12_PASSWORD --env "$env_name" --repo "$repo"
 unset p12_password all_password kc_password
 
 # --- 3. App Store Connect API key (notarization) ----------------------------------------
@@ -115,11 +139,11 @@ p8_path=${~p8_path}
 read -r "key_id?Key-ID: "
 read -r "issuer_id?Issuer-ID: "
 [[ -n $key_id && -n $issuer_id ]] || { echo "Key-ID und Issuer-ID dürfen nicht leer sein." >&2; exit 1; }
-print -rn -- "$key_id" | gh secret set ASC_KEY_ID --repo "$repo"
-print -rn -- "$issuer_id" | gh secret set ASC_ISSUER_ID --repo "$repo"
-base64 -i "$p8_path" | tr -d '\n' | gh secret set ASC_KEY_P8_BASE64 --repo "$repo"
+print -rn -- "$key_id" | gh secret set ASC_KEY_ID --env "$env_name" --repo "$repo"
+print -rn -- "$issuer_id" | gh secret set ASC_ISSUER_ID --env "$env_name" --repo "$repo"
+base64 -i "$p8_path" | tr -d '\n' | gh secret set ASC_KEY_P8_BASE64 --env "$env_name" --repo "$repo"
 
 echo
-echo "Fertig. Gesetzt in $repo:"
-gh secret list --repo "$repo" | awk '{print "  " $1}'
-echo "Noch zu tun: Config/Sparkle.xcconfig committen und pushen, dann Tag v\$(cat VERSION) setzen."
+echo "Fertig. Gesetzt im Environment $env_name von $repo:"
+gh secret list --env "$env_name" --repo "$repo" | awk '{print "  " $1}'
+echo "Noch zu tun: Config/Sparkle.xcconfig committen und per PR nach main bringen, dann Tag v\$(cat VERSION) setzen."

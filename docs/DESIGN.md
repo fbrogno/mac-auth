@@ -27,7 +27,7 @@ language, English comes from `.xcstrings` catalogs · code and comments in Engli
 ## AuthCore
 
 ### OTP
-- TOTP (RFC 6238) and HOTP (RFC 4226); SHA-1, SHA-256, SHA-512; 6 or 8 digits; period 15–120 s (default 30).
+- TOTP (RFC 6238) and HOTP (RFC 4226); SHA-1, SHA-256, SHA-512; 6 to 8 digits; period 15–120 s (default 30).
 - `Base32` (RFC 4648; decoding ignores case, spaces, dashes and padding).
 - `otpauth://totp|hotp/...` parse and serialise (issuer from label prefix and/or `issuer` parameter).
 
@@ -36,7 +36,16 @@ language, English comes from `.xcstrings` catalogs · code and comments in Engli
 - Fields: `otp_parameters` (secret, name, issuer, algorithm, digits, type, counter), `version`,
   `batch_size`, `batch_index`, `batch_id`. Unknown fields are skipped, malformed input throws a typed error.
 - Batches: an export can span several QR codes; the importer reports "2 of 3 scanned" via batch id/index.
-- Writer: the same format for "transfer to phone" (max. 10 accounts per QR code).
+- Writer: the same format for "transfer to phone" (max. 10 accounts per QR code). Google's format has no
+  period field and only 6 or 8 digits; accounts it cannot represent are refused, never exported with
+  silently changed parameters. They can be transferred as single `otpauth://` QR codes.
+
+### Other import formats
+`ImportDetector` recognises a file by its content: a text file with one `otpauth://` link per line (Ente
+Auth and many others), Aegis (unencrypted JSON export), 2FAS (unencrypted `.2fas` export), MacAuth's own
+backup and Google migration links. Encrypted Aegis/2FAS files are recognised and refused with a hint to
+export unencrypted. Entries that cannot be used are listed with their label and the reason, never with
+their secret.
 
 ### Model
 `Account`: id (UUID), issuer, name, secret (bytes), algorithm, digits, period, kind (totp/hotp), counter,
@@ -46,7 +55,12 @@ Duplicate = same secret bytes + same kind/algorithm/digits/period.
 
 ### Vault
 - One file: `Application Support/MacAuth/vault.json` (inside the sandbox container). Written atomically
-  (temp file + replace); the previous generation is kept as `vault.previous.json`.
+  (temp file, `F_FULLFSYNC`, rename, directory sync); the previous generation is kept as
+  `vault.previous.json`.
+- **Nothing is ever overwritten blindly.** Whenever an existing vault file would be replaced by something
+  that is not its own next generation (restore from a backup, recovery, an unknown file found at save
+  time), the old file is first set aside unchanged as `vault.replaced-<UTC time>.json`, together with its
+  key material. These files are never deleted automatically and can be restored from the lock screen.
 - Envelope (JSON): `version`, `protector`, protector fields, `nonce`, `ciphertext`, `tag`.
   Payload: JSON of accounts and groups, sealed with **ChaCha20-Poly1305** under a random 256-bit vault key;
   the envelope header is authenticated as AAD.
@@ -58,13 +72,25 @@ Duplicate = same secret bytes + same kind/algorithm/digits/period.
     (ECDH → HKDF-SHA256 → ChaCha20-Poly1305). Unlocking therefore *cryptographically* needs Touch ID or the
     login password; it is not a mere UI gate.
   - **KeychainProtector** (fallback: no Secure Enclave, or the user turned the unlock prompt off): vault key
-    as generic password in the login keychain, `ThisDeviceOnly`, never synchronised. The app lock is then a
+    as generic password in the login keychain, never synchronised through iCloud. Each wrap creates its
+    own item; an item is only removed after the file that replaces it has been written. Note: the
+    file-based login keychain ignores `ThisDeviceOnly`, so this item travels with Time Machine and
+    Migration Assistant, protected by the login password. The app lock is then a
     `LAContext.deviceOwnerAuthentication` gate (or none, if switched off).
+  - Changing the protector always creates a **new vault key** and re-seals the contents, then destroys the
+    old key material and the previous generation that depended on it. A key that once lived in the
+    keychain therefore never protects a later Secure Enclave vault.
   - **InMemoryProtector** for tests.
+- Unlocking always goes through the protector; there is no shortcut for an already unlocked store.
+  Locking takes effect immediately; a lock generation counter lets the app discard results of anything
+  that was still running (unlock prompts, file dialogs, camera callbacks).
 - Unlocked state: vault key and accounts live in memory only; locking drops them (key bytes overwritten
   best-effort). Auto-lock after inactivity (default 5 min; 1/5/15/60/never) and always on sleep, screen
   lock and fast user switching.
-- A lost Secure Enclave key (new Mac, erased Mac) is recovered from a backup file – by design.
+- A lost Secure Enclave key (new Mac, erased Mac) is recovered from a backup file – by design. The core
+  never declares a key permanently unusable on its own: temporary conditions (for example a locked
+  screen, error -25308) are reported as "try again later"; replacing a vault is always the user's
+  explicit decision and keeps the old file.
 
 ### Backup file (`.macauth`)
 - JSON: `format: "macauth-backup"`, `version: 1`, `kdf: {name: "pbkdf2-hmac-sha256", iterations: 600000,
@@ -90,7 +116,10 @@ A normal window with Dock icon (min. 760 × 520): sidebar + card grid.
 - **Search:** the field has focus on start and after unlocking; typing anywhere filters (issuer, name,
   group, note); `esc` clears; arrow keys move the selection.
 - **Shortcuts:** `⌘N` add · `⌘F` search · `⌘L` lock · `⌘,` settings · `⌘C` copy selection · `⌥⌘C` copy
-  next code · `⌫` delete with confirmation.
+  next code · `⌘⌫` delete with confirmation (only when no text field has focus; "Cancel" is the default
+  button of every destructive dialog).
+- **Global shortcut** (optional, off by default): shows or hides the window from anywhere; with "hide after
+  copying" the previous app is in front again as soon as the code is on the clipboard.
 - **Context menu:** copy, copy next code, edit, move to group, pin, show QR code (after re-authentication),
   delete. Drag to reorder, drag onto a sidebar group to move.
 - **List mode** as a denser alternative to the grid.
@@ -100,7 +129,10 @@ The first start shows three large choices: **Aus Google Authenticator importiere
 wiederherstellen**, **Manuell hinzufügen**. Import sources:
 - Mac camera (scan the export QR from the phone screen; live preview, multi-QR batches counted),
 - image file or screenshot (open panel, drag onto the window, paste from the clipboard),
-- a single `otpauth://` link or setup key typed in.
+- a single `otpauth://` link or setup key typed in,
+- an export file of another app (see "Other import formats").
+The camera is the recommended way. After an import from a screenshot or a plain-text export the app
+reminds the user to delete that file, because it contains every secret.
 QR decoding with Vision (`VNDetectBarcodesRequest`). Every import ends in a **review sheet**: found
 accounts with checkboxes, target group (Firma/Privat/…) for all or per row, duplicates marked and
 unchecked. Nothing is stored before the user confirms. Imported images are never copied or kept.
@@ -108,11 +140,13 @@ unchecked. Nothing is stored before the user confirms. Imported images are never
 ### Export
 - Encrypted backup file (see above).
 - "Auf Handy übertragen": QR codes in Google's migration format, or one `otpauth://` QR per account.
-Both need a fresh authentication.
+Both need a fresh authentication. So does every setting that lowers protection (unlock prompt off, longer
+or no auto-lock, screen protection off, hidden codes off); while the vault is locked the security
+settings cannot be changed at all.
 
 ### Clipboard
-Copied codes carry `org.nspasteboard.ConcealedType` (clipboard managers skip them) and are cleared after
-30 s (10/30/60/never) if the clipboard still holds the code.
+Copied codes carry `org.nspasteboard.ConcealedType` (clipboard managers skip them), stay on this Mac
+(no Universal Clipboard) and are cleared after 30 s (10/30/60/never) if the clipboard still holds the code.
 
 ### Screen
 Window content is excluded from screen sharing and screenshots (`NSWindow.sharingType = .none`), default

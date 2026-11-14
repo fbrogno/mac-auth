@@ -40,10 +40,8 @@ struct SidebarView: View {
                     .contextMenu {
                         Button("Gruppe bearbeiten …") { model.sheet = .editGroup(group.id) }
                         Button("Alle Konten der Gruppe übertragen …") {
-                            Task {
-                                let ids = Set(model.accounts.filter { $0.groupID == group.id }.map(\.id))
-                                if await model.authenticate(reason: String(localized: "QR-Codes für die Übertragung anzeigen")) { model.sheet = .transfer(ids) }
-                            }
+                            let ids = Set(model.accounts.filter { $0.groupID == group.id }.map(\.id))
+                            Task { await BackupFlow.startTransfer(model, ids: ids) }
                         }
                         Divider()
                         Button("Gruppe löschen …", role: .destructive) { groupToDelete = group }
@@ -64,6 +62,7 @@ struct SidebarView: View {
             isPresented: Binding(get: { groupToDelete != nil }, set: { if !$0 { groupToDelete = nil } }),
             titleVisibility: .visible
         ) {
+            Button("Abbrechen", role: .cancel) { groupToDelete = nil }
             Button("Gruppe löschen", role: .destructive) {
                 if let group = groupToDelete { model.deleteGroup(group.id) }
                 groupToDelete = nil
@@ -84,9 +83,9 @@ struct SidebarView: View {
                     Button("Backup exportieren …") { Task { await BackupFlow.startExport(model) } }
                         .controlSize(.small)
                 }
-                .padding(10)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                .floatingGlass(RoundedRectangle(cornerRadius: 16, style: .continuous), tint: Color.orange.opacity(0.25))
             }
             Button {
                 model.lock()
@@ -97,6 +96,7 @@ struct SidebarView: View {
             .buttonStyle(.plain)
             .padding(.horizontal, 10).padding(.vertical, 7)
             .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .disabled(model.isDemo)
             .help(Text("MacAuth sperren (⌘L)"))
         }
         .padding(10)

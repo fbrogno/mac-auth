@@ -369,6 +369,22 @@
         }
       }
     },
+    "Algorithmus „%@“ wird nicht unterstützt": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algorithmus „%@“ wird nicht unterstützt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algorithm “%@” is not supported"
+          }
+        }
+      }
+    },
     "Alle": {
       "localizations": {
         "de": {
@@ -625,6 +641,22 @@
         }
       }
     },
+    "Aufnehmen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufnehmen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record"
+          }
+        }
+      }
+    },
     "Aus Backup wiederherstellen …": {
       "localizations": {
         "de": {
@@ -637,6 +669,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Restore from Backup …"
+          }
+        }
+      }
+    },
+    "Aus Datei importieren …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Datei importieren …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import from File…"
           }
         }
       }
@@ -733,6 +781,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Authentication not possible"
+          }
+        }
+      }
+    },
+    "Automatisch nach Updates suchen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatisch nach Updates suchen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for updates automatically"
           }
         }
       }
@@ -849,18 +913,18 @@
         }
       }
     },
-    "Beim Ruhezustand, bei gesperrtem Bildschirm und beim Benutzerwechsel sperrt MacAuth immer.": {
+    "Beim Ruhezustand, bei gesperrtem Bildschirm und beim Benutzerwechsel sperrt MacAuth immer. Weniger Schutz einzustellen verlangt eine Abfrage mit Touch ID oder Passwort.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Beim Ruhezustand, bei gesperrtem Bildschirm und beim Benutzerwechsel sperrt MacAuth immer."
+            "value": "Beim Ruhezustand, bei gesperrtem Bildschirm und beim Benutzerwechsel sperrt MacAuth immer. Weniger Schutz einzustellen verlangt eine Abfrage mit Touch ID oder Passwort."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "MacAuth always locks on sleep, when the screen is locked and when switching users."
+            "value": "MacAuth always locks on sleep, when the screen is locked and when switching users. Lowering protection asks for Touch ID or your password."
           }
         }
       }
@@ -897,6 +961,22 @@
         }
       }
     },
+    "Codetyp „%@“ wird nicht unterstützt": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Codetyp „%@“ wird nicht unterstützt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code type “%@” is not supported"
+          }
+        }
+      }
+    },
     "Danach": {
       "localizations": {
         "de": {
@@ -909,6 +989,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Next"
+          }
+        }
+      }
+    },
+    "Danach wirst du wie gewohnt zum Entsperren gefragt. Der Tresor, der sich nicht öffnen ließ, wird dabei zur Seite gelegt, nicht gelöscht.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danach wirst du wie gewohnt zum Entsperren gefragt. Der Tresor, der sich nicht öffnen ließ, wird dabei zur Seite gelegt, nicht gelöscht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Then you unlock as usual. The vault that would not open is set aside, not deleted."
           }
         }
       }
@@ -957,6 +1053,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "The backup was saved."
+          }
+        }
+      }
+    },
+    "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste) und MacAuth-Sicherungen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste) und MacAuth-Sicherungen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file format is not recognised. Supported are Aegis, 2FAS, Ente Auth (otpauth list) and MacAuth backups."
           }
         }
       }
@@ -1073,6 +1185,22 @@
         }
       }
     },
+    "Datei lässt sich nicht importieren": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datei lässt sich nicht importieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file cannot be imported"
+          }
+        }
+      }
+    },
     "Datei wählen …": {
       "localizations": {
         "de": {
@@ -1101,6 +1229,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your codes stay on this Mac."
+          }
+        }
+      }
+    },
+    "Demo-Daten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo-Daten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo data"
           }
         }
       }
@@ -1153,34 +1297,18 @@
         }
       }
     },
-    "Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar, zum Beispiel nach einer Neuinstallation oder einem anderen Mac. Deine Codes lassen sich nur noch aus einem Backup wiederherstellen.": {
+    "Der Schlüssel des Tresors ließ sich gerade nicht lesen. Versuche es noch einmal, deine Daten sind damit nicht verloren.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar, zum Beispiel nach einer Neuinstallation oder einem anderen Mac. Deine Codes lassen sich nur noch aus einem Backup wiederherstellen."
+            "value": "Der Schlüssel des Tresors ließ sich gerade nicht lesen. Versuche es noch einmal, deine Daten sind damit nicht verloren."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The key to this vault can no longer be used on this Mac, for example after a reinstall or on a different Mac. Your codes can only be restored from a backup."
-          }
-        }
-      }
-    },
-    "Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The key to this vault can no longer be used on this Mac."
+            "value": "The vault key could not be read just now. Try again, your data is not lost."
           }
         }
       }
@@ -1297,6 +1425,22 @@
         }
       }
     },
+    "Der Schlüssel ließ sich gerade nicht lesen. Das ist meist vorübergehend, zum Beispiel bei gesperrtem Bildschirm. Versuche es gleich noch einmal. Deine Daten sind nicht verloren.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Schlüssel ließ sich gerade nicht lesen. Das ist meist vorübergehend, zum Beispiel bei gesperrtem Bildschirm. Versuche es gleich noch einmal. Deine Daten sind nicht verloren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key could not be read just now. This is usually temporary, for example while the screen is locked. Try again in a moment. Your data is not lost."
+          }
+        }
+      }
+    },
     "Der Schlüssel wandert dann aus der Secure Enclave in den Schlüsselbund. Jeder, der an deinem entsperrten Mac sitzt, kommt an die Codes.": {
       "localizations": {
         "de": {
@@ -1393,6 +1537,38 @@
         }
       }
     },
+    "Der Tresor liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Tresor liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault is still on this Mac and nothing was deleted. Try again first, for example after a restart. If that does not help, restore your backup or bring back an earlier version."
+          }
+        }
+      }
+    },
+    "Der bisherige Tresor lässt sich gerade nicht öffnen. Seine Datei bleibt erhalten, du kannst sie später über „Frühere Fassung wiederherstellen“ zurückholen. Der neue Tresor enthält nur die ausgewählten Konten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der bisherige Tresor lässt sich gerade nicht öffnen. Seine Datei bleibt erhalten, du kannst sie später über „Frühere Fassung wiederherstellen“ zurückholen. Der neue Tresor enthält nur die ausgewählten Konten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The current vault cannot be opened right now. Its file is kept, and you can bring it back later with “Restore Earlier Version”. The new vault contains only the selected accounts."
+          }
+        }
+      }
+    },
     "Der otpauth-Link ist fehlerhaft.": {
       "localizations": {
         "de": {
@@ -1425,34 +1601,18 @@
         }
       }
     },
-    "Der vorhandene, nicht mehr nutzbare Tresor wird dabei ersetzt.": {
+    "Die %@-Datei ist verschlüsselt. Exportiere sie in %@ unverschlüsselt, importiere sie hier und lösche die Exportdatei danach.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Der vorhandene, nicht mehr nutzbare Tresor wird dabei ersetzt."
+            "value": "Die %1$@-Datei ist verschlüsselt. Exportiere sie in %2$@ unverschlüsselt, importiere sie hier und lösche die Exportdatei danach."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The existing vault, which can no longer be used, will be replaced."
-          }
-        }
-      }
-    },
-    "Der vorhandene, nicht mehr nutzbare Tresor wird ersetzt.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Der vorhandene, nicht mehr nutzbare Tresor wird ersetzt."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The existing vault, which can no longer be used, will be replaced."
+            "value": "The %1$@ file is encrypted. Export it unencrypted from %2$@, import it here, then delete the export file."
           }
         }
       }
@@ -1501,6 +1661,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Authentication failed."
+          }
+        }
+      }
+    },
+    "Die Datei enthält zu viele Einträge.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datei enthält zu viele Einträge."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file contains too many entries."
+          }
+        }
+      }
+    },
+    "Die Datei ist leer.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datei ist leer."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file is empty."
+          }
+        }
+      }
+    },
+    "Die Datei ist zu groß.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datei ist zu groß."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file is too large."
           }
         }
       }
@@ -1569,6 +1777,54 @@
         }
       }
     },
+    "Die Kamera ist der bessere Weg, denn dann liegt der QR-Code nie als Datei auf dem Mac. Wenn du einen Screenshot nutzt, lösche ihn nach dem Import, auch aus dem Papierkorb und aus iCloud-Fotos.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kamera ist der bessere Weg, denn dann liegt der QR-Code nie als Datei auf dem Mac. Wenn du einen Screenshot nutzt, lösche ihn nach dem Import, auch aus dem Papierkorb und aus iCloud-Fotos."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The camera is the better way, because then the QR code never exists as a file on your Mac. If you use a screenshot, delete it after the import, also from the Trash and from iCloud Photos."
+          }
+        }
+      }
+    },
+    "Die Kombination braucht mindestens ⌘, ⌥ oder ⌃.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kombination braucht mindestens ⌘, ⌥ oder ⌃."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The shortcut needs at least ⌘, ⌥ or ⌃."
+          }
+        }
+      }
+    },
+    "Die Kombination holt das Fenster nach vorn, wenn du es brauchst, und blendet es beim erneuten Drücken wieder aus. Sie braucht mindestens ⌘, ⌥ oder ⌃.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kombination holt das Fenster nach vorn, wenn du es brauchst, und blendet es beim erneuten Drücken wieder aus. Sie braucht mindestens ⌘, ⌥ oder ⌃."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The shortcut brings the window to the front when you need it and hides it when pressed again. It needs at least ⌘, ⌥ or ⌃."
+          }
+        }
+      }
+    },
     "Die Konten bleiben erhalten und sind danach in keiner Gruppe.": {
       "localizations": {
         "de": {
@@ -1597,6 +1853,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "The passwords do not match."
+          }
+        }
+      }
+    },
+    "Die Schlüsseldateien des Tresors lassen sich nicht lesen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Schlüsseldateien des Tresors lassen sich nicht lesen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault key files cannot be read."
+          }
+        }
+      }
+    },
+    "Die Schutzart des Tresors steht erst nach dem Entsperren fest.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Schutzart des Tresors steht erst nach dem Entsperren fest."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault’s protection type is known only after unlocking."
           }
         }
       }
@@ -1633,6 +1921,22 @@
         }
       }
     },
+    "Die Tastenkombination konnte nicht angemeldet werden.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Tastenkombination konnte nicht angemeldet werden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The shortcut could not be registered."
+          }
+        }
+      }
+    },
     "Die Tresordatei konnte nicht gelesen oder geschrieben werden.": {
       "localizations": {
         "de": {
@@ -1645,6 +1949,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "The vault file could not be read or written."
+          }
+        }
+      }
+    },
+    "Die Version dieser Datei wird nicht unterstützt.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Version dieser Datei wird nicht unterstützt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This file version is not supported."
           }
         }
       }
@@ -1681,6 +2001,22 @@
         }
       }
     },
+    "Diese Kombination wird schon von einer anderen App oder vom System benutzt. Wähle eine andere.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Kombination wird schon von einer anderen App oder vom System benutzt. Wähle eine andere."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another app or the system already uses this shortcut. Choose a different one."
+          }
+        }
+      }
+    },
     "Diese QR-Codes enthalten deine Geheimnisse. Zeige sie niemandem und schließe das Fenster danach.": {
       "localizations": {
         "de": {
@@ -1693,6 +2029,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "These QR codes contain your secrets. Show them to no one and close the window afterwards."
+          }
+        }
+      }
+    },
+    "Diese Tresordatei gibt es nicht mehr.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Tresordatei gibt es nicht mehr."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This vault file no longer exists."
+          }
+        }
+      }
+    },
+    "Diese Tresordateien liegen noch auf diesem Mac. Nichts davon wurde gelöscht.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Tresordateien liegen noch auf diesem Mac. Nichts davon wurde gelöscht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These vault files are still on this Mac. None of them was deleted."
           }
         }
       }
@@ -1729,6 +2097,38 @@
         }
       }
     },
+    "Dieser Mac hat keine Secure Enclave. Der Schlüssel liegt im Schlüsselbund, MacAuth fragt beim Öffnen aber nach Touch ID oder Passwort.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Mac hat keine Secure Enclave. Der Schlüssel liegt im Schlüsselbund, MacAuth fragt beim Öffnen aber nach Touch ID oder Passwort."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac has no Secure Enclave. The key is in the keychain, but MacAuth asks for Touch ID or your password when opening."
+          }
+        }
+      }
+    },
+    "Dieser Mac hat keine Secure Enclave. Der Schlüssel liegt im Schlüsselbund, MacAuth öffnet ohne Abfrage.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Mac hat keine Secure Enclave. Der Schlüssel liegt im Schlüsselbund, MacAuth öffnet ohne Abfrage."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac has no Secure Enclave. The key is in the keychain and MacAuth opens without asking."
+          }
+        }
+      }
+    },
     "Dieser QR-Code gehört zu einem anderen Export. Scanne die Codes eines Exports nacheinander.": {
       "localizations": {
         "de": {
@@ -1757,6 +2157,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "This account already exists."
+          }
+        }
+      }
+    },
+    "Du hast eine Exportdatei von Aegis, 2FAS, Ente Auth oder eine MacAuth-Sicherung?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast eine Exportdatei von Aegis, 2FAS, Ente Auth oder eine MacAuth-Sicherung?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do you have an export file from Aegis, 2FAS or Ente Auth, or a MacAuth backup?"
           }
         }
       }
@@ -1793,6 +2209,22 @@
         }
       }
     },
+    "Ein Screenshot enthält alle Schlüssel": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ein Screenshot enthält alle Schlüssel"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A screenshot contains all your keys"
+          }
+        }
+      }
+    },
     "Einfügen": {
       "localizations": {
         "de": {
@@ -1821,6 +2253,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Setting not changed"
+          }
+        }
+      }
+    },
+    "Eintrag fehlerhaft": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eintrag fehlerhaft"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entry is malformed"
+          }
+        }
+      }
+    },
+    "Einzel-QR-Code: %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einzel-QR-Code: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Single QR code: %@"
           }
         }
       }
@@ -1889,6 +2353,38 @@
         }
       }
     },
+    "Erneut versuchen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erneut versuchen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Ersetzter Tresor": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ersetzter Tresor"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replaced vault"
+          }
+        }
+      }
+    },
     "Erst wenn du etwas hinzufügst, legt MacAuth den geschützten Tresor an.": {
       "localizations": {
         "de": {
@@ -1917,6 +2413,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Advanced"
+          }
+        }
+      }
+    },
+    "Es entsteht ein neuer Tresor aus dem Backup. Die bisherige Tresordatei bleibt erhalten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es entsteht ein neuer Tresor aus dem Backup. Die bisherige Tresordatei bleibt erhalten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A new vault is created from the backup. The current vault file is kept."
+          }
+        }
+      }
+    },
+    "Es entsteht ein neuer Tresor. Die bisherige Tresordatei bleibt erhalten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es entsteht ein neuer Tresor. Die bisherige Tresordatei bleibt erhalten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A new vault is created. The current vault file is kept."
           }
         }
       }
@@ -1953,6 +2481,22 @@
         }
       }
     },
+    "Es gibt keine ältere Fassung. Du kannst es erneut versuchen oder ein Backup einspielen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es gibt keine ältere Fassung. Du kannst es erneut versuchen oder ein Backup einspielen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no earlier version. You can try again or restore a backup."
+          }
+        }
+      }
+    },
     "Es gibt noch keinen Tresor.": {
       "localizations": {
         "de": {
@@ -1981,6 +2525,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "An unexpected error occurred."
+          }
+        }
+      }
+    },
+    "Exportdatei aus Aegis, 2FAS oder Ente Auth, oder eine MacAuth-Sicherung. Du kannst die Datei auch auf das Fenster ziehen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportdatei aus Aegis, 2FAS oder Ente Auth, oder eine MacAuth-Sicherung. Du kannst die Datei auch auf das Fenster ziehen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export file from Aegis, 2FAS or Ente Auth, or a MacAuth backup. You can also drag the file onto the window."
+          }
+        }
+      }
+    },
+    "Exportdatei jetzt löschen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportdatei jetzt löschen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the export file now"
           }
         }
       }
@@ -2113,6 +2689,38 @@
         }
       }
     },
+    "Frühere Fassung wiederherstellen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frühere Fassung wiederherstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Earlier Version"
+          }
+        }
+      }
+    },
+    "Frühere Fassung wiederherstellen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frühere Fassung wiederherstellen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Earlier Version…"
+          }
+        }
+      }
+    },
     "Füge den Schlüssel aus dem QR-Code-Fenster der Website ein. Einen otpauth-Link kannst du direkt hier einfügen.": {
       "localizations": {
         "de": {
@@ -2125,6 +2733,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Paste the key shown next to the website’s QR code. You can paste an otpauth link right here."
+          }
+        }
+      }
+    },
+    "Für diese Konten folgt je ein eigener QR-Code am Ende. Er enthält die genauen Einstellungen, ob deine Handy-App ihn liest, hängt von der App ab.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für diese Konten folgt je ein eigener QR-Code am Ende. Er enthält die genauen Einstellungen, ob deine Handy-App ihn liest, hängt von der App ab."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each of these accounts gets its own QR code at the end. It carries the exact settings; whether your phone app reads it depends on the app."
+          }
+        }
+      }
+    },
+    "Gerade ist keine Abfrage möglich, zum Beispiel weil der Bildschirm gesperrt ist. Versuche es gleich noch einmal.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gerade ist keine Abfrage möglich, zum Beispiel weil der Bildschirm gesperrt ist. Versuche es gleich noch einmal."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No prompt is possible right now, for example because the screen is locked. Try again in a moment."
           }
         }
       }
@@ -2337,18 +2977,18 @@
         }
       }
     },
-    "Halte den QR-Code vor die Kamera deines Macs oder mache einen Screenshot und wähle ihn hier aus.": {
+    "Halte den QR-Code vor die Kamera deines Macs (empfohlen). Alternativ geht ein Screenshot, den du danach unbedingt wieder löschst.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Halte den QR-Code vor die Kamera deines Macs oder mache einen Screenshot und wähle ihn hier aus."
+            "value": "Halte den QR-Code vor die Kamera deines Macs (empfohlen). Alternativ geht ein Screenshot, den du danach unbedingt wieder löschst."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hold the QR code up to your Mac’s camera, or take a screenshot and choose it here."
+            "value": "Hold the QR code in front of your Mac’s camera (recommended). A screenshot works too, but you must delete it afterwards."
           }
         }
       }
@@ -2593,6 +3233,22 @@
         }
       }
     },
+    "Keine otpauth-Zeile": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine otpauth-Zeile"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not an otpauth line"
+          }
+        }
+      }
+    },
     "Konten": {
       "localizations": {
         "de": {
@@ -2785,6 +3441,38 @@
         }
       }
     },
+    "Lösche den Screenshot jetzt, auch aus dem Papierkorb und aus iCloud-Fotos. Er enthält alle Schlüssel.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lösche den Screenshot jetzt, auch aus dem Papierkorb und aus iCloud-Fotos. Er enthält alle Schlüssel."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the screenshot now, also from the Trash and from iCloud Photos. It contains all your keys."
+          }
+        }
+      }
+    },
+    "Lösche die Exportdatei jetzt, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle Schlüssel im Klartext.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lösche die Exportdatei jetzt, auch aus dem Papierkorb und aus iCloud Drive. Sie enthält alle Schlüssel im Klartext."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the export file now, also from the Trash and from iCloud Drive. It contains all your keys in plain text."
+          }
+        }
+      }
+    },
     "Löschen": {
       "localizations": {
         "de": {
@@ -2833,6 +3521,22 @@
         }
       }
     },
+    "MacAuth anzeigen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth anzeigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show MacAuth"
+          }
+        }
+      }
+    },
     "MacAuth entsperren": {
       "localizations": {
         "de": {
@@ -2877,6 +3581,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "MacAuth is locked"
+          }
+        }
+      }
+    },
+    "MacAuth ist gesperrt. Entsperre es, um Sicherheitseinstellungen zu ändern.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth ist gesperrt. Entsperre es, um Sicherheitseinstellungen zu ändern."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth is locked. Unlock it to change security settings."
+          }
+        }
+      }
+    },
+    "MacAuth mit einer Tastenkombination anzeigen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacAuth mit einer Tastenkombination anzeigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show MacAuth with a keyboard shortcut"
           }
         }
       }
@@ -3089,6 +3825,38 @@
         }
       }
     },
+    "Neuen Tresor anlegen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neuen Tresor anlegen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create New Vault"
+          }
+        }
+      }
+    },
+    "Neuen Tresor anlegen?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neuen Tresor anlegen?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a new vault?"
+          }
+        }
+      }
+    },
     "Neues Konto …": {
       "localizations": {
         "de": {
@@ -3105,6 +3873,22 @@
         }
       }
     },
+    "Nicht im Google-Format übertragbar:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht im Google-Format übertragbar:"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cannot be transferred in Google’s format:"
+          }
+        }
+      }
+    },
     "Nie": {
       "localizations": {
         "de": {
@@ -3117,6 +3901,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Never"
+          }
+        }
+      }
+    },
+    "Nimm zuerst eine Tastenkombination auf.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimm zuerst eine Tastenkombination auf."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record a keyboard shortcut first."
           }
         }
       }
@@ -3393,22 +4193,6 @@
         }
       }
     },
-    "QR-Code des Kontos anzeigen": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "QR-Code des Kontos anzeigen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show the account’s QR code"
-          }
-        }
-      }
-    },
     "QR-Code zur Übertragung": {
       "localizations": {
         "de": {
@@ -3585,6 +4369,22 @@
         }
       }
     },
+    "Schlüssel ungültig": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schlüssel ungültig"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key is invalid"
+          }
+        }
+      }
+    },
     "Schlüssel verbergen": {
       "localizations": {
         "de": {
@@ -3597,6 +4397,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hide key"
+          }
+        }
+      }
+    },
+    "Schlüsselbund": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schlüsselbund"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keychain"
           }
         }
       }
@@ -3617,6 +4433,70 @@
         }
       }
     },
+    "Schutz des Tresors ändern": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schutz des Tresors ändern"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change vault protection"
+          }
+        }
+      }
+    },
+    "Schutz von MacAuth ändern": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schutz von MacAuth ändern"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change MacAuth protection"
+          }
+        }
+      }
+    },
+    "Screenshot jetzt löschen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshot jetzt löschen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the screenshot now"
+          }
+        }
+      }
+    },
+    "Screenshot wählen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshot wählen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose Screenshot"
+          }
+        }
+      }
+    },
     "Screenshot wählen …": {
       "localizations": {
         "de": {
@@ -3629,6 +4509,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose Screenshot …"
+          }
+        }
+      }
+    },
+    "Secure Enclave": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave"
           }
         }
       }
@@ -3841,6 +4737,38 @@
         }
       }
     },
+    "Taste drücken …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taste drücken …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press a key…"
+          }
+        }
+      }
+    },
+    "Tastenkombination": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tastenkombination"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keyboard Shortcut"
+          }
+        }
+      }
+    },
     "Tresor konnte nicht angelegt werden": {
       "localizations": {
         "de": {
@@ -3853,6 +4781,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "The vault could not be created"
+          }
+        }
+      }
+    },
+    "Tresor lässt sich nicht öffnen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tresor lässt sich nicht öffnen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault cannot be opened"
           }
         }
       }
@@ -3885,6 +4829,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Invalid number of digits (allowed: 6 to 8)."
+          }
+        }
+      }
+    },
+    "Ungültiger Wert für „%@“": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ungültiger Wert für „%@“"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid value for “%@”"
           }
         }
       }
@@ -3937,18 +4897,18 @@
         }
       }
     },
-    "Vorherige Fassung wiederherstellen": {
+    "Vorherige Fassung": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vorherige Fassung wiederherstellen"
+            "value": "Vorherige Fassung"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Restore Previous Version"
+            "value": "Previous version"
           }
         }
       }
@@ -3981,6 +4941,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Continue with the next QR code."
+          }
+        }
+      }
+    },
+    "Wiederherstellen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wiederherstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore"
           }
         }
       }
@@ -4029,6 +5005,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose the backup file and enter the password you protected it with."
+          }
+        }
+      }
+    },
+    "Wähle eine Exportdatei aus Aegis, 2FAS oder Ente Auth (unverschlüsselt) oder eine MacAuth-Sicherung.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle eine Exportdatei aus Aegis, 2FAS oder Ente Auth (unverschlüsselt) oder eine MacAuth-Sicherung."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose an export file from Aegis, 2FAS or Ente Auth (unencrypted) or a MacAuth backup."
           }
         }
       }
@@ -4093,6 +5085,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose where the encrypted backup should be saved."
+          }
+        }
+      }
+    },
+    "Während des Speicherns haben sich Konten geändert. Das Backup enthält den Stand vom Start des Exports. Exportiere noch einmal, damit die Erinnerung zurückgesetzt wird.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Während des Speicherns haben sich Konten geändert. Das Backup enthält den Stand vom Start des Exports. Exportiere noch einmal, damit die Erinnerung zurückgesetzt wird."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accounts changed while saving. The backup holds the state from when the export started. Export again to reset the reminder."
           }
         }
       }
@@ -4349,6 +5357,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Skipped because MacAuth does not support them:"
+          }
+        }
+      }
+    },
+    "„%@“ kopiert": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "„%@“ kopiert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” copied"
           }
         }
       }

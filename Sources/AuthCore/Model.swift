@@ -144,3 +144,51 @@ extension Account {
         return candidates.map { !seen.insert($0.duplicateKey).inserted }
     }
 }
+
+// MARK: - Merging imports
+
+extension VaultData {
+    /// Returns a copy with imported accounts (and their groups) added, without touching existing entries:
+    /// - an account whose UUID is already taken gets a new UUID,
+    /// - imported groups are merged with existing ones by name (trimmed, case-insensitive) and the accounts'
+    ///   `groupID`s are rewritten; unknown names become new groups (new UUID if the id is taken),
+    /// - a `groupID` that matches neither an imported nor an existing group is cleared,
+    /// - `sortIndex` continues after the highest existing value, in import order.
+    /// Duplicate detection is left to the caller (`Account.duplicateFlags`).
+    public func merging(accounts imported: [Account], groups importedGroups: [AccountGroup] = []) -> VaultData {
+        func key(_ name: String) -> String { name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+        var result = self
+        var groupMap: [UUID: UUID] = [:]
+        var byName: [String: UUID] = [:]
+        for g in result.groups where byName[key(g.name)] == nil { byName[key(g.name)] = g.id }
+        var usedGroupIDs = Set(result.groups.map(\.id))
+        for g in importedGroups {
+            if let existing = byName[key(g.name)] {
+                groupMap[g.id] = existing
+                continue
+            }
+            var added = g
+            added.name = g.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            if usedGroupIDs.contains(added.id) { added.id = UUID() }
+            usedGroupIDs.insert(added.id)
+            byName[key(added.name)] = added.id
+            groupMap[g.id] = added.id
+            result.groups.append(added)
+        }
+        let knownGroups = Set(result.groups.map(\.id))
+        var usedIDs = Set(result.accounts.map(\.id))
+        var next = (result.accounts.map(\.sortIndex).max() ?? -1) + 1
+        for var a in imported {
+            if usedIDs.contains(a.id) { a.id = UUID() }
+            usedIDs.insert(a.id)
+            if let g = a.groupID {
+                let mapped = groupMap[g] ?? g
+                a.groupID = knownGroups.contains(mapped) ? mapped : nil
+            }
+            a.sortIndex = next
+            next += 1
+            result.accounts.append(a)
+        }
+        return result
+    }
+}

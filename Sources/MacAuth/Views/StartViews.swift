@@ -5,9 +5,9 @@ struct FirstRunView: View {
     @Bindable var model: AppModel
 
     var body: some View {
-        VStack(spacing: 28) {
-            VStack(spacing: 10) {
-                AppIconImage(size: 84)
+        VStack(spacing: 20) {
+            VStack(spacing: 6) {
+                IconGlow(size: 84)
                 Text("Willkommen bei MacAuth").font(.system(size: 28, weight: .semibold))
                 Text("Deine Codes bleiben auf diesem Mac.")
                     .font(.title3).foregroundStyle(.secondary)
@@ -16,17 +16,46 @@ struct FirstRunView: View {
                 ChoiceCard(symbol: "qrcode.viewfinder", title: "Aus Google Authenticator importieren",
                            text: "Scanne den Export-QR-Code oder wähle einen Screenshot.") { model.sheet = .importer }
                 ChoiceCard(symbol: "externaldrive.badge.checkmark", title: "Backup wiederherstellen",
-                           text: "Öffne eine Backup-Datei und gib das Passwort ein.") { model.sheet = .restoreBackup }
+                           text: "Öffne eine Backup-Datei und gib das Passwort ein.") { model.sheet = .restoreBackup(preset: nil, replace: false) }
                 ChoiceCard(symbol: "square.and.pencil", title: "Manuell hinzufügen",
                            text: "Gib einen Setup-Schlüssel oder otpauth-Link ein.") { model.sheet = .add }
             }
             .frame(maxWidth: 760)
+            FileImportRow { Task { await ImportFlow.chooseFile(model: model) } }
+                .frame(maxWidth: 760)
             Label("Erst wenn du etwas hinzufügst, legt MacAuth den geschützten Tresor an.", systemImage: "lock.shield")
                 .font(.callout).foregroundStyle(.secondary)
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .windowBackgroundColor))
+    }
+}
+
+/// The fourth, smaller way in: an export file of another authenticator app.
+private struct FileImportRow: View {
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: "doc.badge.arrow.up").font(.system(size: 17)).foregroundStyle(Color.accentColor).frame(width: 28)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Aus Datei importieren …").font(.system(size: 13.5, weight: .semibold))
+                    Text("Exportdatei aus Aegis, 2FAS oder Ente Auth, oder eine MacAuth-Sicherung. Du kannst die Datei auch auf das Fenster ziehen.")
+                        .font(.system(size: 12)).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 16).padding(.vertical, 11)
+            .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(hovering ? Color.accentColor.opacity(0.7) : Color.primary.opacity(0.1), lineWidth: hovering ? 1.5 : 1))
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .pointerStyle(.link)
     }
 }
 
@@ -71,26 +100,32 @@ private struct ChoiceCard: View {
 struct LockedView: View {
     @Bindable var model: AppModel
 
+    private var needsRetry: Bool {
+        switch model.lockNotice {
+        case .retryLater, .cannotOpen: true
+        default: false
+        }
+    }
+
     var body: some View {
         VStack(spacing: 18) {
-            AppIconImage(size: 88)
-            Text("MacAuth ist gesperrt").font(.system(size: 24, weight: .semibold))
+            IconGlow(size: 88)
+            Text(model.lockNotice == .cannotOpen ? "Tresor lässt sich nicht öffnen" : "MacAuth ist gesperrt")
+                .font(.system(size: 24, weight: .semibold))
             Button {
                 Task { await model.unlock() }
             } label: {
-                Label("Entsperren", systemImage: "touchid").font(.system(size: 14, weight: .medium)).padding(.horizontal, 10).padding(.vertical, 3)
+                Label(needsRetry ? "Erneut versuchen" : "Entsperren", systemImage: needsRetry ? "arrow.clockwise" : "touchid")
+                    .font(.system(size: 14, weight: .medium)).padding(.horizontal, 10).padding(.vertical, 3)
             }
-            .buttonStyle(.borderedProminent).controlSize(.large)
+            .primaryButtonStyle().controlSize(.large)
             .keyboardShortcut(.defaultAction)
             .disabled(model.isUnlocking)
             notice
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .windowBackgroundColor))
-        .onAppear {
-            if !model.suppressAutoPrompt, model.lockNotice == nil, NSApp.isActive { Task { await model.unlock() } }
-        }
+        // No prompt here on purpose: the model asks at app start, when the app comes back to the front, or on the button.
     }
 
     @ViewBuilder
@@ -104,21 +139,22 @@ struct LockedView: View {
                     .foregroundStyle(.secondary)
             case .failed(let message):
                 Text(message).foregroundStyle(.red)
-            case .keyUnusable:
-                Text("Der Schlüssel dieses Tresors ist auf diesem Mac nicht mehr nutzbar, zum Beispiel nach einer Neuinstallation oder einem anderen Mac. Deine Codes lassen sich nur noch aus einem Backup wiederherstellen.")
+            case .retryLater:
+                Text("Der Schlüssel ließ sich gerade nicht lesen. Das ist meist vorübergehend, zum Beispiel bei gesperrtem Bildschirm. Versuche es gleich noch einmal. Deine Daten sind nicht verloren.")
                     .foregroundStyle(.secondary)
-                Button("Aus Backup wiederherstellen …") { model.sheet = .restoreBackup }
-            case .corrupted:
-                Text("Der Tresor ist beschädigt oder wurde verändert.").foregroundStyle(.secondary)
-                if model.canRecoverPrevious {
-                    Button("Vorherige Fassung wiederherstellen") { Task { await model.recoverPreviousGeneration() } }
+            case .cannotOpen:
+                Text("Der Tresor liegt noch auf diesem Mac, es wurde nichts gelöscht. Versuche es zuerst erneut, zum Beispiel nach einem Neustart. Hilft das nicht, kannst du dein Backup einspielen oder eine frühere Fassung zurückholen.")
+                    .foregroundStyle(.secondary)
+                HStack(spacing: 10) {
+                    Button("Aus Backup wiederherstellen …") { model.sheet = .restoreBackup(preset: nil, replace: true) }
+                    Button("Frühere Fassung wiederherstellen …") { model.sheet = .rescue }
                 }
-                Button("Aus Backup wiederherstellen …") { model.sheet = .restoreBackup }
+                .padding(.top, 4)
             }
         }
         .font(.callout)
         .multilineTextAlignment(.center)
-        .frame(maxWidth: 420)
+        .frame(maxWidth: 460)
         .fixedSize(horizontal: false, vertical: true)
     }
 }

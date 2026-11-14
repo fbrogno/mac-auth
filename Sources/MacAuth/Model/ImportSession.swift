@@ -5,7 +5,9 @@ import Observation
 /// Everything found by an import, waiting for the user's confirmation. Nothing is stored before.
 @MainActor @Observable
 final class ImportSession: Identifiable {
-    enum Source { case google, link, backup }
+    enum Source { case google, link, backup, file }
+    /// How the data arrived; decides the clean-up hint after a successful import.
+    enum Delivery { case camera, image, file, text, backup }
 
     struct Row: Identifiable {
         let id = UUID()
@@ -17,16 +19,22 @@ final class ImportSession: Identifiable {
 
     let id = UUID()
     let source: Source
+    let delivery: Delivery
+    /// What this session may do; fixed at creation, never derived from the phase at confirmation time.
+    let intent: ImportIntent
+    /// Rescue path: set once the user confirmed that the old vault file is kept and a new vault replaces it.
+    var replaceConfirmed = false
     var rows: [Row]
     var skipped: [String]
     /// Existing groups first, then groups of a backup that do not exist yet (matched by name).
     var availableGroups: [AccountGroup]
-    /// True if the vault does not exist or is replaced: the result becomes the whole vault.
-    var replacesVault = false
+    var replacesVault: Bool { intent == .replaceVault }
 
-    init(source: Source, accounts: [Account], skipped: [String] = [], existing: [Account],
-         existingGroups: [AccountGroup], backupGroups: [AccountGroup] = [], defaultGroupID: UUID? = nil) {
+    init(source: Source, delivery: Delivery, intent: ImportIntent, accounts: [Account], skipped: [String] = [], existing: [Account],
+         existingGroups: [AccountGroup], incomingGroups backupGroups: [AccountGroup] = [], defaultGroupID: UUID? = nil) {
         self.source = source
+        self.delivery = delivery
+        self.intent = intent
         self.skipped = skipped
         var groups = existingGroups
         var mapping: [UUID: UUID] = [:]
@@ -42,8 +50,8 @@ final class ImportSession: Identifiable {
         let flags = Account.duplicateFlags(candidates: accounts, existing: existing)
         rows = zip(accounts, flags).map { account, duplicate in
             var target: UUID?
-            if source == .backup {
-                target = account.groupID.flatMap { mapping[$0] }
+            if source == .backup || source == .file {
+                target = account.groupID.flatMap { mapping[$0] } ?? (source == .file ? defaultGroupID : nil)
             } else {
                 target = defaultGroupID
             }

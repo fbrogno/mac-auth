@@ -36,11 +36,17 @@ struct RootView: View {
             Text(model.alert?.message ?? "")
         }
         .dropDestination(for: URL.self) { urls, _ in
-            guard model.phase == .firstRun || model.phase == .unlocked else { return false }
+            guard model.phase == .firstRun || model.phase == .unlocked, model.sheet == nil else { return false }
             ImportFlow.handle(urls: urls, model: model)
             return true
         }
-        .task { await model.start() }
+        .task {
+            if model.isDemo {
+                model.input.start()
+                if Entry.isDemo { model.demoHotKeySelfTest() }
+            }
+            await model.start()
+        }
     }
 }
 
@@ -54,7 +60,8 @@ struct SheetRouter: View {
         case .edit(let id): AccountFormSheet(model: model, editing: model.account(id))
         case .importer: ImportSheet(model: model)
         case .review(let session): ReviewSheet(model: model, session: session)
-        case .restoreBackup: RestoreSheet(model: model)
+        case .restoreBackup(let preset, let replace): RestoreSheet(model: model, preset: preset, replace: replace)
+        case .rescue: RescueSheet(model: model)
         case .exportBackup: ExportBackupSheet(model: model)
         case .transfer(let ids): TransferSheet(model: model, preselected: ids)
         case .newGroup: GroupSheet(model: model, existing: nil)
@@ -120,6 +127,18 @@ enum FilePanels {
         }
     }
 
+    /// Export file of another authenticator (Aegis, 2FAS, Ente Auth, otpauth list) or a MacAuth backup.
+    static func openImportFile() async -> URL? {
+        await withCheckedContinuation { continuation in
+            let panel = NSOpenPanel()
+            panel.allowedContentTypes = [UTType(filenameExtension: BackupFile.fileExtension) ?? .data, .json, .plainText, .text, .data]
+            panel.allowsMultipleSelection = false
+            panel.canChooseDirectories = false
+            panel.message = String(localized: "Wähle eine Exportdatei aus Aegis, 2FAS oder Ente Auth (unverschlüsselt) oder eine MacAuth-Sicherung.")
+            panel.begin { response in continuation.resume(returning: response == .OK ? panel.url : nil) }
+        }
+    }
+
     static func saveBackup(suggestedName: String) async -> URL? {
         await withCheckedContinuation { continuation in
             let panel = NSSavePanel()
@@ -132,31 +151,80 @@ enum FilePanels {
     }
 }
 
-/// Entry points of the import paths (file panel, drop, paste, typed link).
+/// Entry points of the import paths (file panel, drop, paste, typed link). Every path that waits (panel, file read,
+/// image decoding) remembers the state it started in and drops its result if the app was locked meanwhile.
 @MainActor
 enum ImportFlow {
     static func chooseImages(model: AppModel) async {
+        let ticket = model.ticket
         let urls = await FilePanels.openImages()
-        guard !urls.isEmpty else { return }
-        present(await model.importer.ingest(files: urls, model: model), model: model)
+        guard !urls.isEmpty, model.isCurrent(ticket) else { return }
+        present(await model.importer.ingest(files: urls, model: model), model: model, ticket: ticket)
     }
 
+    static func chooseFile(model: AppModel) async {
+        let ticket = model.ticket
+        guard let url = await FilePanels.openImportFile(), model.isCurrent(ticket) else { return }
+        await importFile(url, model: model, ticket: ticket)
+    }
+
+    /// Dropped files: images are QR screenshots, everything else goes through the file detector.
     static func handle(urls: [URL], model: AppModel) {
-        let images = urls.filter { (try? $0.resourceValues(forKeys: [.contentTypeKey]).contentType?.conforms(to: .image)) ?? false }
-        guard !images.isEmpty else { return }
-        Task { present(await model.importer.ingest(files: images, model: model), model: model) }
+        let ticket = model.ticket
+        let isImage: (URL) -> Bool = { (try? $0.resourceValues(forKeys: [.contentTypeKey]).contentType?.conforms(to: .image)) ?? false }
+        let images = urls.filter(isImage)
+        if !images.isEmpty {
+            Task { present(await model.importer.ingest(files: images, model: model), model: model, ticket: ticket) }
+        } else if let file = urls.first {
+            Task { await importFile(file, model: model, ticket: ticket) }
+        }
     }
 
     static func handle(text: String, model: AppModel) {
-        present(model.importer.ingest(text: text, model: model), model: model)
+        let ticket = model.ticket
+        present(model.importer.ingest(text: text, model: model), model: model, ticket: ticket)
     }
 
     static func paste(model: AppModel) {
-        Task { present(await model.importer.ingestPasteboard(model: model), model: model) }
+        let ticket = model.ticket
+        Task { present(await model.importer.ingestPasteboard(model: model), model: model, ticket: ticket) }
+    }
+
+    /// Reads the file off the main thread, recognises its format and opens the matching next step.
+    static func importFile(_ url: URL, model: AppModel, ticket: Ticket) async {
+        let loaded: Result<Data, Error> = await Task.detached(priority: .userInitiated) {
+            let didStart = url.startAccessingSecurityScopedResource()
+            defer { if didStart { url.stopAccessingSecurityScopedResource() } }
+            do {
+                let handle = try FileHandle(forReadingFrom: url)
+                defer { try? handle.close() }
+                let data = try handle.read(upToCount: 32 * 1024 * 1024 + 1) ?? Data()
+                return .success(data)
+            } catch {
+                return .failure(BackupError.ioFailure(error.localizedDescription))
+            }
+        }.value
+        guard model.isCurrent(ticket) else { return }
+        do {
+            let data = try loaded.get()
+            switch try ImportDetector.detect(data) {
+            case .accounts(let result):
+                let skipped = result.skipped.map { "\($0.label) – \($0.reason.localizedText)" }
+                let session = model.makeSession(source: .file, delivery: .file, accounts: result.accounts, skipped: skipped, groups: result.groups)
+                model.sheet = .review(session)
+            case .googleMigration(let links):
+                present(model.importer.ingest(links, delivery: .file, model: model), model: model, ticket: ticket)
+            case .macauthBackup:
+                model.sheet = .restoreBackup(preset: BackupPreset(name: url.lastPathComponent, data: data), replace: false)
+            }
+        } catch {
+            model.alert = AppAlert(title: String(localized: "Datei lässt sich nicht importieren"), message: ErrorText.message(for: error))
+        }
     }
 
     /// A finished session opens the review sheet; otherwise the importer sheet shows progress or the problem.
-    static func present(_ session: ImportSession?, model: AppModel) {
+    static func present(_ session: ImportSession?, model: AppModel, ticket: Ticket) {
+        guard model.isCurrent(ticket) else { return }
         if let session {
             model.sheet = .review(session)
         } else if model.importer.progress != nil || model.importer.notice != nil {

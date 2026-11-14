@@ -24,60 +24,79 @@ enum DocRenderer {
         for scheme in [ColorScheme.light, .dark] {
             let tag = scheme == .light ? "light" : "dark"
             let suffix = englishOnly ? "-en" : ""
-            func want(_ name: String) -> Bool { only == nil || only!.contains(name) }
+            let english = ["main-grid", "first-run", "import-review", "settings"]
+            func want(_ name: String) -> Bool { (only == nil || only!.contains(name)) && (!englishOnly || english.contains(name)) }
 
             if want("main-grid") {
                 let model = demoModel(.unlocked)
                 window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("main-grid-\(tag)\(suffix).png"))
             }
-            if englishOnly { continue }
             if want("main-list") {
                 let model = demoModel(.unlocked)
                 model.settings.listMode = true
-                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("main-list-\(tag).png"))
+                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("main-list-\(tag)\(suffix).png"))
             }
             if want("search") {
                 let model = demoModel(.unlocked)
                 model.search = "pro"
                 model.selection = model.visibleAccounts.first?.id
-                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("search-\(tag).png"))
+                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("search-\(tag)\(suffix).png"))
             }
             if want("first-run") {
                 let model = demoModel(.firstRun)
-                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("first-run-\(tag).png"))
+                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("first-run-\(tag)\(suffix).png"))
             }
             if want("locked") {
                 let model = demoModel(.locked)
-                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("locked-\(tag).png"))
+                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("locked-\(tag)\(suffix).png"))
             }
             if want("import-review") {
                 let model = demoModel(.unlocked)
-                let session = model.makeSession(source: .google, accounts: DemoData.reviewAccounts,
+                let session = model.makeSession(source: .google, delivery: .camera, accounts: DemoData.reviewAccounts,
                                                 skipped: ["Altdienst (alt@beispiel.example)"])
-                sheet(ReviewSheet(model: model, session: session), scheme: scheme, to: url.appendingPathComponent("import-review-\(tag).png"))
+                sheet(ReviewSheet(model: model, session: session), scheme: scheme, to: url.appendingPathComponent("import-review-\(tag)\(suffix).png"))
+            }
+            if want("import-file-review") {
+                let model = demoModel(.unlocked)
+                let session = model.makeSession(source: .file, delivery: .file, accounts: DemoData.reviewAccounts,
+                                                skipped: ["Altsystem (alt@beispiel.example) – Codetyp „steam“ wird nicht unterstützt",
+                                                          "Wartungskonto – Schlüssel ungültig"])
+                sheet(ReviewSheet(model: model, session: session), scheme: scheme, to: url.appendingPathComponent("import-file-review-\(tag)\(suffix).png"))
+            }
+            if want("locked-cannot-open") {
+                let model = demoModel(.locked, notice: .cannotOpen)
+                window(RootView(model: model), model: model, scheme: scheme, size: size, to: url.appendingPathComponent("locked-cannot-open-\(tag)\(suffix).png"))
+            }
+            if want("rescue") {
+                let model = demoModel(.locked, notice: .cannotOpen)
+                sheet(RescueSheet(model: model), scheme: scheme, to: url.appendingPathComponent("rescue-\(tag)\(suffix).png"))
             }
             if want("add") {
                 let model = demoModel(.unlocked)
                 var prefill = DemoData.reviewAccounts[1]
                 prefill.groupID = nil
-                sheet(AccountFormSheet(model: model, editing: nil, prefill: prefill), scheme: scheme, to: url.appendingPathComponent("add-\(tag).png"))
+                sheet(AccountFormSheet(model: model, editing: nil, prefill: prefill), scheme: scheme, to: url.appendingPathComponent("add-\(tag)\(suffix).png"))
             }
             if want("export-backup") {
                 let model = demoModel(.unlocked)
                 sheet(ExportBackupSheet(model: model, previewPassword: "Sommerwiese-Kaffee-42"), scheme: scheme,
-                      to: url.appendingPathComponent("export-backup-\(tag).png"))
+                      to: url.appendingPathComponent("export-backup-\(tag)\(suffix).png"))
             }
             if want("settings") {
                 let model = demoModel(.unlocked)
-                sheet(SettingsView(model: model, updater: nil), scheme: scheme, to: url.appendingPathComponent("settings-\(tag).png"))
+                sheet(SettingsView(model: model, updater: nil), scheme: scheme, to: url.appendingPathComponent("settings-\(tag)\(suffix).png"))
             }
             if want("settings") {
                 let model = demoModel(.unlocked)
-                sheet(SettingsView(model: model, updater: nil, initialTab: 1), scheme: scheme, to: url.appendingPathComponent("settings-general-\(tag).png"))
+                sheet(SettingsView(model: model, updater: nil, initialTab: 1), scheme: scheme, to: url.appendingPathComponent("settings-general-\(tag)\(suffix).png"))
             }
             if want("transfer") {
                 let model = demoModel(.unlocked)
-                sheet(TransferSheet(model: model, preselected: nil), scheme: scheme, to: url.appendingPathComponent("transfer-\(tag).png"))
+                sheet(TransferSheet(model: model, preselected: nil), scheme: scheme, to: url.appendingPathComponent("transfer-\(tag)\(suffix).png"))
+            }
+            if want("transfer-unsupported") {
+                let model = demoModel(.unlocked, accounts: DemoData.transferAccounts)
+                sheet(TransferSheet(model: model, preselected: nil), scheme: scheme, to: url.appendingPathComponent("transfer-unsupported-\(tag)\(suffix).png"))
             }
         }
 
@@ -85,7 +104,7 @@ enum DocRenderer {
         print("Bilder geschrieben nach \(url.path)")
     }
 
-    private static func demoModel(_ phase: AppModel.Phase) -> AppModel {
+    private static func demoModel(_ phase: AppModel.Phase, notice: LockNotice? = nil, accounts: [Account]? = nil) -> AppModel {
         let suite = "com.fbrogno.macauth.render.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite) ?? .standard
         defer { defaults.removePersistentDomain(forName: suite) }
@@ -94,8 +113,13 @@ enum DocRenderer {
         settings.lastBackupExport = 1
         switch phase {
         case .firstRun: return AppModel(demoPhase: phase, accounts: [], groups: AccountGroup.makeDefaults(), settings: settings)
-        case .locked: return AppModel(demoPhase: phase, accounts: [], groups: [], settings: settings)
-        default: return AppModel(demoPhase: phase, accounts: DemoData.accounts, groups: DemoData.groups, settings: settings)
+        case .locked:
+            let rescue = [
+                RescueEntry(id: "previous", kind: .demo, date: DemoData.now.addingTimeInterval(-3_600 * 5), protector: nil),
+                RescueEntry(id: "replaced", kind: .demo, date: DemoData.now.addingTimeInterval(-86_400 * 9), protector: "secure-enclave"),
+            ]
+            return AppModel(demoPhase: phase, accounts: [], groups: [], settings: settings, lockNotice: notice, rescue: rescue)
+        default: return AppModel(demoPhase: phase, accounts: accounts ?? DemoData.accounts, groups: DemoData.groups, settings: settings)
         }
     }
 
@@ -121,11 +145,12 @@ enum DocRenderer {
             if model.phase != .unlocked { TrafficLights().padding(.top, 20).padding(.leading, 14) }
         }
         .frame(width: size.width, height: size.height)
-        sheet(shot, scheme: scheme, to: file, padding: 36)
+        sheet(shot, scheme: scheme, to: file, padding: 36, opaque: model.phase != .unlocked)
     }
 
-    private static func sheet(_ content: some View, scheme: ColorScheme, to file: URL, padding: CGFloat = 40) {
+    private static func sheet(_ content: some View, scheme: ColorScheme, to file: URL, padding: CGFloat = 40, opaque: Bool = true) {
         let hosting = NSHostingView(rootView: content
+            .background(opaque ? Color(nsColor: .windowBackgroundColor) : Color.clear)
             .environment(\.fixedNow, DemoData.now)
             .environment(\.controlActiveState, .key)
             .toggleStyle(DocSwitchStyle(dark: scheme == .dark))

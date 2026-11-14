@@ -56,7 +56,7 @@ struct MigrationTests {
 
     @Test func roundTrip() throws {
         let accounts = [makeAccount(), makeAccount("bob ö", issuer: "Büro", secret: "abcdefghijklmnopqrstuvwxyz012345",
-                                                   algorithm: .sha512, digits: 8, kind: .hotp, counter: UInt64.max)]
+                                                   algorithm: .sha512, digits: 8, kind: .hotp, counter: UInt64(Int64.max))]
         let uris = try MigrationCodec.uris(for: accounts, batchID: 77)
         #expect(uris.count == 1)
         let batch = try MigrationCodec.parse(uri: uris[0], now: now)

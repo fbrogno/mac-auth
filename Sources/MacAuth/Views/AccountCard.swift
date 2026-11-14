@@ -41,6 +41,8 @@ struct AccountCard: View {
     let isSelected: Bool
     let isCopied: Bool
     let revealCode: Bool
+    /// False while the first card is only preselected automatically (hidden-codes mode must not reveal it).
+    var selectionReveals = true
     let onCopy: () -> Void
     let onNextHOTP: () -> Void
 
@@ -48,10 +50,10 @@ struct AccountCard: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var account: Account { display.account }
-    private var codeVisible: Bool { revealCode || hovering || isSelected }
+    private var codeVisible: Bool { revealCode || hovering || (isSelected && selectionReveals) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center, spacing: 12) {
                 MonogramTile(account: account)
                     .overlay(alignment: .bottomTrailing) {
@@ -60,7 +62,7 @@ struct AccountCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 5) {
                         Text(account.issuer.isEmpty ? account.name : account.issuer)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .lineLimit(1)
                         if account.pinned {
                             Image(systemName: "star.fill").font(.system(size: 9)).foregroundStyle(.orange)
@@ -86,16 +88,16 @@ struct AccountCard: View {
             }
             .frame(height: 34, alignment: .leading)
         }
-        .padding(.horizontal, 16).padding(.vertical, 14)
+        .padding(Metrics.cardPadding)
         .background(background)
         .overlay(alignment: .leading) {
             if let groupColor {
-                Capsule().fill(groupColor).frame(width: 3).padding(.vertical, 14).padding(.leading, 5)
+                Capsule().fill(groupColor).frame(width: 3).padding(.vertical, 20).padding(.leading, 7)
             }
         }
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(borderColor, lineWidth: isSelected ? 2 : 1))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous).strokeBorder(borderColor, lineWidth: isSelected ? 2 : 1))
+        .clipShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous))
         .shadow(color: .black.opacity(hovering ? 0.16 : 0.06), radius: hovering ? 9 : 2.5, y: hovering ? 4 : 1)
         .offset(y: hovering && !reduceMotion ? -1.5 : 0)
         .animation(reduceMotion ? nil : .smooth(duration: 0.18), value: hovering)
@@ -174,13 +176,15 @@ struct AccountRow: View {
     let isSelected: Bool
     let isCopied: Bool
     let revealCode: Bool
+    /// False while the first card is only preselected automatically (hidden-codes mode must not reveal it).
+    var selectionReveals = true
     let onCopy: () -> Void
     let onNextHOTP: () -> Void
 
     @State private var hovering = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private var account: Account { display.account }
-    private var codeVisible: Bool { revealCode || hovering || isSelected }
+    private var codeVisible: Bool { revealCode || hovering || (isSelected && selectionReveals) }
 
     var body: some View {
         HStack(spacing: 12) {

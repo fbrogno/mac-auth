@@ -21,7 +21,7 @@ final class ImportCoordinator {
     }
 
     /// Feeds QR payloads. Returns a session when the import is complete.
-    func ingest(_ payloads: [String], model: AppModel) -> ImportSession? {
+    func ingest(_ payloads: [String], delivery: ImportSession.Delivery, model: AppModel) -> ImportSession? {
         var links: [Account] = []
         var problems: [String] = []
         var sawNew = false
@@ -45,10 +45,10 @@ final class ImportCoordinator {
         }
         notice = sawNew || !links.isEmpty ? nil : problems.first
         if !links.isEmpty {
-            return model.makeSession(source: .link, accounts: links)
+            return model.makeSession(source: .link, delivery: delivery, accounts: links)
         }
         if collector.isComplete {
-            let session = model.makeSession(source: .google, accounts: collector.accounts, skipped: collector.skipped)
+            let session = model.makeSession(source: .google, delivery: delivery, accounts: collector.accounts, skipped: collector.skipped)
             collector.reset()
             return session
         }
@@ -57,6 +57,7 @@ final class ImportCoordinator {
 
     /// Reads image files off the main thread and feeds the results.
     func ingest(files: [URL], model: AppModel) async -> ImportSession? {
+        let ticket = model.ticket
         isReading = true
         defer { isReading = false }
         let found = await Task.detached(priority: .userInitiated) {
@@ -66,31 +67,34 @@ final class ImportCoordinator {
                 return QRDecoder.payloads(at: url)
             }
         }.value
+        guard model.isCurrent(ticket) else { return nil }   // locked or changed while reading: drop the result
         if found.isEmpty {
             notice = String(localized: "In diesem Bild wurde kein QR-Code gefunden.")
             return nil
         }
-        return ingest(found, model: model)
+        return ingest(found, delivery: .image, model: model)
     }
 
     /// Text typed or pasted: otpauth link or Google export link.
     func ingest(text: String, model: AppModel) -> ImportSession? {
-        ingest([text.trimmingCharacters(in: .whitespacesAndNewlines)], model: model)
+        ingest([text.trimmingCharacters(in: .whitespacesAndNewlines)], delivery: .text, model: model)
     }
 
     /// ⌘V: image first, then text.
     func ingestPasteboard(model: AppModel) async -> ImportSession? {
+        let ticket = model.ticket
         let pasteboard = NSPasteboard.general
         if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL], !urls.isEmpty {
             return await ingest(files: urls, model: model)
         }
         if let images = pasteboard.readObjects(forClasses: [NSImage.self]) as? [NSImage], let image = images.first {
             let found = await Task.detached(priority: .userInitiated) { QRDecoder.payloads(in: image) }.value
+            guard model.isCurrent(ticket) else { return nil }
             if found.isEmpty {
                 notice = String(localized: "In diesem Bild wurde kein QR-Code gefunden.")
                 return nil
             }
-            return ingest(found, model: model)
+            return ingest(found, delivery: .image, model: model)
         }
         if let text = pasteboard.string(forType: .string), OTPAuthURI.isOTPAuthURI(text) || MigrationCodec.isMigrationURI(text) {
             return ingest(text: text, model: model)
