@@ -69,6 +69,7 @@ struct SheetRouter: View {
         case .add: AccountFormSheet(model: model, editing: nil)
         case .edit(let id): AccountFormSheet(model: model, editing: model.account(id))
         case .importer: ImportSheet(model: model)
+        case .microsoftGuide: ImportSheet(model: model, initialGuide: .microsoft)
         case .review(let session): ReviewSheet(model: model, session: session)
         case .restoreBackup(let preset, let replace): RestoreSheet(model: model, preset: preset, replace: replace)
         case .rescue: RescueSheet(model: model)
@@ -153,7 +154,8 @@ enum FilePanels {
         return await run(panel) == .OK ? panel.url : nil
     }
 
-    /// Export file of another authenticator (Aegis, 2FAS, Ente Auth, otpauth list) or a MacAuth backup.
+    /// Export file of another authenticator (Aegis, 2FAS, Ente Auth, otpauth list), the Android database of
+    /// Microsoft Authenticator (`PhoneFactor`, a file without extension) or a MacAuth backup.
     static func openImportFile() async -> URL? {
         let panel = NSOpenPanel()
         // Detection is by content, so any file may be chosen; the listed types only make the common ones easy to find.
@@ -161,7 +163,7 @@ enum FilePanels {
                                      UTType(filenameExtension: "2fas") ?? .data, .data]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
-        panel.message = String(localized: "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV) oder eine MacAuth-Sicherung.")
+        panel.message = String(localized: "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV), die Datenbank „PhoneFactor“ aus Microsoft Authenticator oder eine MacAuth-Sicherung.")
         return await run(panel) == .OK ? panel.url : nil
     }
 
@@ -252,7 +254,9 @@ enum ImportFlow {
                 let skipped = result.skipped.map { "\($0.label) – \($0.reason.localizedText)" }
                 // Never an empty review sheet: nothing usable and nothing to explain means "no codes found".
                 if result.hasNothingToReview {
-                    let message = result.rowsWithoutCode > 0
+                    let message = result.mayBeIncomplete
+                        ? String(localized: "In dieser Datenbank steht kein Konto. Sie wurde im laufenden Betrieb kopiert: Die Konten stehen vermutlich noch in der Begleitdatei „PhoneFactor-wal“. Führe die Dateien vorher zusammen, die Anleitung steht in der README. Es wurde nichts importiert.")
+                        : result.rowsWithoutCode > 0
                         ? String(localized: "In dieser Datei steht bei keinem der \(result.rowsWithoutCode) Einträge ein Code für die Zwei-Faktor-Anmeldung. Es wurde nichts importiert.")
                         : String(localized: "In dieser Datei wurde kein Code für die Zwei-Faktor-Anmeldung gefunden. Es wurde nichts importiert.")
                     model.alert = AppAlert(title: String(localized: "Keine Codes gefunden"), message: message)
@@ -260,7 +264,8 @@ enum ImportFlow {
                 }
                 let delivery: ImportSession.Delivery = [.applePasswordsCSV, .genericCSV, .bitwarden].contains(result.format) ? .passwordFile : .file
                 let session = model.makeSession(source: .file, delivery: delivery, accounts: result.accounts, skipped: skipped, groups: result.groups,
-                                                format: result.format, rowsWithoutCode: result.rowsWithoutCode)
+                                                format: result.format, rowsWithoutCode: result.rowsWithoutCode,
+                                                mayBeIncomplete: result.mayBeIncomplete)
                 model.sheet = .review(session)
             case .googleMigration(let links):
                 present(model.importer.ingest(links, delivery: .file, model: model), model: model, ticket: ticket)
@@ -278,7 +283,7 @@ enum ImportFlow {
         if let session {
             model.sheet = .review(session)
         } else if model.importer.progress != nil || model.importer.notice != nil {
-            if case .importer = model.sheet { return }
+            if model.sheet?.isImportGuide == true { return }
             model.sheet = .importer
         }
     }

@@ -218,6 +218,7 @@ struct AppCommands: Commands {
             Button("Neue Gruppe …") { model.sheet = .newGroup }.keyboardShortcut("n", modifiers: [.command, .shift]).disabled(!unlocked)
             Divider()
             Button("Importieren …") { model.sheet = .importer }.keyboardShortcut("i", modifiers: [.command, .shift]).disabled(!canAdd)
+            Button("Aus Microsoft Authenticator umziehen …") { model.sheet = .microsoftGuide }.disabled(!canAdd)
             Button("Aus Datei importieren …") { Task { await ImportFlow.chooseFile(model: model) } }.disabled(!canAdd)
             // On the lock screen after a failed unlock this is the replacement path (the old file is kept, with its own confirmation).
             Button("Backup wiederherstellen …") { model.sheet = .restoreBackup(preset: nil, replace: model.phase == .locked) }
@@ -244,7 +245,8 @@ struct AppCommands: Commands {
             Button("Einfügen") {
                 if NSApp.keyWindow?.firstResponder is NSTextView {
                     NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil)
-                } else if canAdd, model.sheet == nil {
+                } else if canAdd, model.sheet == nil || model.sheet?.isImportGuide == true {
+                    // Also with the import sheet open: its guides tell the user to paste a QR code with ⌘V.
                     ImportFlow.paste(model: model)
                 }
             }

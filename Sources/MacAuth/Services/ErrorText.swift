@@ -80,10 +80,11 @@ enum ErrorText {
             case .emptyFile: return String(localized: "Die Datei ist leer.")
             case .tooLarge: return String(localized: "Die Datei ist zu groß.")
             case .tooManyEntries: return String(localized: "Die Datei enthält zu viele Einträge.")
-            case .unrecognizedFormat: return String(localized: "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste), Bitwarden, andOTP, CSV-Dateien mit einer Code-Spalte (Apple Passwörter, 1Password, Proton Pass u. a.) und MacAuth-Sicherungen.")
+            case .unrecognizedFormat: return String(localized: "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste), Bitwarden, andOTP, CSV-Dateien mit einer Code-Spalte (Apple Passwörter, 1Password, Proton Pass u. a.), die Android-Datenbank von Microsoft Authenticator (PhoneFactor) und MacAuth-Sicherungen.")
             case .encryptedFile(let format):
                 return String(localized: "Die \(format.displayName)-Datei ist verschlüsselt. Exportiere sie in \(format.displayName) unverschlüsselt, importiere sie hier und lösche die Exportdatei danach.")
             case .unsupportedVersion: return String(localized: "Die Version dieser Datei wird nicht unterstützt.")
+            case .damagedDatabase: return String(localized: "Die Datenbank ist beschädigt oder unvollständig und lässt sich nicht lesen. Kopiere die Datei „PhoneFactor“ noch einmal vom Gerät.")
             case .malformedCSV: return String(localized: "Die CSV-Datei ist fehlerhaft und lässt sich nicht lesen. Exportiere sie noch einmal aus der App.")
             }
         default:
@@ -101,6 +102,7 @@ extension SkipReason {
         case .invalidParameter(let p): String(localized: "Ungültiger Wert für „\(p)“")
         case .notAnOTPAuthLine: String(localized: "Keine otpauth-Zeile")
         case .malformed: String(localized: "Eintrag fehlerhaft")
+        case .noStandardCode: String(localized: "Kein Einmalcode hinterlegt (Anmeldung per Mitteilung oder ohne Passwort). Richte das Konto beim Dienst neu ein.")
         }
     }
 }

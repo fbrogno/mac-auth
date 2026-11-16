@@ -7,11 +7,17 @@ struct ImportSheet: View {
     @State private var cameraProblem: CameraAccess?
     @State private var cameraTicket: Ticket?
     @State private var confirmScreenshot = false
-    /// Instructions for a file import (Apple Passwords, another app); nil = the Google Authenticator guide.
+    /// Instructions for another source (Apple Passwords, another app's file, the move from Microsoft Authenticator);
+    /// nil = the Google Authenticator guide.
     @State private var fileGuide: FileGuide?
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
 
-    enum FileGuide { case applePasswords, otherApp }
+    enum FileGuide { case applePasswords, otherApp, microsoft }
+
+    /// Where Microsoft accounts add another authenticator app. Opened in the browser only on the user's click.
+    private static let microsoftPersonalURL = URL(string: "https://account.microsoft.com/security")!
+    private static let microsoftWorkURL = URL(string: "https://mysignins.microsoft.com/security-info")!
 
     init(model: AppModel, initialGuide: FileGuide? = nil) {
         self.model = model
@@ -29,6 +35,7 @@ struct ImportSheet: View {
                     switch fileGuide {
                     case .applePasswords: applePasswordsPage
                     case .otherApp: otherAppPage
+                    case .microsoft: microsoftPage
                     }
                 } else {
                     guidePage
@@ -46,7 +53,11 @@ struct ImportSheet: View {
             Spacer()
             Button("Abbrechen") { dismiss() }.keyboardShortcut(.cancelAction)
             if !scanning {
-                if fileGuide != nil {
+                if fileGuide == .microsoft {
+                    Button("Schlüssel eingeben …") { model.sheet = .add }
+                    Button("Einfügen") { ImportFlow.paste(model: model) }
+                        .keyboardShortcut(.defaultAction).primaryButtonStyle()
+                } else if fileGuide != nil {
                     Button("Datei wählen …") { Task { await ImportFlow.chooseFile(model: model) } }
                         .keyboardShortcut(.defaultAction).primaryButtonStyle()
                 } else {
@@ -72,6 +83,7 @@ struct ImportSheet: View {
         switch fileGuide {
         case .applePasswords: String(localized: "Aus Apple Passwörter importieren")
         case .otherApp: String(localized: "Aus anderer App importieren")
+        case .microsoft: String(localized: "Aus Microsoft Authenticator umziehen")
         case nil: String(localized: "Aus Google Authenticator importieren")
         }
     }
@@ -81,6 +93,7 @@ struct ImportSheet: View {
         switch fileGuide {
         case .applePasswords: return String(localized: "So holst du die Codes aus der App „Passwörter“ deines Macs oder iPhones:")
         case .otherApp: return String(localized: "Exportiere die Konten unverschlüsselt aus der anderen App und wähle die Datei hier aus.")
+        case .microsoft: return String(localized: "Microsoft Authenticator gibt die Schlüssel nicht heraus, einen Export gibt es nicht. Deshalb richtest du jedes Konto einmal neu ein:")
         case nil: return String(localized: "So holst du deine Konten aus der Handy-App:")
         }
     }
@@ -114,11 +127,44 @@ struct ImportSheet: View {
                 Label("Bitwarden (JSON, unverschlüsselt) und andOTP (unverschlüsselte Sicherung)", systemImage: "checkmark.circle")
                 Label("Passwortmanager als CSV, etwa 1Password und Proton Pass", systemImage: "checkmark.circle")
                 Label("Jede Textdatei mit otpauth-Links, ein Link je Zeile", systemImage: "checkmark.circle")
+                Label("Microsoft Authenticator: Datenbank „PhoneFactor“ eines Android-Geräts mit Root-Zugriff", systemImage: "checkmark.circle")
             }
             .font(.callout).fixedSize(horizontal: false, vertical: true)
             Text("MacAuth erkennt das Format am Inhalt der Datei. Verschlüsselte Dateien werden abgelehnt, exportiere dann bitte unverschlüsselt. Eine Datei kannst du auch auf das Fenster ziehen.")
                 .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             passwordsNote
+        }
+    }
+
+    private var microsoftPage: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
+                StepRow(number: 1, text: "Melde dich am Mac beim Dienst an und öffne dort die Einstellungen für die Zwei-Faktor-Anmeldung.")
+                StepRow(number: 2, text: "Richte dort die Authenticator-App neu ein oder füge eine weitere App hinzu. Der Dienst zeigt einen QR-Code.")
+                StepRow(number: 3, text: "Nimm den QR-Code mit ⌃⇧⌘4 in die Zwischenablage auf und füge ihn hier mit ⌘V ein. Zeigt der Dienst nur einen Schlüssel, wähle „Schlüssel eingeben“.")
+                StepRow(number: 4, text: "Bestätige die Einrichtung beim Dienst mit dem Code, den MacAuth anzeigt.")
+            }
+            Text("Das wiederholst du für jedes Konto. Im Hauptfenster genügt dafür ⌘V, den Assistenten brauchst du nicht jedes Mal.")
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Divider()
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Für Microsoft-Konten geht es hier entlang:").font(.callout.weight(.medium))
+                VStack(spacing: 8) {
+                    sourceButton(title: "Privates Konto", subtitle: "„Wie ich mich anmelde“, „App verwenden“, dann „Andere Authentifikator-App einrichten“",
+                                 symbol: "person") { openURL(Self.microsoftPersonalURL) }
+                    sourceButton(title: "Geschäfts- oder Schulkonto", subtitle: "Anmeldemethode hinzufügen, dann eine andere Authenticator-App wählen. Der Admin kann das sperren.",
+                                 symbol: "building.2") { openURL(Self.microsoftWorkURL) }
+                }
+                Text("Die Seiten öffnen sich im Browser. Der Wortlaut bei Microsoft kann abweichen.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Label("Lösche ein Konto erst dann aus Microsoft Authenticator, wenn der Code aus MacAuth beim Dienst funktioniert hat. Halte deine Wiederherstellungscodes bereit.",
+                  systemImage: "exclamationmark.shield")
+                .font(.callout).fixedSize(horizontal: false, vertical: true)
+                .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            Text("Android-Gerät mit Root-Zugriff? Dann liest „Aus Datei importieren“ die Datenbank „PhoneFactor“ direkt ein.")
+                .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -138,6 +184,7 @@ struct ImportSheet: View {
                     sourceButton(title: "Aus Apple Passwörter", subtitle: "Export der App „Passwörter“", symbol: "key") { fileGuide = .applePasswords }
                     sourceButton(title: "Aus anderer App (Datei)", subtitle: "Aegis, 2FAS, Ente, Bitwarden, andOTP, CSV", symbol: "doc.text") { fileGuide = .otherApp }
                 }
+                sourceButton(title: "Aus Microsoft Authenticator", subtitle: "Ohne Export: Konto für Konto neu einrichten, MacAuth führt dich durch", symbol: "arrow.triangle.swap") { fileGuide = .microsoft }
                 Text("Eine MacAuth-Sicherung stellst du über „Backup wiederherstellen“ wieder her.")
                     .font(.callout).foregroundStyle(.secondary)
             }
@@ -295,6 +342,14 @@ struct ReviewSheet: View {
                 if session.fileHasPasswords {
                     Label("Es werden nur die Codes importiert. Passwörter in der Datei werden ignoriert und nicht gespeichert. Lösche die Datei nach dem Import, sie enthält alle deine Passwörter.",
                           systemImage: "lock.shield")
+                        .font(.callout).fixedSize(horizontal: false, vertical: true)
+                        .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .padding(.horizontal, 24)
+                }
+                if session.mayBeIncomplete {
+                    Label("Diese Datenbank wurde im laufenden Betrieb kopiert. Zuletzt hinzugefügte Konten stehen dann nur in der Begleitdatei „PhoneFactor-wal“ und fehlen hier. Vergleiche die Liste mit Microsoft Authenticator.",
+                          systemImage: "exclamationmark.triangle")
                         .font(.callout).fixedSize(horizontal: false, vertical: true)
                         .padding(10).frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))

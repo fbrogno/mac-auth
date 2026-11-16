@@ -132,11 +132,24 @@ Jeder Import endet in einem Prüfschritt. Gespeichert wird erst nach deiner Best
 | **Google Authenticator** | Am Handy: Menü, **Konten übertragen**, **Konten exportieren**, Konten wählen, ein QR-Code erscheint. In MacAuth **Aus Google Authenticator importieren** wählen und den QR-Code mit der Mac-Kamera scannen. Mehrere QR-Codes zählt MacAuth mit („2 von 3“). Ein Screenshot, eine Bilddatei oder ein einzelner `otpauth://`-Link bzw. Setup-Schlüssel gehen auch. |
 | **Apple Passwörter** | In „Passwörter“: **Ablage** > **Alle Passwörter in eine Datei exportieren**. In MacAuth: **Aus Apple Passwörter**, die CSV-Datei wählen. Gelesen werden nur die Codes; die Passwörter in der Datei werden ignoriert und nie gespeichert. |
 | **Aegis, 2FAS, Bitwarden, andOTP** | Dort unverschlüsselt exportieren, dann **Aus Datei importieren …** (auch im **+**-Menü und im Ablage-Menü, oder die Datei auf das Fenster ziehen). Das Format wird am Inhalt der Datei erkannt. |
+| **Microsoft Authenticator** | Die App hat keinen Export und zeigt den Schlüssel eines bestehenden Kontos nie an, deshalb wird jedes Konto einmal neu eingerichtet: **Aus Microsoft Authenticator umziehen …** (erster Start, **+**-Menü, Ablage-Menü) führt dich durch. Beim Dienst die Authenticator-App neu einrichten oder eine weitere App hinzufügen, dann den QR-Code in MacAuth einfügen (`⌃⇧⌘4`, dann `⌘V`) oder den Setup-Schlüssel eingeben. Nur Android mit Root: **Aus Datei importieren …** liest die App-Datenbank `PhoneFactor` direkt, siehe [unten](#datenbank-von-microsoft-authenticator-android-mit-root). |
 | **Ente Auth** | Die `otpauth://`-Liste exportieren, dann **Aus Datei importieren …**. |
 | **1Password, Proton Pass, andere CSV** | Eine CSV mit Spalte für Einmalpasswörter (`OTPAuth`, `totp`, `2fa`, `otp` …) wird gelesen; alle anderen Spalten werden beim Einlesen verworfen. |
 | **MacAuth-Backup** | **Backup wiederherstellen** (erster Start oder Sperrbildschirm) oder **Aus Datei importieren …**, um seine Konten hinzuzufügen. |
 
 Exportdateien anderer Apps enthalten alle Geheimnisse im Klartext. Lösche sie nach dem Import, auch aus dem Papierkorb und aus iCloud Drive, und ebenso einen Screenshot eines QR-Codes. Lösche die Konten erst aus der alten App, wenn du geprüft hast, dass die Codes in MacAuth funktionieren. Exportiere danach ein Backup (`⇧⌘E`) und lege es sicher ab, mit einem langen Passwort.
+
+### Datenbank von Microsoft Authenticator (Android mit Root)
+
+Auf Android liegen die Konten in der SQLite-Datei `/data/data/com.azure.authenticator/databases/PhoneFactor`, lesbar nur mit Root-Zugriff. MacAuth erkennt die Datei am Inhalt und liest gewöhnliche Konten (6 Stellen) und private Microsoft-Konten (8 Stellen). Einträge ohne Einmalcode, etwa Geschäftskonten mit Bestätigung per Mitteilung, stehen mit Grund in der Liste und müssen beim Dienst neu eingerichtet werden. Auf dem iPhone gibt es keinen solchen Dateiweg, und das Cloud-Backup von Microsoft Authenticator können andere Apps nicht lesen.
+
+Neben `PhoneFactor` können `PhoneFactor-wal` und `PhoneFactor-shm` liegen. Zuletzt hinzugefügte Konten stehen womöglich nur in der `-wal`-Datei, und MacAuth liest nur die eine gewählte Datei; im Prüfschritt steht ein Hinweis, wenn das der Fall sein kann. Wer sichergehen will, kopiert alle drei Dateien in einen Ordner und führt sie vorher zusammen:
+
+```sh
+sqlite3 PhoneFactor "PRAGMA wal_checkpoint(TRUNCATE);"
+```
+
+Die Datei enthält alle Schlüssel im Klartext: Lösche nach dem Import alle Kopien.
 
 In die Gegenrichtung: **Ablage** > **Für andere App exportieren (unverschlüsselt) …**, oder Konten als QR-Codes aufs Handy übertragen.
 

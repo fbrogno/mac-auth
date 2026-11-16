@@ -13,6 +13,8 @@ public enum ImportFormat: String, Sendable, Equatable, CaseIterable {
     case bitwarden
     /// andOTP plain-text JSON backup.
     case andOTP
+    /// Account database of Microsoft Authenticator for Android (SQLite file `PhoneFactor`, rooted devices only).
+    case microsoftAuthenticator
 
     public var displayName: String {
         switch self {
@@ -23,6 +25,7 @@ public enum ImportFormat: String, Sendable, Equatable, CaseIterable {
         case .genericCSV: "CSV"
         case .bitwarden: "Bitwarden"
         case .andOTP: "andOTP"
+        case .microsoftAuthenticator: "Microsoft Authenticator"
         }
     }
 }
@@ -34,6 +37,8 @@ public enum SkipReason: Error, Sendable, Equatable {
     case invalidParameter(String)
     case notAnOTPAuthLine
     case malformed
+    /// The source app holds no key for this entry (approval by notification, passwordless sign-in).
+    case noStandardCode
 
     public var description: String {
         switch self {
@@ -43,6 +48,7 @@ public enum SkipReason: Error, Sendable, Equatable {
         case .invalidParameter(let p): "Ungültiger Wert für „\(p)“"
         case .notAnOTPAuthLine: "Keine otpauth-Zeile"
         case .malformed: "Eintrag fehlerhaft"
+        case .noStandardCode: "Kein Einmalcode hinterlegt (Anmeldung per Mitteilung oder ohne Passwort)"
         }
     }
 }
@@ -62,6 +68,9 @@ public struct ImportResult: Sendable {
     /// Rows/items that carry no one-time code at all (typical for password-manager exports). Not an error;
     /// the UI can say "37 Einträge ohne Code übersprungen". Their content is never kept.
     public var rowsWithoutCode: Int = 0
+    /// The source may hold more accounts than this file shows: a Microsoft Authenticator database copied while
+    /// its write-ahead log (`PhoneFactor-wal`) still held changes. The UI asks the user to compare the list.
+    public var mayBeIncomplete: Bool = false
 
     /// Nothing the user could review or be told about: no account and no unusable entry. The app shows
     /// "Keine Codes gefunden" instead of an empty review sheet.
@@ -86,6 +95,7 @@ public enum ImportDetection: Sendable {
 ///   `otpauth://totp?secret=…` link without label (community sources; Apple publishes no specification)
 /// - Bitwarden: https://bitwarden.com/help/condition-bitwarden-import/ (`items[].login.totp`, `encrypted`)
 /// - andOTP: https://github.com/andOTP/andOTP/wiki/Backup-Format and `Entry.java` (JSON array, Base32 secret)
+/// - Microsoft Authenticator (Android database `PhoneFactor`): see `ImportPhoneFactor.swift`
 /// A password-manager file is read into memory for parsing; only the OTP and label columns are kept in a result and
 /// nothing else is retained after the parse.
 public enum ImportDetector {
@@ -94,6 +104,8 @@ public enum ImportDetector {
     public static func detect(_ data: Data, now: Date = Date()) throws -> ImportDetection {
         guard !data.isEmpty else { throw ImportError.emptyFile }
         guard data.count <= Limits.maxFileBytes else { throw ImportError.tooLarge }
+        // Binary formats first: a SQLite file is never valid UTF-8 text.
+        if isSQLite(data) { return .accounts(try parsePhoneFactor(data, now: now)) }
         var bytes = data
         if bytes.starts(with: [0xEF, 0xBB, 0xBF]) { bytes = bytes.dropFirst(3) }
         guard let text = String(data: bytes, encoding: .utf8) else { throw ImportError.unrecognizedFormat }
@@ -326,7 +338,7 @@ public enum ImportDetector {
         return .success(account)
     }
 
-    private static func clip(_ s: String) -> String {
+    static func clip(_ s: String) -> String {
         let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
         guard t.utf8.count > Limits.maxTextBytes else { return t }
         var out = ""
@@ -339,7 +351,7 @@ public enum ImportDetector {
         return out
     }
 
-    private static func label(title: String, username: String, fallback: String) -> String {
+    static func label(title: String, username: String, fallback: String) -> String {
         let t = String(title.trimmingCharacters(in: .whitespacesAndNewlines).prefix(100))
         let u = String(username.trimmingCharacters(in: .whitespacesAndNewlines).prefix(100))
         switch (t.isEmpty, u.isEmpty) {
