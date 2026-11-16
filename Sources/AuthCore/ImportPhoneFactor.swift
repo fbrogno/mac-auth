@@ -13,16 +13,35 @@ import SQLite3
 /// Always SHA1 and 30 seconds.
 ///
 /// The file is foreign input. It is opened from memory only (`sqlite3_deserialize`, nothing is written to disk),
-/// read-only, with an authorizer that allows nothing but reading the four columns of the table `accounts`:
-/// no views, triggers, functions, pragmas or other tables of the file are ever evaluated.
+/// read-only, with an authorizer that allows nothing but a direct read of the four columns of the table `accounts`:
+/// no views, triggers, pragmas or other tables of the file are evaluated. Generated columns are the one place where
+/// expressions of the file's schema still run (built-in functions only, `trusted_schema` is off); a crafted chain of
+/// them could cost hours or gigabytes, so the size of the compiled statement, the number of executed steps and the
+/// time are capped and the read is aborted as a damaged file beyond that.
 extension ImportDetector {
     static let sqliteMagic = Data("SQLite format 3\u{0}".utf8)
 
     static func isSQLite(_ data: Data) -> Bool { data.starts(with: sqliteMagic) }
 
     private static let phoneFactorColumns: Set<String> = ["name", "username", "oath_secret_key", "account_type"]
+    /// What a read may cost before it is given up: 20 million virtual-machine steps (10 000 honest rows need well
+    /// under a million) and the time limit of the call (an honest file takes milliseconds).
+    struct PhoneFactorBudget {
+        static let stepsPerCall: Int32 = 50
+        static let maxCalls = 400_000
+        var calls: Int
+        var deadline: TimeInterval
+    }
 
-    static func parsePhoneFactor(_ data: Data, now: Date) throws -> ImportResult {
+    private static func schemaIsEmpty(_ db: OpaquePointer) -> Bool {
+        var statement: OpaquePointer?
+        defer { sqlite3_finalize(statement) }
+        guard sqlite3_prepare_v2(db, "SELECT count(*) FROM sqlite_master", -1, &statement, nil) == SQLITE_OK,
+              sqlite3_step(statement) == SQLITE_ROW else { return false }
+        return sqlite3_column_int64(statement, 0) == 0
+    }
+
+    static func parsePhoneFactor(_ data: Data, now: Date, timeLimit: TimeInterval = 5) throws -> ImportResult {
         // A SQLite header is 100 bytes; the smallest database is one page of at least 512 bytes.
         guard data.count >= 512, data.count <= Limits.maxFileBytes else { throw ImportError.damagedDatabase }
         var image = [UInt8](data)
@@ -52,6 +71,24 @@ extension ImportDetector {
         // are bounds-checked, and no single value may exceed 1 MB.
         sqlite3_exec(db, "PRAGMA trusted_schema = OFF; PRAGMA cell_size_check = ON;", nil, nil, nil)
         sqlite3_limit(db, SQLITE_LIMIT_LENGTH, 1_000_000)
+        // The real statement compiles to a few dozen instructions and runs a few steps per row.
+        sqlite3_limit(db, SQLITE_LIMIT_VDBE_OP, 1_000)
+        // Steps alone do not bound the time (one step may copy a megabyte), so there is a deadline as well.
+        let budget = UnsafeMutablePointer<PhoneFactorBudget>.allocate(capacity: 1)
+        budget.initialize(to: PhoneFactorBudget(calls: 0, deadline: Date.timeIntervalSinceReferenceDate + timeLimit))
+        defer { budget.deallocate() }
+        sqlite3_progress_handler(db, PhoneFactorBudget.stepsPerCall, { context in
+            guard let budget = context?.assumingMemoryBound(to: PhoneFactorBudget.self) else { return 1 }
+            budget.pointee.calls += 1
+            // Non-zero interrupts the statement.
+            return budget.pointee.calls > PhoneFactorBudget.maxCalls || Date.timeIntervalSinceReferenceDate > budget.pointee.deadline ? 1 : 0
+        }, budget)
+
+        // Copied from a phone that never wrote its log back: the main file has no schema at all and every account
+        // sits in `PhoneFactor-wal`. Reported as "possibly incomplete" instead of "unknown format".
+        if usesWAL, schemaIsEmpty(db) {
+            return ImportResult(format: .microsoftAuthenticator, accounts: [], groups: [], skipped: [], mayBeIncomplete: true)
+        }
         sqlite3_set_authorizer(db, { _, action, arg1, arg2, _, inner in
             switch action {
             case SQLITE_SELECT:
@@ -97,8 +134,13 @@ extension ImportDetector {
             let entryLabel = label(title: issuer, username: name, fallback: "Eintrag \(rows)")
             func skip(_ r: SkipReason) { skipped.append(SkippedEntry(label: entryLabel, reason: r)) }
 
-            guard sqlite3_column_type(statement, 3) == SQLITE_INTEGER else { skip(.noStandardCode); continue }
-            let type = sqlite3_column_int64(statement, 3)
+            // An integer, also when stored as text ("0"); anything else is not a known type.
+            let type: Int64?
+            switch sqlite3_column_type(statement, 3) {
+            case SQLITE_INTEGER: type = sqlite3_column_int64(statement, 3)
+            case SQLITE_TEXT: type = Int64(columnText(3))
+            default: type = nil
+            }
             // Types other than 0 and 1, and entries without a stored key, are approvals by notification or
             // passwordless sign-in: there is no key a code could be computed from.
             guard type == 0 || type == 1, !key.isEmpty else { skip(.noStandardCode); continue }

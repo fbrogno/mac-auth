@@ -57,11 +57,13 @@ MacAuth's own backup, Google migration links, and the following password-manager
   listed as unusable (`SkipReason.noStandardCode`). The file is recognised by the SQLite signature before the text
   formats and read with the system SQLite (`import SQLite3`, no third-party code) from memory only
   (`sqlite3_deserialize`, read-only, nothing written to disk). An authorizer allows nothing but direct reads of the
-  four columns of `accounts`, so views, triggers, functions and other tables of a crafted file are never evaluated;
-  `trusted_schema` is off and a value may not exceed 1 MB. A SQLite file without that table is
+  four columns of `accounts`, so views, triggers and other tables of a crafted file are never evaluated;
+  `trusted_schema` is off and a value may not exceed 1 MB. Generated columns still evaluate their (built-in)
+  expressions, so the compiled statement is limited to 1000 instructions and a progress handler aborts after
+  20 million steps or 5 seconds; a chain of generated columns built to burn CPU or memory ends as `damagedDatabase`. A SQLite file without that table is
   `unrecognizedFormat`, an unreadable one `damagedDatabase`. Only the one chosen file is read: a database in
   write-ahead-log mode is opened as a plain database and the result carries `mayBeIncomplete` (accounts may sit in
-  `PhoneFactor-wal` only), which the review sheet shows; the README explains how to merge the files first.
+  `PhoneFactor-wal` only), which the review sheet shows (also when the main file has no schema at all); the README explains how to merge the files first.
 
 Microsoft Authenticator has no export on any platform. The app therefore offers a guide ("Aus Microsoft
 Authenticator umziehen", `ImportSheet` with `FileGuide.microsoft`, reachable from the first start, the **+** menu and

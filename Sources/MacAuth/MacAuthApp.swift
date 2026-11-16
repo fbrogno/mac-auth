@@ -245,8 +245,9 @@ struct AppCommands: Commands {
             Button("Einfügen") {
                 if NSApp.keyWindow?.firstResponder is NSTextView {
                     NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: nil)
-                } else if canAdd, model.sheet == nil || model.sheet?.isImportGuide == true {
-                    // Also with the import sheet open: its guides tell the user to paste a QR code with ⌘V.
+                } else if canAdd, model.sheet == nil || (model.sheet?.isImportGuide == true && !model.cameraScanning) {
+                    // Also with the import sheet open: its guides tell the user to paste a QR code with ⌘V. Not while
+                    // the camera collects a multi-part export; a pasted single code would close the sheet and drop it.
                     ImportFlow.paste(model: model)
                 }
             }

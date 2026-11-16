@@ -141,6 +141,65 @@ struct ImportPhoneFactorTests {
         #expect(r.accounts.map(\.issuer) == ["GitHub"])
     }
 
+    /// The log was never written back: the main file is an empty database. Not "unknown format" but a result that
+    /// tells the user where the accounts are.
+    @Test func writeAheadLogDatabaseWithoutSchemaIsMarkedIncomplete() throws {
+        let dir = try tempDirectory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let file = dir.appendingPathComponent("PhoneFactor")
+        var db: OpaquePointer?
+        #expect(sqlite3_open(file.path, &db) == SQLITE_OK)
+        let sql = "PRAGMA journal_mode = WAL;" + Self.schema +
+            "INSERT INTO accounts (name, username, oath_secret_key, account_type) VALUES ('NurImLog', 'bob', '\(Self.base32)', 0);"
+        #expect(sqlite3_exec(db, sql, nil, nil, nil) == SQLITE_OK)
+        let data = try Data(contentsOf: file)
+        sqlite3_close(db)
+        let r = try result(data)
+        #expect(r.format == .microsoftAuthenticator && r.mayBeIncomplete && r.hasNothingToReview)
+        // An empty database that is not in log mode stays an unknown file.
+        var plain = data
+        plain[18] = 1; plain[19] = 1
+        #expect(throws: ImportError.unrecognizedFormat) { _ = try result(plain) }
+    }
+
+    /// Generated columns run expressions of the file. Chains built to burn CPU or memory are cut off quickly.
+    @Test func generatedColumnChainsAreCutOff() throws {
+        // CPU: every row drags an 800 kB string through 200 replace() calls (half a second per row without the cap).
+        var cpu = "CREATE TABLE accounts (username TEXT, oath_secret_key TEXT, account_type INTEGER, c0 TEXT"
+        for k in 1...200 { cpu += ", c\(k) TEXT GENERATED ALWAYS AS (replace(c\(k - 1), '0', '0')) VIRTUAL" }
+        cpu += ", name TEXT GENERATED ALWAYS AS (substr(c200, 1, 5)) VIRTUAL);"
+        cpu += "WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 2) " +
+            "INSERT INTO accounts (username, oath_secret_key, account_type, c0) SELECT i, '\(Self.base32)', 0, hex(zeroblob(400000)) FROM n;"
+        // Memory: each column doubles the expression of the one before (about 190 MB at 16 levels without the cap).
+        var memory = "CREATE TABLE accounts (username TEXT, oath_secret_key TEXT, account_type INTEGER, c0 INTEGER"
+        for k in 1...16 { memory += ", c\(k) INTEGER GENERATED ALWAYS AS (c\(k - 1) + c\(k - 1)) VIRTUAL" }
+        memory += ", name TEXT GENERATED ALWAYS AS (c16) VIRTUAL);INSERT INTO accounts (username, oath_secret_key, account_type, c0) VALUES ('a', '\(Self.base32)', 0, 1);"
+        for sql in [cpu, memory] {
+            let data = try Self.database(sql)
+            let started = Date()
+            #expect(throws: ImportError.self) { _ = try result(data) }
+            #expect(Date().timeIntervalSince(started) < 1)
+        }
+    }
+
+    /// Steps alone do not bound the time (one step may copy a megabyte), so the read also has a deadline. With a
+    /// deadline that has already passed, an honest database with enough rows to reach the check is given up.
+    @Test func readStopsAtTheDeadline() throws {
+        let rows = "WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 2000) " +
+            "INSERT INTO accounts (name, username, oath_secret_key, account_type) SELECT 'A', i, '\(Self.base32)', 0 FROM n;"
+        let data = try Self.database(Self.schema + rows)
+        #expect(throws: ImportError.damagedDatabase) { _ = try ImportDetector.parsePhoneFactor(data, now: now, timeLimit: -1) }
+        #expect(try ImportDetector.parsePhoneFactor(data, now: now).accounts.count == 2000)
+    }
+
+    @Test func accountTypeStoredAsTextIsAccepted() throws {
+        let data = try Self.database("CREATE TABLE accounts (name, username, oath_secret_key, account_type);" +
+            "INSERT INTO accounts VALUES ('GitHub', 'alice', '\(Self.base32)', '0'), ('Microsoft', 'bob', '\(Self.base64)', ' 1 '), ('X', 'carol', '\(Self.base32)', 'abc'), ('Y', 'dave', '\(Self.base32)', 0.5);")
+        let r = try result(data)
+        #expect(r.accounts.map(\.digits) == [6, 8])
+        #expect(r.skipped.map(\.reason) == [.noStandardCode, .noStandardCode])
+    }
+
     @Test func detectionDoesNotDisturbTextFormats() throws {
         // Text that merely starts like the signature without the NUL byte is not a database.
         #expect(throws: ImportError.unrecognizedFormat) {
