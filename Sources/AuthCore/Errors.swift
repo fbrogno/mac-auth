@@ -175,6 +175,8 @@ public enum ImportError: Error, Equatable, LocalizedError {
     case unsupportedVersion(String)
     /// The file looks like CSV but cannot be parsed. Carries a fixed reason text, never file content.
     case malformedCSV(String)
+    /// A SQLite file (Microsoft Authenticator `PhoneFactor`) that cannot be read.
+    case damagedDatabase
 
     public var errorDescription: String? {
         switch self {
@@ -185,6 +187,7 @@ public enum ImportError: Error, Equatable, LocalizedError {
         case .encryptedFile(let f): "Die \(f.displayName)-Datei ist verschlüsselt. Bitte unverschlüsselt exportieren."
         case .unsupportedVersion(let v): "Die Dateiversion (\(v)) wird nicht unterstützt."
         case .malformedCSV(let r): "Die CSV-Datei ist fehlerhaft (\(r))."
+        case .damagedDatabase: "Die Datenbank ist beschädigt und lässt sich nicht lesen."
         }
     }
 }

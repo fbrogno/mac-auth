@@ -721,6 +721,22 @@
         }
       }
     },
+    "Android-Gerät mit Root-Zugriff? Dann liest „Aus Datei importieren“ die Datenbank „PhoneFactor“ direkt ein.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Android-Gerät mit Root-Zugriff? Dann liest „Aus Datei importieren“ die Datenbank „PhoneFactor“ direkt ein."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rooted Android device? Then “Import from File” reads the “PhoneFactor” database directly."
+          }
+        }
+      }
+    },
     "Anlegen": {
       "localizations": {
         "de": {
@@ -733,6 +749,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Create"
+          }
+        }
+      }
+    },
+    "Anmeldemethode hinzufügen, dann eine andere Authenticator-App wählen. Der Admin kann das sperren.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anmeldemethode hinzufügen, dann eine andere Authenticator-App wählen. Der Admin kann das sperren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a sign-in method, then choose a different authenticator app. Your admin can block this."
           }
         }
       }
@@ -925,6 +957,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Import from Google Authenticator …"
+          }
+        }
+      }
+    },
+    "Aus Microsoft Authenticator": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Microsoft Authenticator"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From Microsoft Authenticator"
+          }
+        }
+      }
+    },
+    "Aus Microsoft Authenticator umziehen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Microsoft Authenticator umziehen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move from Microsoft Authenticator"
+          }
+        }
+      }
+    },
+    "Aus Microsoft Authenticator umziehen …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Microsoft Authenticator umziehen …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move from Microsoft Authenticator …"
           }
         }
       }
@@ -1153,6 +1233,22 @@
         }
       }
     },
+    "Bestätige die Einrichtung beim Dienst mit dem Code, den MacAuth anzeigt.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bestätige die Einrichtung beim Dienst mit dem Code, den MacAuth anzeigt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm the setup at the service with the code MacAuth shows."
+          }
+        }
+      }
+    },
     "Bild wird gelesen …": {
       "localizations": {
         "de": {
@@ -1345,18 +1441,18 @@
         }
       }
     },
-    "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste), Bitwarden, andOTP, CSV-Dateien mit einer Code-Spalte (Apple Passwörter, 1Password, Proton Pass u. a.) und MacAuth-Sicherungen.": {
+    "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste), Bitwarden, andOTP, CSV-Dateien mit einer Code-Spalte (Apple Passwörter, 1Password, Proton Pass u. a.), die Android-Datenbank von Microsoft Authenticator (PhoneFactor) und MacAuth-Sicherungen.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste), Bitwarden, andOTP, CSV-Dateien mit einer Code-Spalte (Apple Passwörter, 1Password, Proton Pass u. a.) und MacAuth-Sicherungen."
+            "value": "Das Dateiformat wird nicht erkannt. Unterstützt werden Aegis, 2FAS, Ente Auth (otpauth-Liste), Bitwarden, andOTP, CSV-Dateien mit einer Code-Spalte (Apple Passwörter, 1Password, Proton Pass u. a.), die Android-Datenbank von Microsoft Authenticator (PhoneFactor) und MacAuth-Sicherungen."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The file format is not recognised. Supported are Aegis, 2FAS, Ente Auth (otpauth list), Bitwarden, andOTP, CSV files with a code column (Apple Passwords, 1Password, Proton Pass and others) and MacAuth backups."
+            "value": "The file format is not recognised. Supported are Aegis, 2FAS, Ente Auth (otpauth list), Bitwarden, andOTP, CSV files with a code column (Apple Passwords, 1Password, Proton Pass and others), the Android database of Microsoft Authenticator (PhoneFactor) and MacAuth backups."
           }
         }
       }
@@ -1485,6 +1581,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "That is not a MacAuth backup."
+          }
+        }
+      }
+    },
+    "Das wiederholst du für jedes Konto. Im Hauptfenster genügt dafür ⌘V, den Assistenten brauchst du nicht jedes Mal.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das wiederholst du für jedes Konto. Im Hauptfenster genügt dafür ⌘V, den Assistenten brauchst du nicht jedes Mal."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat this for every account. In the main window ⌘V is enough, you do not need this guide each time."
           }
         }
       }
@@ -2145,6 +2257,22 @@
         }
       }
     },
+    "Die Datenbank ist beschädigt oder unvollständig und lässt sich nicht lesen. Kopiere die Datei „PhoneFactor“ noch einmal vom Gerät.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datenbank ist beschädigt oder unvollständig und lässt sich nicht lesen. Kopiere die Datei „PhoneFactor“ noch einmal vom Gerät."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The database is damaged or incomplete and cannot be read. Copy the “PhoneFactor” file from the device again."
+          }
+        }
+      }
+    },
     "Die Entsperrung wurde abgebrochen.": {
       "localizations": {
         "de": {
@@ -2305,6 +2433,22 @@
         }
       }
     },
+    "Die Seiten öffnen sich im Browser. Der Wortlaut bei Microsoft kann abweichen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Seiten öffnen sich im Browser. Der Wortlaut bei Microsoft kann abweichen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The pages open in your browser. Microsoft's wording may differ."
+          }
+        }
+      }
+    },
     "Die Sicherung hat ein unbekanntes Format. Bitte aktualisiere MacAuth.": {
       "localizations": {
         "de": {
@@ -2429,6 +2573,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "This file is not protected"
+          }
+        }
+      }
+    },
+    "Diese Datenbank wurde im laufenden Betrieb kopiert. Zuletzt hinzugefügte Konten stehen dann nur in der Begleitdatei „PhoneFactor-wal“ und fehlen hier. Vergleiche die Liste mit Microsoft Authenticator.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Datenbank wurde im laufenden Betrieb kopiert. Zuletzt hinzugefügte Konten stehen dann nur in der Begleitdatei „PhoneFactor-wal“ und fehlen hier. Vergleiche die Liste mit Microsoft Authenticator."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This database was copied while the app was in use. Recently added accounts may then exist only in the companion file “PhoneFactor-wal” and are missing here. Compare the list with Microsoft Authenticator."
           }
         }
       }
@@ -3409,6 +3569,22 @@
         }
       }
     },
+    "Für Microsoft-Konten geht es hier entlang:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für Microsoft-Konten geht es hier entlang:"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For Microsoft accounts, start here:"
+          }
+        }
+      }
+    },
     "Für andere App exportieren": {
       "localizations": {
         "de": {
@@ -3485,6 +3661,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "No prompt is possible right now, for example because the screen is locked. Try again in a moment."
+          }
+        }
+      }
+    },
+    "Geschäfts- oder Schulkonto": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geschäfts- oder Schulkonto"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work or school account"
           }
         }
       }
@@ -3953,6 +4145,22 @@
         }
       }
     },
+    "In dieser Datenbank steht kein Konto. Sie wurde im laufenden Betrieb kopiert: Die Konten stehen vermutlich noch in der Begleitdatei „PhoneFactor-wal“. Führe die Dateien vorher zusammen, die Anleitung steht in der README. Es wurde nichts importiert.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In dieser Datenbank steht kein Konto. Sie wurde im laufenden Betrieb kopiert: Die Konten stehen vermutlich noch in der Begleitdatei „PhoneFactor-wal“. Führe die Dateien vorher zusammen, die Anleitung steht in der README. Es wurde nichts importiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This database holds no account. It was copied while the app was in use: the accounts are probably still in the companion file “PhoneFactor-wal”. Merge the files first, the README explains how. Nothing was imported."
+          }
+        }
+      }
+    },
     "Intervall: %lld Sekunden": {
       "localizations": {
         "de": {
@@ -3981,6 +4189,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Any text file with otpauth links, one link per line"
+          }
+        }
+      }
+    },
+    "Kein Einmalcode hinterlegt (Anmeldung per Mitteilung oder ohne Passwort). Richte das Konto beim Dienst neu ein.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Einmalcode hinterlegt (Anmeldung per Mitteilung oder ohne Passwort). Richte das Konto beim Dienst neu ein."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No one-time code stored (sign-in by notification or passwordless). Set the account up again at the service."
           }
         }
       }
@@ -4369,6 +4593,22 @@
         }
       }
     },
+    "Lösche ein Konto erst dann aus Microsoft Authenticator, wenn der Code aus MacAuth beim Dienst funktioniert hat. Halte deine Wiederherstellungscodes bereit.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lösche ein Konto erst dann aus Microsoft Authenticator, wenn der Code aus MacAuth beim Dienst funktioniert hat. Halte deine Wiederherstellungscodes bereit."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete an account from Microsoft Authenticator only after the code from MacAuth has worked at the service. Keep your recovery codes at hand."
+          }
+        }
+      }
+    },
     "Löschen": {
       "localizations": {
         "de": {
@@ -4573,6 +4813,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "Right-click an account and mark it as a favorite. It will appear here and always at the top."
+          }
+        }
+      }
+    },
+    "Melde dich am Mac beim Dienst an und öffne dort die Einstellungen für die Zwei-Faktor-Anmeldung.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melde dich am Mac beim Dienst an und öffne dort die Einstellungen für die Zwei-Faktor-Anmeldung."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to the service on your Mac and open its two-factor authentication settings."
+          }
+        }
+      }
+    },
+    "Microsoft Authenticator gibt die Schlüssel nicht heraus, einen Export gibt es nicht. Deshalb richtest du jedes Konto einmal neu ein:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Authenticator gibt die Schlüssel nicht heraus, einen Export gibt es nicht. Deshalb richtest du jedes Konto einmal neu ein:"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Authenticator does not hand out its keys, there is no export. So you set up each account once more:"
+          }
+        }
+      }
+    },
+    "Microsoft Authenticator hat keinen Export. MacAuth führt dich Konto für Konto durch den Umzug.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Authenticator hat keinen Export. MacAuth führt dich Konto für Konto durch den Umzug."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Authenticator has no export. MacAuth guides you through the move, account by account."
+          }
+        }
+      }
+    },
+    "Microsoft Authenticator: Datenbank „PhoneFactor“ eines Android-Geräts mit Root-Zugriff": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Authenticator: Datenbank „PhoneFactor“ eines Android-Geräts mit Root-Zugriff"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Authenticator: “PhoneFactor” database of a rooted Android device"
           }
         }
       }
@@ -4849,6 +5153,22 @@
         }
       }
     },
+    "Nimm den QR-Code mit ⌃⇧⌘4 in die Zwischenablage auf und füge ihn hier mit ⌘V ein. Zeigt der Dienst nur einen Schlüssel, wähle „Schlüssel eingeben“.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimm den QR-Code mit ⌃⇧⌘4 in die Zwischenablage auf und füge ihn hier mit ⌘V ein. Zeigt der Dienst nur einen Schlüssel, wähle „Schlüssel eingeben“."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture the QR code to the clipboard with ⌃⇧⌘4 and paste it here with ⌘V. If the service shows only a key, choose “Enter Key”."
+          }
+        }
+      }
+    },
     "Nimm zuerst eine Tastenkombination auf.": {
       "localizations": {
         "de": {
@@ -5025,6 +5345,22 @@
         }
       }
     },
+    "Ohne Export: Konto für Konto neu einrichten, MacAuth führt dich durch": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ohne Export: Konto für Konto neu einrichten, MacAuth führt dich durch"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No export: set up account by account, MacAuth guides you"
+          }
+        }
+      }
+    },
     "Ohne diesen Code kommst du eventuell nicht mehr in dein Konto. Prüfe vorher, dass du einen anderen Zugang hast, zum Beispiel Wiederherstellungscodes, oder den Code auf einem anderen Gerät. Das Löschen lässt sich nicht rückgängig machen.": {
       "localizations": {
         "de": {
@@ -5137,6 +5473,22 @@
         }
       }
     },
+    "Privates Konto": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privates Konto"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personal account"
+          }
+        }
+      }
+    },
     "QR-Code %lld von %lld": {
       "localizations": {
         "de": {
@@ -5213,6 +5565,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Grid"
+          }
+        }
+      }
+    },
+    "Richte dort die Authenticator-App neu ein oder füge eine weitere App hinzu. Der Dienst zeigt einen QR-Code.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Richte dort die Authenticator-App neu ein oder füge eine weitere App hinzu. Der Dienst zeigt einen QR-Code."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up the authenticator app again there, or add another app. The service shows a QR code."
           }
         }
       }
@@ -5325,6 +5693,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show key"
+          }
+        }
+      }
+    },
+    "Schlüssel eingeben …": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schlüssel eingeben …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter Key …"
           }
         }
       }
@@ -6305,18 +6689,18 @@
         }
       }
     },
-    "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV) oder eine MacAuth-Sicherung.": {
+    "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV), die Datenbank „PhoneFactor“ aus Microsoft Authenticator oder eine MacAuth-Sicherung.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV) oder eine MacAuth-Sicherung."
+            "value": "Wähle eine unverschlüsselte Exportdatei (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV), die Datenbank „PhoneFactor“ aus Microsoft Authenticator oder eine MacAuth-Sicherung."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose an unencrypted export file (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV) or a MacAuth backup."
+            "value": "Choose an unencrypted export file (Aegis, 2FAS, Ente Auth, Bitwarden, andOTP, CSV), the “PhoneFactor” database of Microsoft Authenticator or a MacAuth backup."
           }
         }
       }
@@ -6785,6 +7169,22 @@
         }
       }
     },
+    "„Wie ich mich anmelde“, „App verwenden“, dann „Andere Authentifikator-App einrichten“": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "„Wie ich mich anmelde“, „App verwenden“, dann „Andere Authentifikator-App einrichten“"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“Manage how I sign in”, “Use an app”, then “Set up a different Authenticator app”"
+          }
+        }
+      }
+    },
     "••••••••••••": {
       "localizations": {
         "de": {
@@ -6817,22 +7217,6 @@
         }
       }
     },
-    "↵ kopiert den aktuellen Code, ⌥↵ den nächsten": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "↵ kopiert den aktuellen Code, ⌥↵ den nächsten"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "↵ copies the current code, ⌥↵ the next one"
-          }
-        }
-      }
-    },
     "↵ kopieren · ⌥↵ nächster Code, zählt weiter": {
       "localizations": {
         "de": {
@@ -6845,6 +7229,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "↵ copy · ⌥↵ next code, counts on"
+          }
+        }
+      }
+    },
+    "↵ kopiert den aktuellen Code, ⌥↵ den nächsten": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↵ kopiert den aktuellen Code, ⌥↵ den nächsten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↵ copies the current code, ⌥↵ the next one"
           }
         }
       }

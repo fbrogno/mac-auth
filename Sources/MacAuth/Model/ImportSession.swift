@@ -29,6 +29,9 @@ final class ImportSession: Identifiable {
     let format: ImportFormat?
     /// Rows of a password-manager file that carry no code and were skipped. Their content is never kept.
     let rowsWithoutCode: Int
+    /// The file may not show every account of the source app (Microsoft Authenticator database with a pending
+    /// write-ahead log); the review sheet asks to compare the list.
+    let mayBeIncomplete: Bool
     var rows: [Row]
     var skipped: [String]
     /// Existing groups first, then groups of a backup that do not exist yet (matched by name).
@@ -39,7 +42,8 @@ final class ImportSession: Identifiable {
 
     init(source: Source, delivery: Delivery, intent: ImportIntent, accounts: [Account], skipped: [String] = [], existing: [Account],
          existingGroups: [AccountGroup], incomingGroups backupGroups: [AccountGroup] = [], defaultGroupID: UUID? = nil,
-         format: ImportFormat? = nil, rowsWithoutCode: Int = 0) {
+         format: ImportFormat? = nil, rowsWithoutCode: Int = 0, mayBeIncomplete: Bool = false) {
+        self.mayBeIncomplete = mayBeIncomplete
         self.format = format
         self.rowsWithoutCode = rowsWithoutCode
         self.source = source

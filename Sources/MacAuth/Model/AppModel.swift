@@ -15,6 +15,8 @@ enum ActiveSheet: Identifiable {
     case add
     case edit(UUID)
     case importer
+    /// The import sheet opened on its guide for people coming from Microsoft Authenticator (which has no export).
+    case microsoftGuide
     case review(ImportSession)
     case restoreBackup(preset: BackupPreset?, replace: Bool)
     case exportBackup
@@ -30,6 +32,7 @@ enum ActiveSheet: Identifiable {
         case .add: "add"
         case .edit(let id): "edit-\(id)"
         case .importer: "importer"
+        case .microsoftGuide: "microsoftGuide"
         case .review(let s): "review-\(s.id)"
         case .restoreBackup(let p, let replace): "restore-\(p?.id.uuidString ?? "none")-\(replace)"
         case .exportBackup: "export"
@@ -42,13 +45,21 @@ enum ActiveSheet: Identifiable {
         }
     }
 
+    /// The import sheet in either of its two starting states: pasting a QR code or link is taken there too.
+    var isImportGuide: Bool {
+        switch self {
+        case .importer, .microsoftGuide: true
+        default: false
+        }
+    }
+
     func isAllowed(in phase: AppPhase) -> Bool {
         switch self {
         case .rescue: return phase == .locked
         case .restoreBackup(_, let replace): return replace ? phase == .locked : (phase == .firstRun || phase == .unlocked)
         case .review(let session):
             return session.intent == .replaceVault ? phase == .locked : (phase == .firstRun || phase == .unlocked)
-        case .add, .importer: return phase == .firstRun || phase == .unlocked
+        case .add, .importer, .microsoftGuide: return phase == .firstRun || phase == .unlocked
         case .exportBackup, .exportPlain, .transfer, .edit, .newGroup, .editGroup, .confirmDelete: return phase == .unlocked
         }
     }
@@ -399,7 +410,7 @@ final class AppModel {
     private var importInProgress: Bool {
         var sheetOpen = importer.progress != nil
         switch sheet {
-        case .importer, .review: sheetOpen = true
+        case .importer, .microsoftGuide, .review: sheetOpen = true
         default: break
         }
         guard sheetOpen || cameraScanning else { keepAliveSince = nil; return false }
@@ -974,7 +985,7 @@ final class AppModel {
 
     func makeSession(source: ImportSession.Source, delivery: ImportSession.Delivery, accounts found: [Account],
                      skipped: [String] = [], groups incoming: [AccountGroup] = [], intent: ImportIntent? = nil,
-                     format: ImportFormat? = nil, rowsWithoutCode: Int = 0) -> ImportSession {
+                     format: ImportFormat? = nil, rowsWithoutCode: Int = 0, mayBeIncomplete: Bool = false) -> ImportSession {
         let defaultGroup = UUID(uuidString: settings.defaultGroupID).flatMap { id in groups.contains { $0.id == id } ? id : nil }
         let resolved: ImportIntent
         if let intent {
@@ -989,7 +1000,7 @@ final class AppModel {
         return ImportSession(source: source, delivery: delivery, intent: resolved, accounts: found, skipped: skipped,
                              existing: phase == .unlocked ? accounts : [],
                              existingGroups: phase == .locked ? [] : groups, incomingGroups: incoming, defaultGroupID: defaultGroup,
-                             format: format, rowsWithoutCode: rowsWithoutCode)
+                             format: format, rowsWithoutCode: rowsWithoutCode, mayBeIncomplete: mayBeIncomplete)
     }
 
     /// Stores the confirmed rows according to the session's intent.

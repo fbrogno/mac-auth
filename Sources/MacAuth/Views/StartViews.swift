@@ -21,8 +21,17 @@ struct FirstRunView: View {
                            text: "Gib einen Setup-Schlüssel oder otpauth-Link ein.") { model.sheet = .add }
             }
             .frame(maxWidth: 760)
-            FileImportRow { Task { await ImportFlow.chooseFile(model: model) } }
-                .frame(maxWidth: 760)
+            VStack(spacing: 8) {
+                FileImportRow(symbol: "doc.badge.arrow.up", title: "Aus Datei importieren …",
+                              text: "Exportdatei aus Aegis, 2FAS oder Ente Auth, oder eine MacAuth-Sicherung. Du kannst die Datei auch auf das Fenster ziehen.") {
+                    Task { await ImportFlow.chooseFile(model: model) }
+                }
+                FileImportRow(symbol: "arrow.triangle.swap", title: "Aus Microsoft Authenticator umziehen …",
+                              text: "Microsoft Authenticator hat keinen Export. MacAuth führt dich Konto für Konto durch den Umzug.") {
+                    model.sheet = .microsoftGuide
+                }
+            }
+            .frame(maxWidth: 760)
             Label("Erst wenn du etwas hinzufügst, legt MacAuth den geschützten Tresor an.", systemImage: "lock.shield")
                 .font(.callout).foregroundStyle(.secondary)
         }
@@ -31,18 +40,21 @@ struct FirstRunView: View {
     }
 }
 
-/// The fourth, smaller way in: an export file of another authenticator app.
+/// The smaller ways in: an export file of another authenticator app, the move from Microsoft Authenticator.
 private struct FileImportRow: View {
+    let symbol: String
+    let title: LocalizedStringKey
+    let text: LocalizedStringKey
     let action: () -> Void
     @State private var hovering = false
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: "doc.badge.arrow.up").font(.system(size: 17)).foregroundStyle(Color.accentColor).frame(width: 28)
+                Image(systemName: symbol).font(.system(size: 17)).foregroundStyle(Color.accentColor).frame(width: 28)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Aus Datei importieren …").font(.system(size: 13.5, weight: .semibold))
-                    Text("Exportdatei aus Aegis, 2FAS oder Ente Auth, oder eine MacAuth-Sicherung. Du kannst die Datei auch auf das Fenster ziehen.")
+                    Text(title).font(.system(size: 13.5, weight: .semibold))
+                    Text(text)
                         .font(.system(size: 12)).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)

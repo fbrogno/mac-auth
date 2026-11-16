@@ -48,6 +48,7 @@ struct MainView: View {
                     Button("Neues Konto …") { model.sheet = .add }
                     Divider()
                     Button("Aus Google Authenticator importieren …") { model.sheet = .importer }
+                    Button("Aus Microsoft Authenticator umziehen …") { model.sheet = .microsoftGuide }
                     Button("Aus Datei importieren …") { Task { await ImportFlow.chooseFile(model: model) } }
                     Button("Backup wiederherstellen …") { model.sheet = .restoreBackup(preset: nil, replace: false) }
                 } label: {

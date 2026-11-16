@@ -51,6 +51,25 @@ MacAuth's own backup, Google migration links, and the following password-manager
   otherwise from the title/name and username/login/email columns.
 - **Bitwarden JSON** (unencrypted): `items[].login.totp`, link or bare Base32 key; `steam://` entries are listed as unusable.
 - **andOTP** plain JSON backup (top-level array, Base32 `secret`, `type` TOTP/HOTP; STEAM/MOTP listed as unusable).
+- **Microsoft Authenticator, Android database `PhoneFactor`** (SQLite, rooted devices only; `ImportPhoneFactor.swift`,
+  format read from Aegis' `MicrosoftAuthImporter`): table `accounts`, `account_type` 0 = Base32 key/6 digits,
+  1 = personal Microsoft account with Base64 key/8 digits, always SHA1/30 s; any other type or an empty key is
+  listed as unusable (`SkipReason.noStandardCode`). The file is recognised by the SQLite signature before the text
+  formats and read with the system SQLite (`import SQLite3`, no third-party code) from memory only
+  (`sqlite3_deserialize`, read-only, nothing written to disk). An authorizer allows nothing but direct reads of the
+  four columns of `accounts`, so views, triggers and other tables of a crafted file are never evaluated;
+  `trusted_schema` is off and a value may not exceed 1 MB. Generated columns still evaluate their (built-in)
+  expressions, so the compiled statement is limited to 1000 instructions and a progress handler aborts after
+  20 million steps or 5 seconds; a chain of generated columns built to burn CPU or memory ends as `damagedDatabase`. A SQLite file without that table is
+  `unrecognizedFormat`, an unreadable one `damagedDatabase`. Only the one chosen file is read: a database in
+  write-ahead-log mode is opened as a plain database and the result carries `mayBeIncomplete` (accounts may sit in
+  `PhoneFactor-wal` only), which the review sheet shows (also when the main file has no schema at all); the README explains how to merge the files first.
+
+Microsoft Authenticator has no export on any platform. The app therefore offers a guide ("Aus Microsoft
+Authenticator umziehen", `ImportSheet` with `FileGuide.microsoft`, reachable from the first start, the **+** menu and
+the File menu): each account is set up again at its service and the QR code is pasted from the clipboard or the key
+typed in. The two links to Microsoft's account pages open in the browser on click only; the app itself still makes
+no network request.
 
 Encrypted Aegis/2FAS/Bitwarden files are recognised and refused with a hint to export unencrypted. Entries that
 cannot be used are listed with their label and the reason, never with their secret.

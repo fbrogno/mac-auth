@@ -24,7 +24,7 @@ enum DocRenderer {
         for scheme in [ColorScheme.light, .dark] {
             let tag = scheme == .light ? "light" : "dark"
             let suffix = englishOnly ? "-en" : ""
-            let english = ["main-grid", "first-run", "import-review", "settings", "quick-access", "quick-access-search", "quick-access-locked", "quick-access-frames"]
+            let english = ["main-grid", "first-run", "import-review", "import-microsoft", "settings", "quick-access", "quick-access-search", "quick-access-locked", "quick-access-frames"]
             func want(_ name: String) -> Bool { (only == nil || only!.contains(name)) && (!englishOnly || english.contains(name)) }
 
             if want("main-grid") {
@@ -80,6 +80,17 @@ enum DocRenderer {
             if want("import-other-app") {
                 let model = demoModel(.unlocked)
                 sheet(ImportSheet(model: model, initialGuide: .otherApp), scheme: scheme, to: url.appendingPathComponent("import-other-app-\(tag)\(suffix).png"))
+            }
+            if want("import-microsoft") {
+                let model = demoModel(.unlocked)
+                sheet(ImportSheet(model: model, initialGuide: .microsoft), scheme: scheme, to: url.appendingPathComponent("import-microsoft-\(tag)\(suffix).png"))
+            }
+            if want("import-microsoft-review") {
+                let model = demoModel(.unlocked)
+                let session = model.makeSession(source: .file, delivery: .file, accounts: DemoData.reviewAccounts,
+                                                skipped: ["Contoso (anna@contoso.example) – Kein Einmalcode hinterlegt (Anmeldung per Mitteilung oder ohne Passwort). Richte das Konto beim Dienst neu ein."],
+                                                format: .microsoftAuthenticator, mayBeIncomplete: true)
+                sheet(ReviewSheet(model: model, session: session), scheme: scheme, to: url.appendingPathComponent("import-microsoft-review-\(tag)\(suffix).png"))
             }
             if want("import-apple-review") {
                 let model = demoModel(.unlocked)
